@@ -164,7 +164,8 @@ public final class UpdateManager {
     @SuppressWarnings("deprecation")
     private void verifyUpdateApk(File file) throws Exception {
         PackageManager pm = activity.getPackageManager();
-        int flags = Build.VERSION.SDK_INT >= 28 ? PackageManager.GET_SIGNING_CERTIFICATES : PackageManager.GET_SIGNATURES;
+        // 一部のAPI 28実装ではarchiveのsigningInfoが返らないため、旧署名も要求する。
+        int flags = PackageManager.GET_SIGNATURES | (Build.VERSION.SDK_INT >= 28 ? PackageManager.GET_SIGNING_CERTIFICATES : 0);
         PackageInfo candidate = pm.getPackageArchiveInfo(file.getAbsolutePath(), flags);
         PackageInfo installed = pm.getPackageInfo(activity.getPackageName(), flags);
         if (candidate == null || !activity.getPackageName().equals(candidate.packageName)) {
@@ -173,11 +174,11 @@ public final class UpdateManager {
         long nextCode = Build.VERSION.SDK_INT >= 28 ? candidate.getLongVersionCode() : candidate.versionCode;
         long currentCode = Build.VERSION.SDK_INT >= 28 ? installed.getLongVersionCode() : installed.versionCode;
         if (nextCode <= currentCode) throw new IllegalStateException("更新APKのversionCodeが増えていません");
-        Signature[] next = Build.VERSION.SDK_INT >= 28
-                ? (candidate.signingInfo == null ? null : candidate.signingInfo.getApkContentsSigners()) : candidate.signatures;
-        Signature[] current = Build.VERSION.SDK_INT >= 28
-                ? (installed.signingInfo == null ? null : installed.signingInfo.getApkContentsSigners()) : installed.signatures;
-        if (next == null || current == null || !Arrays.equals(next, current)) {
+        Signature[] next = Build.VERSION.SDK_INT >= 28 && candidate.signingInfo != null
+                ? candidate.signingInfo.getApkContentsSigners() : candidate.signatures;
+        Signature[] current = Build.VERSION.SDK_INT >= 28 && installed.signingInfo != null
+                ? installed.signingInfo.getApkContentsSigners() : installed.signatures;
+        if (next == null || current == null || next.length == 0 || !Arrays.equals(next, current)) {
             throw new IllegalStateException("更新APKの署名が一致しません");
         }
     }

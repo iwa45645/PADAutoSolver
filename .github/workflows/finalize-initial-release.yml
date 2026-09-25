@@ -1,0 +1,18 @@
+name: Finalize initial v0.2.0 release source
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Advance initial release tag after compatibility verification
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'iwa45645/PADAutoSolver'
+          current=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v0.2.0" --jq .object.sha)
+          test "$current" = 'ef67816a8ba1a6bd318d8101a782c14e8c6f6704'
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/v0.2.0" -f sha="$GITHUB_SHA" -F force=true
