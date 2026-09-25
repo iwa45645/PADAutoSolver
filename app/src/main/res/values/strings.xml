@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">PAD Auto Solver</string>
+    <string name="accessibility_desc">盤面上の計算済みルートをスワイプ操作として実行します。</string>
+</resources>

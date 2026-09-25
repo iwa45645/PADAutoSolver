@@ -1,0 +1,65 @@
+plugins {
+    id 'com.android.application'
+}
+
+def githubRepo = 'iwa45645/PADAutoSolver'
+
+def keystorePath = System.getenv('ANDROID_KEYSTORE_PATH')
+def keystorePassword = System.getenv('ANDROID_KEYSTORE_PASSWORD')
+def keyAliasValue = System.getenv('ANDROID_KEY_ALIAS')
+def keyPasswordValue = System.getenv('ANDROID_KEY_PASSWORD')
+def hasReleaseSigning = keystorePath && keystorePassword && keyAliasValue && keyPasswordValue
+
+android {
+    namespace 'com.example.padautosolver'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.example.padautosolver'
+        minSdk 26
+        targetSdk 35
+        versionCode = (project.findProperty('appVersionCode') ?: '2').toInteger()
+        versionName = project.findProperty('appVersionName') ?: '0.2.0'
+        buildConfigField 'String', 'GITHUB_REPOSITORY', '"' + githubRepo + '"'
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile file(keystorePath)
+                storePassword keystorePassword
+                keyAlias keyAliasValue
+                keyPassword keyPasswordValue
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core:1.15.0'
+    testImplementation 'junit:junit:4.13.2'
+}
+
+gradle.taskGraph.whenReady { graph ->
+    if (graph.allTasks.any { it.name == 'assembleRelease' || it.name == 'bundleRelease' }) {
+        if (!hasReleaseSigning) throw new GradleException('Release requires all four ANDROID signing environment variables')
+    }
+}
