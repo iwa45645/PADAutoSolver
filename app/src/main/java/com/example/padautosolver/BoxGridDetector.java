@@ -23,7 +23,12 @@ final class BoxGridDetector {
    if(!row.cells.isEmpty())rows.add(row);
   }return rows;
  }
- static boolean occupied(Bitmap b,Rect r){float[] hsv=new float[3];int color=0;for(int y=0;y<5;y++)for(int x=0;x<5;x++){android.graphics.Color.colorToHSV(b.getPixel(r.left+5+x*4,r.top+5+y*4),hsv);if(hsv[1]>.5f&&hsv[2]>.35f)color++;}return color>=8;}
+ static boolean occupied(Bitmap b,Rect r){float[] hsv=new float[3];int color=0;for(int y=0;y<5;y++)for(int x=0;x<5;x++){android.graphics.Color.colorToHSV(b.getPixel(r.left+5+x*4,r.top+5+y*4),hsv);if(hsv[1]>.5f&&hsv[2]>.35f)color++;}if(color>=8)return true;
+  double[] mean=new double[3],square=new double[3],above=new double[3];
+  for(int k=0;k<13;k++){int x=r.centerX()+Math.round((-5+k*5)*b.getWidth()/1220f);int p=b.getPixel(x,r.top),q=b.getPixel(x,Math.max(0,r.top-4));for(int ch=0;ch<3;ch++){int v=p>>(ch*8)&255;mean[ch]+=v/13.0;square[ch]+=v*v/13.0;above[ch]+=(q>>(ch*8)&255)/13.0;}}
+  double variance=0,change=0;for(int ch=0;ch<3;ch++){variance+=Math.sqrt(Math.max(0,square[ch]-mean[ch]*mean[ch]))/3;change+=Math.abs(mean[ch]-above[ch])/3;}
+  return variance<30&&change>15;
+ }
  static long hash(Bitmap b,Rect r){int[] v=new int[64];int sum=0;for(int y=0;y<8;y++)for(int x=0;x<8;x++){// upper and lower bands exclude animated New and selection center
   float fy=y<4?.25f+y*.04f:.65f+(y-4)*.04f;int px=r.left+Math.round((.10f+x*.10f)*r.width()),py=r.top+Math.round(fy*r.height());int total=0;for(int dy=-3;dy<=3;dy++)for(int dx=-3;dx<=3;dx++){int p=b.getPixel(px+dx,py+dy);total+=((p>>16&255)*3+(p>>8&255)*6+(p&255))/10;}int value=total/49;v[y*8+x]=value;sum+=value;}
   long h=0;for(int i=0;i<64;i++)if(v[i]*64>sum)h|=1L<<i;return h;

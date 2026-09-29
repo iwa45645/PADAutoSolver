@@ -547,10 +547,13 @@ public class AutoPuzzleService extends Service {
         scanPanel=new android.widget.LinearLayout(this);scanPanel.setOrientation(android.widget.LinearLayout.VERTICAL);scanPanel.setPadding(dp(6),dp(2),dp(6),dp(2));scanPanel.setBackgroundColor(0xEE183747);
         scanStatus=new TextView(this);scanStatus.setText("BOX_SCAN：読み取り専用・待機中");scanStatus.setTextColor(Color.WHITE);scanStatus.setTextSize(11);scanPanel.addView(scanStatus);
         android.widget.LinearLayout controls=new android.widget.LinearLayout(this);scanPanel.addView(controls);
-        android.widget.Button start=new android.widget.Button(this);start.setText("走査開始");start.setTextSize(11);controls.addView(start);
-        android.widget.Button detail=new android.widget.Button(this);detail.setText("詳細を記録");detail.setTextSize(11);controls.addView(detail);
+        android.widget.Button start=new android.widget.Button(this);start.setText("新規");start.setTextSize(11);controls.addView(start);
+        android.widget.Button resume=new android.widget.Button(this);resume.setText("再開");resume.setTextSize(11);controls.addView(resume);
+        android.widget.Button detail=new android.widget.Button(this);detail.setText("詳細");detail.setTextSize(11);controls.addView(detail);
         android.widget.Button stop=new android.widget.Button(this);stop.setText("停止");stop.setTextSize(11);controls.addView(stop);
+        for(android.widget.Button b:new android.widget.Button[]{start,resume,detail,stop}){b.setMinWidth(0);b.setMinimumWidth(0);b.setPadding(0,0,0,0);b.setLayoutParams(new android.widget.LinearLayout.LayoutParams(0,dp(40),1));}
         start.setOnClickListener(v->{if(busy.get())return;try{boxScanner=new BoxScanController(this);recordDetail=false;loopEnabled=true;roundGate.reset();lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(200);}catch(Exception e){pauseLoop(e.getMessage());}});
+        resume.setOnClickListener(v->{if(busy.get())return;try{boxScanner=new BoxScanController(this,true);recordDetail=false;loopEnabled=true;roundGate.reset();lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(200);}catch(Exception e){pauseLoop(e.getMessage());}});
         detail.setOnClickListener(v->{if(busy.get())return;recordDetail=true;loopEnabled=true;lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(200);});
         stop.setOnClickListener(v->pauseLoop("BOX_SCAN停止。途中結果を保持しています"));
         WindowManager.LayoutParams p=new WindowManager.LayoutParams(dp(300),WindowManager.LayoutParams.WRAP_CONTENT,WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,PixelFormat.TRANSLUCENT);p.gravity=Gravity.TOP|Gravity.LEFT;p.x=dp(4);p.y=dp(80);
