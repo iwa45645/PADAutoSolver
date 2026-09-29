@@ -30,6 +30,10 @@ public final class PuzzleSolver {
     private PuzzleSolver() {}
 
     public static Result solve(byte[] initial, int cols, int rows, int maxSteps, int beamWidth) {
+        return solve(initial, cols, rows, maxSteps, beamWidth, 0);
+    }
+
+    public static Result solve(byte[] initial, int cols, int rows, int maxSteps, int beamWidth, long timeBudgetMs) {
         if (cols < 3 || rows < 3 || cols * rows > 63 || initial == null || initial.length != cols * rows
                 || maxSteps < 0 || maxSteps > 50 || beamWidth < 1 || beamWidth > 5000) {
             throw new IllegalArgumentException("Invalid board size");
@@ -50,6 +54,8 @@ public final class PuzzleSolver {
             if (betterFinal(n, best)) best = n;
         }
 
+        long deadline = timeBudgetMs <= 0 ? Long.MAX_VALUE : System.nanoTime() + timeBudgetMs * 1_000_000L;
+        search:
         for (int depth = 1; depth <= maxSteps; depth++) {
             if (Thread.currentThread().isInterrupted()) throw new CancellationException();
             PriorityQueue<Node> top = new PriorityQueue<>(beamWidth + 1,
@@ -59,6 +65,7 @@ public final class PuzzleSolver {
 
             for (Node node : beam) {
                 if (Thread.currentThread().isInterrupted()) throw new CancellationException();
+                if (System.nanoTime() >= deadline) break search;
                 int x = node.pos % cols;
                 int y = node.pos / cols;
 

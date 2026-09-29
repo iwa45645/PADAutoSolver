@@ -17,6 +17,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -36,6 +37,7 @@ public class MainActivity extends Activity {
     private EditText durationMs;
     private EditText columns;
     private UpdateManager updateManager;
+    private CheckBox autoLocate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +60,7 @@ public class MainActivity extends Activity {
         root.addView(title, lp());
 
         TextView help = new TextView(this);
-        help.setText("初回だけ①オーバーレイ権限、②ユーザー補助サービス、③画面キャプチャを許可してください。\n\nパズドラを開いたら右上の丸い『◎』をタップすると、盤面を読み取って自動スワイプします。長押しすると認識中の盤面枠を表示します。");
+        help.setText("初回だけ①オーバーレイ権限、②ユーザー補助サービス、③画面キャプチャを許可してください。\n\n周回モードはキャプチャ開始後に自動進行します。売却モードは専用パネルの開始ボタンで実行します。赤い停止ボタンで終了します。◎は手動実行・長押しは盤面枠の確認です。");
         help.setTextSize(15f);
         help.setPadding(0, dp(8), 0, dp(14));
         root.addView(help, lp());
@@ -76,9 +78,29 @@ public class MainActivity extends Activity {
                 startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
         root.addView(accessibility, lp());
 
+        TextView modeTitle = new TextView(this); modeTitle.setText("動作モード"); modeTitle.setTextSize(20); root.addView(modeTitle, lp());
+        android.widget.RadioGroup modes = new android.widget.RadioGroup(this);
+        android.widget.RadioButton farming = new android.widget.RadioButton(this); farming.setId(View.generateViewId()); farming.setText("周回モード：パズル・クリア後の進行");
+        android.widget.RadioButton selling = new android.widget.RadioButton(this); selling.setId(View.generateViewId()); selling.setText("売却モード：30枠選択・合計MP30のみ連続売却");
+        modes.addView(farming); modes.addView(selling);
+        modes.check(prefs.getString("operationMode", "farm").equals("sale") ? selling.getId() : farming.getId());
+        modes.setOnCheckedChangeListener((group,id) -> prefs.edit().putString("operationMode", id==selling.getId()?"sale":"farm").apply());
+        root.addView(modes, lp());
+        TextView modeHelp = new TextView(this); modeHelp.setText("モードを切り替えると実行を停止します。画面共有中なら、ゲームに戻って各モードの開始ボタンを押してください。"); root.addView(modeHelp, lp());
+
         Button capture = button("③ 画面キャプチャを開始");
         capture.setOnClickListener(v -> requestScreenCapture());
         root.addView(capture, lp());
+
+        Button stop = button("■ 自動操作・画面キャプチャを停止");
+        stop.setTextColor(android.graphics.Color.RED);
+        stop.setOnClickListener(v -> {
+            PuzzleAccessibilityService service = PuzzleAccessibilityService.getInstance();
+            if (service != null) service.cancelDrag();
+            stopService(new Intent(this, AutoPuzzleService.class));
+            Toast.makeText(this, "自動操作を停止しました", Toast.LENGTH_SHORT).show();
+        });
+        root.addView(stop, lp());
 
         Button update = button("アプリの更新を確認");
         update.setOnClickListener(v -> updateManager.checkForUpdates(true));
@@ -90,6 +112,10 @@ public class MainActivity extends Activity {
         root.addView(settingsTitle, lp());
 
         columns = numberField(root, "盤面の列数（通常 6 / 7×6盤面は 7）", prefs.getInt("columns", 6));
+        autoLocate = new CheckBox(this);
+        autoLocate.setText("盤面の縦位置を自動検出（画面下の余白に対応）");
+        autoLocate.setChecked(prefs.getBoolean("autoLocate", true));
+        root.addView(autoLocate, lp());
         horizontalMarginDp = numberField(root, "盤面の左右余白 dp（通常 0）", prefs.getInt("horizontalMarginDp", 0));
         bottomInsetDp = numberField(root, "盤面下端の余白 dp（通常 0。ナビバー分だけ上げたい時に調整）", prefs.getInt("bottomInsetDp", 0));
         maxSteps = numberField(root, "探索手数（推奨 28〜36）", prefs.getInt("maxSteps", 30));
@@ -140,6 +166,10 @@ public class MainActivity extends Activity {
     }
 
     private void requestScreenCapture() {
+        if (PuzzleAccessibilityService.getInstance() == null) {
+            Toast.makeText(this, "先に②でPAD Auto Solverのユーザー補助を有効にしてください", Toast.LENGTH_LONG).show();
+            return;
+        }
         if (!Settings.canDrawOverlays(this)) {
             Toast.makeText(this, "先にオーバーレイ権限を許可してください", Toast.LENGTH_LONG).show();
         }
@@ -168,7 +198,7 @@ public class MainActivity extends Activity {
                 } else {
                     startService(service);
                 }
-                Toast.makeText(this, "準備完了。パズドラを開いて ◎ をタップしてください", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "準備完了。パズドラを開くと自動で進行します", Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(this, "画面キャプチャが許可されませんでした", Toast.LENGTH_SHORT).show();
             }
@@ -183,6 +213,7 @@ public class MainActivity extends Activity {
         int beam = clamp(parse(beamWidth, 1200), 100, 5000);
         int duration = clamp(parse(durationMs, 4000), 800, 12000);
         prefs.edit()
+                .putBoolean("autoLocate", autoLocate.isChecked())
                 .putInt("columns", cols)
                 .putInt("horizontalMarginDp", margin)
                 .putInt("bottomInsetDp", inset)

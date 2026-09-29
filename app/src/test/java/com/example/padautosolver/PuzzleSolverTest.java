@@ -71,4 +71,12 @@ public class PuzzleSolverTest {
         byte[] b = new byte[30]; Arrays.fill(b, (byte) 6);
         PuzzleSolver.solve(b, 6, 5, 8, 100);
     }
+    @Test public void searchRespectsTimeBudgetAndKeepsBestRoute() {
+        byte[] b = board("012345", "120453", "230154", "345012", "450123");
+        long start = System.nanoTime();
+        PuzzleSolver.Result result = PuzzleSolver.solve(b, 6, 5, 50, 5000, 20);
+        assertTrue((System.nanoTime() - start) / 1_000_000 < 1000);
+        assertFalse(result.path.isEmpty());
+        assertTrue(result.path.size() <= 51);
+    }
 }

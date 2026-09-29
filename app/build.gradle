@@ -18,8 +18,8 @@ android {
         applicationId 'com.example.padautosolver'
         minSdk 26
         targetSdk 35
-        versionCode = (project.findProperty('appVersionCode') ?: '2').toInteger()
-        versionName = project.findProperty('appVersionName') ?: '0.2.0'
+        versionCode = (project.findProperty('appVersionCode') ?: '3').toInteger()
+        versionName = project.findProperty('appVersionName') ?: '0.2.1'
         buildConfigField 'String', 'GITHUB_REPOSITORY', '"' + githubRepo + '"'
     }
 
@@ -54,7 +54,9 @@ android {
 }
 
 dependencies {
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
     implementation 'androidx.core:core:1.15.0'
+    implementation 'com.google.mlkit:text-recognition-japanese:16.0.1'
     testImplementation 'junit:junit:4.13.2'
 }
 

@@ -8,100 +8,148 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Toast;
-
+import java.util.ArrayList;
 import java.util.List;
 
 public class PuzzleAccessibilityService extends AccessibilityService {
     private static volatile PuzzleAccessibilityService instance;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-
-    public static PuzzleAccessibilityService getInstance() {
-        return instance;
+    private Drag active;
+    private volatile String foregroundPackage = "";
+    public boolean isGameForeground() {
+        android.view.accessibility.AccessibilityNodeInfo root = getRootInActiveWindow();
+        if (root == null) return false;
+        boolean game = "jp.gungho.pad".contentEquals(root.getPackageName() == null ? "" : root.getPackageName());
+        root.recycle();
+        return game;
     }
+    public static PuzzleAccessibilityService getInstance() { return instance; }
 
-    @Override
-    protected void onServiceConnected() {
-        super.onServiceConnected();
-        instance = this;
+    @Override protected void onServiceConnected() {
+        super.onServiceConnected(); instance = this;
         Toast.makeText(this, "PAD Auto Solver: 自動スワイプ有効", Toast.LENGTH_SHORT).show();
     }
-
-    @Override
-    public void onDestroy() {
+    @Override public void onDestroy() {
+        cancelDrag();
         if (instance == this) instance = null;
         super.onDestroy();
     }
+    @Override public void onAccessibilityEvent(AccessibilityEvent event) {
+        if (event.getPackageName() != null && event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            String pkg = event.getPackageName().toString();
+            if (!getPackageName().equals(pkg)) foregroundPackage = pkg;
+        }
+    }
+    @Override public void onInterrupt() { cancelDrag(); }
 
-    @Override
-    public void onAccessibilityEvent(AccessibilityEvent event) {
-        // 画面内容は取得しない。ジェスチャー送信だけに使う。
+    public void cancelDrag() {
+        mainHandler.post(() -> { if (active != null) active.cancelled = true; });
     }
 
-    @Override
-    public void onInterrupt() {
+    public void performTap(float x, float y, Runnable onDone) {
+        performPress(x, y, 80, onDone);
+    }
+    public void performPress(float x, float y, long holdMs, Runnable onDone) {
+        performControl(x, y, y, holdMs, onDone, () -> { });
+    }
+    public void performControl(float x, float y, float endY, long holdMs, Runnable onDone, Runnable onFailure) {
+        Path path = new Path(); path.moveTo(x, y);
+        if (endY != y) path.lineTo(x, endY);
+        boolean accepted = dispatchGesture(new GestureDescription.Builder()
+                .addStroke(new GestureDescription.StrokeDescription(path, 0, holdMs)).build(),
+                new GestureResultCallback() {
+                    @Override public void onCompleted(GestureDescription gesture) { onDone.run(); }
+                    @Override public void onCancelled(GestureDescription gesture) { onFailure.run(); }
+                }, mainHandler);
+        if (!accepted) onFailure.run();
     }
 
-    public void performDrag(List<Integer> route, RectF boardRect, int cols, int rows,
+    // Select one visible 5-column page; check cancellation before every tap.
+    public void performSelectionPage(float x, float y, int count,
+            java.util.function.BooleanSupplier canContinue, Runnable onDone, Runnable onFailure) {
+        performSelectionTap(x, y, count, 0, canContinue, onDone, onFailure);
+    }
+    private void performSelectionTap(float x, float y, int count, int index,
+            java.util.function.BooleanSupplier canContinue, Runnable onDone, Runnable onFailure) {
+        if (!canContinue.getAsBoolean() || !isGameForeground()) { onFailure.run(); return; }
+        if (index == count) { onDone.run(); return; }
+        float tapX = x + (index % 5) * 223;
+        float tapY = y + (index / 5) * 237;
+        performControl(tapX, tapY, tapY, 60, () ->
+                mainHandler.postDelayed(() -> performSelectionTap(x, y, count, index + 1,
+                        canContinue, onDone, onFailure), 100), onFailure);
+    }
+
+    public void performDrag(List<Integer> route, RectF rect, int cols, int rows,
                             long durationMs, Runnable onDone) {
         mainHandler.post(() -> {
-            if (route == null || route.isEmpty() || cols < 1 || rows < 1
-                    || boardRect == null || boardRect.width() <= 0 || boardRect.height() <= 0) {
-                Toast.makeText(this, "有効な移動ルートが見つかりませんでした", Toast.LENGTH_SHORT).show();
-                if (onDone != null) onDone.run();
-                return;
+            if (active != null || route == null || route.isEmpty() || rect == null
+                    || cols < 1 || rows < 1 || rect.width() <= 0 || rect.height() <= 0) {
+                if (onDone != null) onDone.run(); return;
             }
-
             for (int i = 0; i < route.size(); i++) {
                 int p = route.get(i);
                 if (p < 0 || p >= cols * rows || (i > 0 &&
                         Math.abs(p % cols - route.get(i - 1) % cols)
                                 + Math.abs(p / cols - route.get(i - 1) / cols) != 1)) {
-                    Toast.makeText(this, "連続していないルートは実行できません", Toast.LENGTH_SHORT).show();
-                    if (onDone != null) onDone.run();
-                    return;
+                    Toast.makeText(this, "不連続なルートは実行しません", Toast.LENGTH_SHORT).show();
+                    if (onDone != null) onDone.run(); return;
                 }
             }
-            Path path = new Path();
-            int first = route.get(0);
-            path.moveTo(
-                    BoardGeometry.centerX(boardRect, cols, first),
-                    BoardGeometry.centerY(boardRect, cols, rows, first));
-
-            for (int i = 1; i < route.size(); i++) {
-                int p = route.get(i);
-                path.lineTo(
-                        BoardGeometry.centerX(boardRect, cols, p),
-                        BoardGeometry.centerY(boardRect, cols, rows, p));
-            }
-
-            long duration = route.size() == 1 ? 100 : Math.max(800, Math.min(12_000, durationMs));
-            GestureDescription.StrokeDescription stroke =
-                    new GestureDescription.StrokeDescription(path, 0, duration, false);
-            GestureDescription gesture = new GestureDescription.Builder()
-                    .addStroke(stroke)
-                    .build();
-
-            boolean accepted = dispatchGesture(gesture,
-                    new GestureResultCallback() {
-                        @Override
-                        public void onCompleted(GestureDescription gestureDescription) {
-                            super.onCompleted(gestureDescription);
-                            if (onDone != null) onDone.run();
-                        }
-
-                        @Override
-                        public void onCancelled(GestureDescription gestureDescription) {
-                            super.onCancelled(gestureDescription);
-                            Toast.makeText(PuzzleAccessibilityService.this,
-                                    "自動スワイプがキャンセルされました", Toast.LENGTH_SHORT).show();
-                            if (onDone != null) onDone.run();
-                        }
-                    }, mainHandler);
-
-            if (!accepted) {
-                Toast.makeText(this, "ジェスチャー送信に失敗しました", Toast.LENGTH_SHORT).show();
-                if (onDone != null) onDone.run();
-            }
+            active = new Drag(new ArrayList<>(route), new RectF(rect), cols, rows, durationMs, onDone);
+            active.hold();
         });
+    }
+
+    private final class Drag {
+        final List<Integer> route;
+        final RectF rect;
+        final int cols, rows;
+        final long perCellMs;
+        final Runnable onDone;
+        int index;
+        boolean cancelled, done;
+        GestureDescription.StrokeDescription previous;
+        Drag(List<Integer> route, RectF rect, int cols, int rows, long limit, Runnable done) {
+            this.route = route; this.rect = rect; this.cols = cols; this.rows = rows; this.onDone = done;
+            perCellMs = Math.max(25, Math.min(route.size() <= 5 ? 100 : 60, (Math.max(200, limit) - 150) / Math.max(1, route.size() - 1)));
+        }
+        float x(int at) { return BoardGeometry.centerX(rect, cols, route.get(at)); }
+        float y(int at) { return BoardGeometry.centerY(rect, cols, rows, route.get(at)); }
+        void hold() {
+            Path path = new Path(); path.moveTo(x(0), y(0));
+            previous = new GestureDescription.StrokeDescription(path, 0, 100, true);
+            boolean accepted = dispatchGesture(new GestureDescription.Builder().addStroke(previous).build(), new GestureResultCallback() {
+                @Override public void onCompleted(GestureDescription gesture) { next(); }
+                @Override public void onCancelled(GestureDescription gesture) { android.util.Log.i("PADSolver", "dragCancelled=hold"); finish(); }
+            }, mainHandler);
+            if (!accepted) { android.util.Log.i("PADSolver", "dragRejected=hold"); finish(); }
+        }
+        void next() {
+            if (done) return;
+            Path path = new Path(); path.moveTo(x(index), y(index));
+            int end = cancelled ? index : Math.min(route.size() - 1, index + 5);
+            for (int i = index + 1; i <= end; i++) path.lineTo(x(i), y(i));
+            boolean more = !cancelled && end < route.size() - 1;
+            long duration = end == index ? 1 : (end - index) * perCellMs;
+            GestureDescription.StrokeDescription stroke = previous == null
+                    ? new GestureDescription.StrokeDescription(path, 0, duration, more)
+                    : previous.continueStroke(path, 0, duration, more);
+            previous = stroke; index = end;
+            GestureDescription gesture = new GestureDescription.Builder().addStroke(stroke).build();
+            boolean accepted = dispatchGesture(gesture, new GestureResultCallback() {
+                @Override public void onCompleted(GestureDescription description) {
+                    if (more) next(); else finish();
+                }
+                @Override public void onCancelled(GestureDescription description) { android.util.Log.i("PADSolver", "dragCancelled=move"); finish(); }
+            }, mainHandler);
+            if (!accepted) finish();
+        }
+        void finish() {
+            if (done) return;
+            done = true;
+            if (active == this) active = null;
+            if (onDone != null) onDone.run();
+        }
     }
 }
