@@ -143,7 +143,9 @@
             "enum": [
               "not_inspected",
               "partial",
-              "verified"
+              "verified",
+              "identity_observed",
+              "identity_unresolved"
             ]
           },
           "details": {
@@ -221,6 +223,40 @@
                   "string",
                   "null"
                 ]
+              }
+            }
+          },
+          "observedIdentity": {
+            "type": "object",
+            "required": [
+              "monsterId",
+              "name",
+              "status",
+              "evidence",
+              "readerVersion"
+            ],
+            "properties": {
+              "monsterId": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "const": "ocr_consensus_unverified"
+              },
+              "evidence": {
+                "type": "string"
+              },
+              "readerVersion": {
+                "type": "integer"
               }
             }
           }

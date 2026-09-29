@@ -17,8 +17,8 @@ final class InventoryReplay {
         int count = draft.inventory.optInt("pageCount");
         if (count < 1) throw new IOException("再集計するページがありません");
         for (int i=0;i<draft.items.length();i++)
-            if(draft.items.getJSONObject(i).getJSONObject("recognition").optBoolean("userConfirmed"))
-                throw new IOException("確認済み個体があるため自動再集計できません");
+            if(draft.items.getJSONObject(i).getJSONObject("recognition").optBoolean("userConfirmed") || draft.items.getJSONObject(i).has("detailEvidence"))
+                throw new IOException("確認済み個体・詳細記録があるため自動再集計できません");
         String original=draft.inventory.toString(2), oldId=draft.inventory.getString("scanSessionId");
         File old=draft.session();
         draft.inventory.put("scanSessionId",UUID.randomUUID().toString()).put("replayedFrom",oldId);

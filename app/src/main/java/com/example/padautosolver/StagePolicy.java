@@ -5,9 +5,9 @@ import java.util.List;
 /** Only known progression controls for the requested dungeon are actionable. */
 final class StagePolicy {
     static final class Item {
-        final String text;
+        final String text, rawText;
         final float x, y;
-        Item(String text, float x, float y) { this.text = normalize(text); this.x = x; this.y = y; }
+        Item(String text, float x, float y) { this.rawText = text; this.text = normalize(text); this.x = x; this.y = y; }
     }
     static final class Decision {
         final Item target;

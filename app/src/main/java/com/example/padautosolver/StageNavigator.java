@@ -66,20 +66,36 @@ final class StageNavigator {
         android.util.Log.i("PADSolver", "stageText=" + items.stream().map(i -> i.text).collect(java.util.stream.Collectors.joining("|")));
         return items;
     }
+    List<StagePolicy.Item> readDetailHeader(Bitmap frame) throws Exception {
+        List<StagePolicy.Item> header=readCrop(frame, .155f, .196f, .80f, .237f, true, true);
+        DetailIdentity identity=DetailIdentity.parse(header,frame.getHeight());
+        if(identity!=null && identity.name==null) {
+            List<StagePolicy.Item> raw=readCrop(frame,.155f,.196f,.80f,.237f,false,false);
+            DetailIdentity alternative=DetailIdentity.parse(raw,frame.getHeight());
+            if(alternative!=null&&alternative.id==identity.id&&alternative.name!=null)return raw;
+        }
+        return header;
+    }
     private List<StagePolicy.Item> readCrop(Bitmap frame, float l, float t, float r, float b) throws Exception {
+        return readCrop(frame,l,t,r,b,true,false);
+    }
+    private List<StagePolicy.Item> readCrop(Bitmap frame,float l,float t,float r,float b,boolean threshold,boolean whiteOnly) throws Exception {
         int left = Math.round(frame.getWidth() * l), top = Math.round(frame.getHeight() * t);
         Bitmap crop = Bitmap.createBitmap(frame, left, top, Math.round(frame.getWidth() * (r-l)), Math.round(frame.getHeight() * (b-t)));
         Bitmap enlarged = Bitmap.createScaledBitmap(crop, crop.getWidth() * 2, crop.getHeight() * 2, true);
         crop.recycle();
         // Isolate bright game text from colored outlines and the dark textured background.
+        if(threshold) {
         int[] pixels = new int[enlarged.getWidth() * enlarged.getHeight()];
         enlarged.getPixels(pixels, 0, enlarged.getWidth(), 0, 0, enlarged.getWidth(), enlarged.getHeight());
         for (int i = 0; i < pixels.length; i++) {
             int red = (pixels[i] >> 16) & 255, green = (pixels[i] >> 8) & 255, blue = pixels[i] & 255;
             int max = Math.max(red, Math.max(green, blue)), min = Math.min(red, Math.min(green, blue));
-            pixels[i] = max > 155 && (min > 105 || max - min > 85) ? 0xff000000 : 0xffffffff;
+            boolean ink=whiteOnly ? min > 190 : max > 155 && (min > 105 || max - min > 85);
+            pixels[i] = ink ? 0xff000000 : 0xffffffff;
         }
         enlarged.setPixels(pixels, 0, enlarged.getWidth(), 0, 0, enlarged.getWidth(), enlarged.getHeight());
+        }
         Task<Text> task = recognizer.process(InputImage.fromBitmap(enlarged, 0));
         task.addOnCompleteListener(Runnable::run, ignored -> enlarged.recycle());
         Text result = Tasks.await(task, 5, TimeUnit.SECONDS);
@@ -88,6 +104,7 @@ final class StageNavigator {
             Rect box = line.getBoundingBox();
             if (box != null) out.add(new StagePolicy.Item(line.getText(), left + box.exactCenterX()/2, top + box.exactCenterY()/2));
         }
+        if(whiteOnly)android.util.Log.i("PADSolver","detailHeader="+result.getText());
         return out;
     }
     void close() { recognizer.close(); }

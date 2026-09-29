@@ -63,6 +63,7 @@ public class AutoPuzzleService extends Service {
     private volatile boolean scanMode;
     private volatile boolean recordDetail;
     private BoxScanController boxScanner;
+    private BoxDetailController detailScanner;
     private android.widget.LinearLayout scanPanel;
     private TextView scanStatus;
     private volatile int selectionEpoch;
@@ -99,7 +100,7 @@ public class AutoPuzzleService extends Service {
             if(accessibility!=null) accessibility.cancelDrag();
             saleMode=prefs.getString("operationMode","farm").equals("sale");
             scanMode=prefs.getString("operationMode","farm").equals("BOX_SCAN");
-            boxScanner=null; recordDetail=false;
+            boxScanner=null; detailScanner=null; recordDetail=false;
             pendingControl="";
             removeBubble();
             if(mediaProjection!=null) showBubble();
@@ -276,7 +277,9 @@ public class AutoPuzzleService extends Service {
             if (scanMode) {
                 if(navigator==null) navigator=new StageNavigator();
                 StagePolicy.Decision decision;
-                if(recordDetail) {
+                if(detailScanner!=null) {
+                    decision=detailScanner.inspect(bitmap,navigator);
+                } else if(recordDetail) {
                     String result=CandidateDetailInspector.record(this,bitmap,navigator.readItems(bitmap));recordDetail=false;
                     decision=new StagePolicy.Decision(null,result,true);
                 } else if(boxScanner==null) decision=new StagePolicy.Decision(null,"BOXパネルの開始を押してください",true);
@@ -552,10 +555,12 @@ public class AutoPuzzleService extends Service {
         android.widget.Button detail=new android.widget.Button(this);detail.setText("詳細");detail.setTextSize(11);controls.addView(detail);
         android.widget.Button stop=new android.widget.Button(this);stop.setText("停止");stop.setTextSize(11);controls.addView(stop);
         for(android.widget.Button b:new android.widget.Button[]{start,resume,detail,stop}){b.setMinWidth(0);b.setMinimumWidth(0);b.setPadding(0,0,0,0);b.setLayoutParams(new android.widget.LinearLayout.LayoutParams(0,dp(40),1));}
-        start.setOnClickListener(v->{if(busy.get())return;try{boxScanner=new BoxScanController(this);recordDetail=false;loopEnabled=true;roundGate.reset();lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(200);}catch(Exception e){pauseLoop(e.getMessage());}});
-        resume.setOnClickListener(v->{if(busy.get())return;try{boxScanner=new BoxScanController(this,true);recordDetail=false;loopEnabled=true;roundGate.reset();lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(200);}catch(Exception e){pauseLoop(e.getMessage());}});
-        detail.setOnClickListener(v->{if(busy.get())return;recordDetail=true;loopEnabled=true;lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(200);});
+        start.setOnClickListener(v->{if(busy.get())return;try{boxScanner=new BoxScanController(this);detailScanner=null;recordDetail=false;loopEnabled=true;roundGate.reset();lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(200);}catch(Exception e){pauseLoop(e.getMessage());}});
+        resume.setOnClickListener(v->{if(busy.get())return;try{boxScanner=new BoxScanController(this,true);detailScanner=null;recordDetail=false;loopEnabled=true;roundGate.reset();lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(200);}catch(Exception e){pauseLoop(e.getMessage());}});
+        detail.setOnClickListener(v->{if(busy.get())return;detailScanner=null;recordDetail=true;loopEnabled=true;lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(200);});
         stop.setOnClickListener(v->pauseLoop("BOX_SCAN停止。途中結果を保持しています"));
+        android.widget.Button batch=new android.widget.Button(this);batch.setText("連続詳細（記録済みはスキップ）");batch.setTextSize(11);scanPanel.addView(batch,new android.widget.LinearLayout.LayoutParams(-1,dp(38)));
+        batch.setOnClickListener(v->{if(busy.get())return;try{detailScanner=new BoxDetailController(this);boxScanner=null;recordDetail=false;pendingControl="";loopEnabled=true;lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(200);}catch(Exception e){pauseLoop(e.getMessage());}});
         WindowManager.LayoutParams p=new WindowManager.LayoutParams(dp(300),WindowManager.LayoutParams.WRAP_CONTENT,WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,PixelFormat.TRANSLUCENT);p.gravity=Gravity.TOP|Gravity.LEFT;p.x=dp(4);p.y=dp(80);
         try{windowManager.addView(scanPanel,p);}catch(RuntimeException e){scanPanel=null;scanStatus=null;}
     }
