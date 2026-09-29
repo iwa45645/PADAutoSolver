@@ -166,7 +166,7 @@ final class BoxDetailController {
         entry.put("detailEvidence",evidence).put("detailStatus",identity.id>0?"identity_observed":"identity_unresolved");
         entry.put("observedIdentity",new JSONObject().put("monsterId",identity.id>0?identity.id:JSONObject.NULL).put("name",identity.name==null?JSONObject.NULL:identity.name).put("readerVersion",2).put("status","ocr_consensus_unverified").put("evidence",path));
         // Keep canonical identity and userConfirmed unchanged until reviewed.
-        JSONArray candidates=new JSONArray();if(identity.id>0)candidates.put(new JSONObject().put("monsterId",identity.id).put("name",identity.name==null?JSONObject.NULL:identity.name).put("source","detail_ocr_consensus"));
+        JSONArray candidates=new JSONArray();if(identity.id>0)candidates.put(new JSONObject().put("monsterId",identity.id).put("name",identity.name==null?JSONObject.NULL:identity.name).put("source","detail_ocr_consensus").put("score",0));
         entry.getJSONObject("recognition").put("candidates",candidates);
         visited++;repo.inventory.put("lastDetailIndex",target).put("detailIdentityObservations",countObserved());repo.save();
         android.util.Log.i("PADSolver","boxDetailSaved index="+target+" id="+(identity.id>0?identity.id:"unknown")+" name="+identity.name);
