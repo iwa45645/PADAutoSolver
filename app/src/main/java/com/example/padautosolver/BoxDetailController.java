@@ -18,6 +18,7 @@ final class BoxDetailController {
     private int target=-1, stable, misses, reads, visited, unchanged, previousStart=-1;
     private boolean inDetail, returning, scrolled;
     private int pendingStart=-1;
+    private int pendingCount, queuedIndex=-1;
     private float pendingTop=-1000;
     private DetailIdentity pendingIdentity;
     private String pendingHeader;
@@ -87,9 +88,20 @@ final class BoxDetailController {
         }
         misses=0;
         float top=rows.get(0).y;
-        if(start!=pendingStart||Math.abs(top-pendingTop)>3){pendingStart=start;pendingTop=top;stable=1;queued=null;return waitFor("BOXの静止と個体位置を確認中");}
+        boolean still=BoxPageStability.samePosition(pendingStart,pendingTop,pendingCount,start,top,cells.size(),config.columns,Math.round(config.pitchY*frame.getHeight()));
+        android.util.Log.i("PADSolver","boxDetailPosition start="+start+" top="+top+" count="+cells.size()+" stable="+still);
+        pendingStart=start;pendingTop=top;pendingCount=cells.size();
+        if(!still){stable=1;queued=null;return waitFor("BOXの静止と個体位置を確認中");}
         stable++;
-        if(queued!=null)return queued;
+        if(queued!=null) {
+            if(queuedIndex>=0) {
+                int cell=queuedIndex-start;
+                if(cell<0||cell>=cells.size()){queued=null;return waitFor("対象個体の表示位置を再確認中");}
+                Rect rect=cells.get(cell);
+                if(Math.abs(rect.centerX()-queued.target.x)>3||Math.abs(rect.centerY()-queued.target.y)>3){queued=null;return waitFor("対象個体の静止を再確認中");}
+            }
+            return queued;
+        }
         if(scrolled){if(start==previousStart)unchanged++;else unchanged=0;scrolled=false;}
 
         for(int cell=0;cell<cells.size();cell++) {
@@ -100,7 +112,7 @@ final class BoxDetailController {
             StagePolicy.Decision d=action("BOX_DETAIL_OPEN",r.centerX(),r.centerY(),"個体詳細を開く #"+(index+1)+" / "+reference.length);
             d.holdMs=800;
             d.completed=()->{target=index;inDetail=true;returning=false;stable=reads=misses=0;pendingIdentity=null;pendingHeader=null;queued=null;};
-            queued=d;return d;
+            queuedIndex=index;queued=d;return d;
         }
         if(start+cells.size()==reference.length) {
             repo.inventory.put("identityTraversalReachedEnd",true);repo.save();
@@ -109,7 +121,7 @@ final class BoxDetailController {
         if(unchanged>=3)return stop("詳細走査のスクロールが進まないため停止");
         StagePolicy.Decision d=action("BOX_DETAIL_SCROLL",frame.getWidth()*.46f,frame.getHeight()*.78f,"記録済みの行をスクロール（今回"+visited+"件）");
         d.endY=frame.getHeight()*(.78f-config.pitchY*1.5f);d.holdMs=1000;
-        d.completed=()->{previousStart=start;scrolled=true;stable=0;queued=null;};queued=d;return d;
+        d.completed=()->{previousStart=start;scrolled=true;stable=0;queued=null;};queuedIndex=-1;queued=d;return d;
     }
 
     private void prepareVariants(Bitmap frame)throws Exception {
