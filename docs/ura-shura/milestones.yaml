@@ -1,0 +1,149 @@
+project: PADAutoSolver
+target: "裏魔門の守護者〈裏修羅〉を所持ボックス由来の固定編成で安定自動クリア"
+base:
+  repository: iwa45645/PADAutoSolver
+  version: v0.2.0
+  commit: d4f0a455483348e2c765c40b08d1b70c89aa66c2
+branch: feature/ura-shura-full-auto
+
+gates:
+  - id: inventory_gate
+    rule: "実ボックスを先頭から末尾まで一度走査するまで固定編成を決め打ちしない"
+  - id: team_gate
+    rule: "所持確認済み個体だけでTeamProfileを確定する"
+  - id: dry_run_gate
+    rule: "Dry Runとリプレイを通すまでスキル・ドラッグを自動実行しない"
+  - id: stability_gate
+    rule: "20回以上・クリア率95%以上・誤操作0を満たすまでv1.0安定版としない"
+
+milestones:
+  - id: M0
+    version: 0.3.0
+    title: 基盤安全化
+    deliverables:
+      - Gradle Wrapper
+      - ACTION_STOP
+      - 通知停止
+      - GestureWatchdog
+      - ForegroundAppGuard
+      - AutomationStateMachine
+      - DiagnosticLogger
+      - 通常モード回帰
+    acceptance:
+      - testDebugUnitTest成功
+      - lintDebug成功
+      - assembleDebug成功
+      - 停止後ジェスチャー0
+
+  - id: M1
+    version: 0.4.0
+    title: ボックス検査
+    deliverables:
+      - BOX_SCANモード
+      - グリッドキャリブレーション
+      - 自動スクロール
+      - 末尾検出
+      - ページ重複除去
+      - アイコン切り出し
+      - MonsterCatalogProvider
+      - 不明候補確認UI
+      - box_inventory.json
+      - 候補詳細検査
+    acceptance:
+      - 利用者ボックスを先頭から末尾まで一度走査
+      - 重複と別個体を区別
+      - 不明項目をunknownとして保持
+      - 人手照合結果を記録
+
+  - id: M2
+    version: 0.5.0
+    title: 編成導出
+    deliverables:
+      - DungeonRequirement
+      - TeamOptimizer
+      - SkillScheduleSimulator
+      - 最大3編成候補
+      - 育成・アシスト・潜在・超覚醒提案
+      - team_profile.json
+      - TeamVerifier
+    acceptance:
+      - 未所持モンスター0
+      - 同一個体二重使用0
+      - 必須ギミック充足
+      - スキルスケジュール破綻0
+      - 利用者が固定編成を選択
+
+  - id: M3
+    version: 0.6.0
+    title: 盤面高度化と半自動
+    deliverables:
+      - UNKNOWN
+      - 特殊ドロップ
+      - 複数PuzzleGoal
+      - Route Preview
+      - Dry Run
+      - Manual Correction
+      - ReplayRunner
+    acceptance:
+      - UNKNOWN時ジェスチャー0
+      - 全PuzzleGoal単体試験
+      - 保存画像リプレイ成功
+
+  - id: M4
+    version: 0.7.0
+    title: シーン・階層認識
+    deliverables:
+      - SceneClassifier
+      - DungeonStateEstimator
+      - EnemyVariant
+      - Phase detection
+      - Skill bar recognition
+      - Clear/GameOver detection
+    acceptance:
+      - 重大遷移を複数フレームで確定
+      - 階層競合時停止
+      - 保存画像fixtureで期待状態一致
+
+  - id: M5
+    version: 0.8.0
+    title: スキル自動操作
+    deliverables:
+      - Atomic skill tap
+      - SkillActivationVerifier
+      - PostconditionVerifier
+      - Skill schedule runtime
+      - Recovery policy
+    acceptance:
+      - 誤スキルタップ0
+      - 発動確認なしの連続操作0
+      - watchdog復帰
+
+  - id: M6
+    version: 0.9.0
+    title: 裏修羅完走候補
+    deliverables:
+      - 全階層strategy profile
+      - ボス分岐
+      - 特殊パズル
+      - 失敗診断
+      - 1回完走
+    acceptance:
+      - 実機1回クリア
+      - 失敗箇所を診断可能
+      - 無限ループ0
+
+  - id: M7
+    version: 1.0.0
+    title: 安定版
+    deliverables:
+      - 連続試験
+      - README
+      - Release notes
+      - 固定署名Release
+    acceptance:
+      - 試行20回以上
+      - クリア率95%以上
+      - 誤アプリ操作0
+      - 誤スキル0
+      - 不確実状態の強行0
+      - 失敗時診断100%

@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PADAutoSolver Team Profile",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "profileId",
+    "dungeonId",
+    "inventoryScanSessionId",
+    "slots",
+    "verifiedAgainstGame"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "profileId": {
+      "type": "string"
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "dungeonId": {
+      "const": "ura_shura"
+    },
+    "inventoryScanSessionId": {
+      "type": "string"
+    },
+    "verifiedAgainstGame": {
+      "type": "boolean"
+    },
+    "helperAcquisition": {
+      "type": "string"
+    },
+    "slots": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": [
+          "position",
+          "instanceId",
+          "monsterId",
+          "roles",
+          "skillCoordinate"
+        ],
+        "properties": {
+          "position": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "instanceId": {
+            "type": "string"
+          },
+          "monsterId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "assistMonsterId": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "latents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "superAwakening": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "skillCoordinate": {
+            "type": "object",
+            "required": [
+              "xNorm",
+              "yNorm"
+            ],
+            "properties": {
+              "xNorm": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "yNorm": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "requirementCoverage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "requirementId",
+          "covered",
+          "evidence"
+        ],
+        "properties": {
+          "requirementId": {
+            "type": "string"
+          },
+          "covered": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "skillSchedule": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "floor",
+          "phase",
+          "action"
+        ],
+        "properties": {
+          "floor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "phase": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "slot": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 5
+          },
+          "preconditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "postconditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

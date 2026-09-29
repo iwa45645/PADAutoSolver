@@ -60,6 +60,11 @@ public class AutoPuzzleService extends Service {
     private android.widget.LinearLayout salePanel;
     private TextView saleStatus;
     private volatile boolean saleMode;
+    private volatile boolean scanMode;
+    private volatile boolean recordDetail;
+    private BoxScanController boxScanner;
+    private android.widget.LinearLayout scanPanel;
+    private TextView scanStatus;
     private volatile int selectionEpoch;
     private volatile boolean loopEnabled;
     private final RoundGate roundGate = new RoundGate();
@@ -93,6 +98,8 @@ public class AutoPuzzleService extends Service {
             PuzzleAccessibilityService accessibility=PuzzleAccessibilityService.getInstance();
             if(accessibility!=null) accessibility.cancelDrag();
             saleMode=prefs.getString("operationMode","farm").equals("sale");
+            scanMode=prefs.getString("operationMode","farm").equals("BOX_SCAN");
+            boxScanner=null; recordDetail=false;
             pendingControl="";
             removeBubble();
             if(mediaProjection!=null) showBubble();
@@ -103,6 +110,7 @@ public class AutoPuzzleService extends Service {
     public void onCreate() {
         super.onCreate();
         saleMode=getSharedPreferences("pad_solver",MODE_PRIVATE).getString("operationMode","farm").equals("sale");
+        scanMode=getSharedPreferences("pad_solver",MODE_PRIVATE).getString("operationMode","farm").equals("BOX_SCAN");
         getSharedPreferences("pad_solver",MODE_PRIVATE).registerOnSharedPreferenceChangeListener(modeListener);
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         captureThread = new HandlerThread("pad-capture");
@@ -227,12 +235,13 @@ public class AutoPuzzleService extends Service {
                 captureHandler);
 
         saleMode=getSharedPreferences("pad_solver",MODE_PRIVATE).getString("operationMode","farm").equals("sale");
-        loopEnabled = !saleMode;
+        scanMode=getSharedPreferences("pad_solver",MODE_PRIVATE).getString("operationMode","farm").equals("BOX_SCAN");
+        loopEnabled = !saleMode && !scanMode;
         showBubble();
         roundGate.reset();
         lastLoopProgress = android.os.SystemClock.elapsedRealtime();
         scheduleLoop(1000);
-        toast(saleMode ? "売却モード：専用パネルから開始してください" : "周回モードを開始しました");
+        toast(scanMode ? "BOX_SCAN：キャリブレーション後、BOXパネルから開始" : saleMode ? "売却モード：専用パネルから開始してください" : "周回モードを開始しました");
     }
 
     private void requestFreshFrame() {
@@ -256,7 +265,7 @@ public class AutoPuzzleService extends Service {
             if (destroyed || generation != captureGeneration) { bitmap.recycle(); return; }
             PuzzleAccessibilityService foreground = PuzzleAccessibilityService.getInstance();
             if (loopEnabled && foreground == null) {
-                bitmap.recycle(); pauseLoop("② PAD Auto Solverのユーザー補助を有効にしてください"); return;
+                bitmap.recycle(); pauseLoop(AccessibilityConnection.unavailableMessage(this)); return;
             }
             if (loopEnabled && !foreground.isGameForeground()) {
                 bitmap.recycle();
@@ -264,6 +273,17 @@ public class AutoPuzzleService extends Service {
                 scheduleLoop(1000); return;
             }
             SharedPreferences prefs = getSharedPreferences("pad_solver", MODE_PRIVATE);
+            if (scanMode) {
+                if(navigator==null) navigator=new StageNavigator();
+                StagePolicy.Decision decision;
+                if(recordDetail) {
+                    String result=CandidateDetailInspector.record(this,bitmap,navigator.readItems(bitmap));recordDetail=false;
+                    decision=new StagePolicy.Decision(null,result,true);
+                } else if(boxScanner==null) decision=new StagePolicy.Decision(null,"BOXパネルの開始を押してください",true);
+                else decision=boxScanner.inspect(bitmap,navigator.readItems(bitmap));
+                bitmap.recycle(); mainHandler.post(()->{if(scanStatus!=null)scanStatus.setText(decision.status);});
+                handleStageDecision(decision,generation); return;
+            }
             if (loopEnabled && saleMode) {
                 if (navigator == null) navigator = new StageNavigator();
                 StagePolicy.Decision sale = navigator.inspectSale(bitmap);
@@ -346,7 +366,7 @@ public class AutoPuzzleService extends Service {
 
             PuzzleAccessibilityService accessibility = PuzzleAccessibilityService.getInstance();
             if (accessibility == null) {
-                fail("ユーザー補助サービスを有効にしてください");
+                fail(AccessibilityConnection.unavailableMessage(this));
                 return;
             }
 
@@ -452,7 +472,8 @@ public class AutoPuzzleService extends Service {
                 showStopBubble();
                 showLoopBubble();
                 showSalePanel();
-                if (saleMode) bubble.setVisibility(View.GONE);
+                showScanPanel();
+                if (saleMode || scanMode) bubble.setVisibility(View.GONE);
             } catch (Exception e) {
                 bubble = null;
                 toast("フローティングボタン表示に失敗しました");
@@ -521,6 +542,21 @@ public class AutoPuzzleService extends Service {
         toast("自動操作を停止しました");
     }
 
+    private void showScanPanel() {
+        if(!scanMode||scanPanel!=null)return;
+        scanPanel=new android.widget.LinearLayout(this);scanPanel.setOrientation(android.widget.LinearLayout.VERTICAL);scanPanel.setPadding(dp(6),dp(2),dp(6),dp(2));scanPanel.setBackgroundColor(0xEE183747);
+        scanStatus=new TextView(this);scanStatus.setText("BOX_SCAN：読み取り専用・待機中");scanStatus.setTextColor(Color.WHITE);scanStatus.setTextSize(11);scanPanel.addView(scanStatus);
+        android.widget.LinearLayout controls=new android.widget.LinearLayout(this);scanPanel.addView(controls);
+        android.widget.Button start=new android.widget.Button(this);start.setText("走査開始");start.setTextSize(11);controls.addView(start);
+        android.widget.Button detail=new android.widget.Button(this);detail.setText("詳細を記録");detail.setTextSize(11);controls.addView(detail);
+        android.widget.Button stop=new android.widget.Button(this);stop.setText("停止");stop.setTextSize(11);controls.addView(stop);
+        start.setOnClickListener(v->{if(busy.get())return;try{boxScanner=new BoxScanController(this);recordDetail=false;loopEnabled=true;roundGate.reset();lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(200);}catch(Exception e){pauseLoop(e.getMessage());}});
+        detail.setOnClickListener(v->{if(busy.get())return;recordDetail=true;loopEnabled=true;lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(200);});
+        stop.setOnClickListener(v->pauseLoop("BOX_SCAN停止。途中結果を保持しています"));
+        WindowManager.LayoutParams p=new WindowManager.LayoutParams(dp(300),WindowManager.LayoutParams.WRAP_CONTENT,WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,PixelFormat.TRANSLUCENT);p.gravity=Gravity.TOP|Gravity.LEFT;p.x=dp(4);p.y=dp(80);
+        try{windowManager.addView(scanPanel,p);}catch(RuntimeException e){scanPanel=null;scanStatus=null;}
+    }
+
     private void showSalePanel() {
         if (salePanel != null || !saleMode) return;
         salePanel = new android.widget.LinearLayout(this);
@@ -563,7 +599,7 @@ public class AutoPuzzleService extends Service {
     }
 
     private void showLoopBubble() {
-        if (loopBubble != null || saleMode) return;
+        if (loopBubble != null || saleMode || scanMode) return;
         loopBubble = new TextView(this);
         loopBubble.setText(loopEnabled ? "Ⅱ 周回" : "▶ 周回"); loopBubble.setTextColor(Color.WHITE);
         loopBubble.setTextSize(16f); loopBubble.setGravity(Gravity.CENTER);
@@ -652,7 +688,8 @@ public class AutoPuzzleService extends Service {
                 .putLong("lastStopTime", System.currentTimeMillis()).apply();
         loopEnabled = false; busy.set(false);
         mainHandler.post(() -> { if (loopBubble != null) loopBubble.setText("▶ 周回");
-            if (saleMode && saleStatus != null) saleStatus.setText(message); });
+            if (saleMode && saleStatus != null) saleStatus.setText(message);
+            if(scanMode && scanStatus!=null)scanStatus.setText(message); });
         toast(message);
     }
 
@@ -704,6 +741,7 @@ public class AutoPuzzleService extends Service {
     }
 
     private void removeBubble() {
+        if(scanPanel!=null){try{windowManager.removeView(scanPanel);}catch(Exception ignored){}scanPanel=null;scanStatus=null;}
         if (salePanel != null) {
             try { windowManager.removeView(salePanel); } catch (Exception ignored) {}
             salePanel=null; saleStatus=null;

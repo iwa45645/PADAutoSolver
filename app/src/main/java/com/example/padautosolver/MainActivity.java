@@ -38,6 +38,29 @@ public class MainActivity extends Activity {
     private EditText columns;
     private UpdateManager updateManager;
     private CheckBox autoLocate;
+    private TextView accessibilityStatus;
+    private Button captureButton;
+    private final android.os.Handler connectionHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private boolean capturePending;
+    private long connectionDeadline;
+    private final Runnable connectionPoll = new Runnable() {
+        @Override public void run() {
+            accessibilityStatus.setText(AccessibilityConnection.status(MainActivity.this));
+            if (!capturePending) return;
+            if (PuzzleAccessibilityService.getInstance() != null) {
+                capturePending = false;
+                captureButton.setEnabled(true);
+                launchScreenCapture();
+            } else if (android.os.SystemClock.elapsedRealtime() < connectionDeadline
+                    && AccessibilityConnection.isEnabled(MainActivity.this)) {
+                connectionHandler.postDelayed(this, 250);
+            } else {
+                capturePending = false;
+                captureButton.setEnabled(true);
+                showAccessibilityRecovery();
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,21 +97,33 @@ public class MainActivity extends Activity {
         root.addView(overlay, lp());
 
         Button accessibility = button("② ユーザー補助サービスを開く");
-        accessibility.setOnClickListener(v ->
-                startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
+        accessibility.setOnClickListener(v -> {
+            if (PuzzleAccessibilityService.getInstance() != null) {
+                Toast.makeText(this, "接続済みです。再設定は不要です", Toast.LENGTH_SHORT).show();
+            } else openAccessibilitySettings();
+        });
         root.addView(accessibility, lp());
+        accessibilityStatus = new TextView(this);
+        accessibilityStatus.setText(AccessibilityConnection.status(this));
+        root.addView(accessibilityStatus, lp());
 
         TextView modeTitle = new TextView(this); modeTitle.setText("動作モード"); modeTitle.setTextSize(20); root.addView(modeTitle, lp());
         android.widget.RadioGroup modes = new android.widget.RadioGroup(this);
         android.widget.RadioButton farming = new android.widget.RadioButton(this); farming.setId(View.generateViewId()); farming.setText("周回モード：パズル・クリア後の進行");
         android.widget.RadioButton selling = new android.widget.RadioButton(this); selling.setId(View.generateViewId()); selling.setText("売却モード：30枠選択・合計MP30のみ連続売却");
-        modes.addView(farming); modes.addView(selling);
-        modes.check(prefs.getString("operationMode", "farm").equals("sale") ? selling.getId() : farming.getId());
-        modes.setOnCheckedChangeListener((group,id) -> prefs.edit().putString("operationMode", id==selling.getId()?"sale":"farm").apply());
+        android.widget.RadioButton scanning = new android.widget.RadioButton(this); scanning.setId(View.generateViewId()); scanning.setText("BOX_SCAN：所持BOXを読み取り（変更操作なし）");
+        modes.addView(farming); modes.addView(selling); modes.addView(scanning);
+        modes.check(prefs.getString("operationMode", "farm").equals("BOX_SCAN") ? scanning.getId() : prefs.getString("operationMode", "farm").equals("sale") ? selling.getId() : farming.getId());
+        modes.setOnCheckedChangeListener((group,id) -> prefs.edit().putString("operationMode", id==scanning.getId()?"BOX_SCAN":id==selling.getId()?"sale":"farm").apply());
         root.addView(modes, lp());
         TextView modeHelp = new TextView(this); modeHelp.setText("モードを切り替えると実行を停止します。画面共有中なら、ゲームに戻って各モードの開始ボタンを押してください。"); root.addView(modeHelp, lp());
 
+        Button inventory = button("所持一覧・BOXキャリブレーション・詳細確認");
+        inventory.setOnClickListener(v -> startActivity(new Intent(this, InventoryActivity.class)));
+        root.addView(inventory, lp());
+
         Button capture = button("③ 画面キャプチャを開始");
+        captureButton = capture;
         capture.setOnClickListener(v -> requestScreenCapture());
         root.addView(capture, lp());
 
@@ -165,11 +200,53 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void requestScreenCapture() {
-        if (PuzzleAccessibilityService.getInstance() == null) {
-            Toast.makeText(this, "先に②でPAD Auto Solverのユーザー補助を有効にしてください", Toast.LENGTH_LONG).show();
-            return;
+    @Override protected void onResume() {
+        super.onResume();
+        accessibilityStatus.setText(AccessibilityConnection.status(this));
+    }
+
+    @Override protected void onPause() {
+        capturePending = false;
+        connectionHandler.removeCallbacks(connectionPoll);
+        captureButton.setEnabled(true);
+        super.onPause();
+    }
+
+    private void openAccessibilitySettings() {
+        Intent intent = new Intent("android.settings.ACCESSIBILITY_DETAILS_SETTINGS");
+        intent.putExtra("android.intent.extra.COMPONENT_NAME",
+                new android.content.ComponentName(this, PuzzleAccessibilityService.class).flattenToString());
+        try { startActivity(intent); }
+        catch (android.content.ActivityNotFoundException e) {
+            startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
         }
+    }
+
+    private void showAccessibilityRecovery() {
+        boolean enabled = AccessibilityConnection.isEnabled(this);
+        new android.app.AlertDialog.Builder(this)
+                .setTitle(enabled ? "ユーザー補助の接続が切れています" : "ユーザー補助の許可が必要です")
+                .setMessage(enabled
+                        ? "許可は保存されていますが、Androidとの再接続を確認できませんでした。設定でPAD Auto Solverを一度オフ→オンにすると復旧できます。接続済みになった後は、毎回の設定は不要です。"
+                        : "設定でPAD Auto Solverのユーザー補助を一度だけ許可してください。")
+                .setPositiveButton("設定を開く", (dialog, which) -> openAccessibilitySettings())
+                .setNegativeButton("閉じる", null).show();
+    }
+
+    private void requestScreenCapture() {
+        if (capturePending) return;
+        if (PuzzleAccessibilityService.getInstance() != null) {
+            launchScreenCapture();
+        } else if (AccessibilityConnection.isEnabled(this)) {
+            accessibilityStatus.setText("ユーザー補助：許可済み・再接続を待っています…");
+            capturePending = true;
+            captureButton.setEnabled(false);
+            connectionDeadline = android.os.SystemClock.elapsedRealtime() + 8000;
+            connectionHandler.postDelayed(connectionPoll, 250);
+        } else showAccessibilityRecovery();
+    }
+
+    private void launchScreenCapture() {
         if (!Settings.canDrawOverlays(this)) {
             Toast.makeText(this, "先にオーバーレイ権限を許可してください", Toast.LENGTH_LONG).show();
         }

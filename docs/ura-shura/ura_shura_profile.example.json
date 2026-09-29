@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "ura_shura",
+  "displayName": "裏魔門の守護者〈裏修羅〉",
+  "dataStatus": "example_only_not_verified",
+  "sources": [],
+  "requirements": [
+    {
+      "id": "example_absorb_void",
+      "severity": "required",
+      "type": "skill_capability",
+      "floor": 0,
+      "phase": "unknown",
+      "parameters": {
+        "capability": "ABSORB_VOID",
+        "note": "実データ確認後に階層と条件を設定する"
+      }
+    }
+  ],
+  "floors": [
+    {
+      "floor": 0,
+      "displayName": "未登録",
+      "variants": [
+        {
+          "id": "unverified",
+          "phases": [
+            {
+              "id": "unknown",
+              "recognition": {
+                "templates": [],
+                "minimumConfidence": 0.9
+              },
+              "rules": [
+                {
+                  "priority": 100,
+                  "conditions": [
+                    "manual_profile_not_ready"
+                  ],
+                  "actions": [
+                    {
+                      "type": "STOP",
+                      "reason": "dungeon_profile_unverified"
+                    }
+                  ],
+                  "postconditions": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

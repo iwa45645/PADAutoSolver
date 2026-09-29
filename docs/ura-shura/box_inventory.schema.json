@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PADAutoSolver Box Inventory",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "scanSessionId",
+    "catalogVersion",
+    "completeScan",
+    "items"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "scanSessionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scannedAt": {
+      "type": "string"
+    },
+    "catalogVersion": {
+      "type": "string"
+    },
+    "completeScan": {
+      "type": "boolean"
+    },
+    "scanStartEvidence": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scanEndEvidence": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pageCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "uncertainCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "instanceId",
+          "recognition",
+          "detailStatus"
+        ],
+        "properties": {
+          "instanceId": {
+            "type": "string"
+          },
+          "monsterId": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "formId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "countGroupId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sourcePage": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sourceCell": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "recognition": {
+            "type": "object",
+            "required": [
+              "confidence",
+              "userConfirmed",
+              "candidates"
+            ],
+            "properties": {
+              "confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "userConfirmed": {
+                "type": "boolean"
+              },
+              "evidence": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "candidates": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "monsterId",
+                    "score"
+                  ],
+                  "properties": {
+                    "monsterId": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "score": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "detailStatus": {
+            "type": "string",
+            "enum": [
+              "not_inspected",
+              "partial",
+              "verified"
+            ]
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "level": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "plusHp": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "plusAtk": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "plusRcv": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "skillLevel": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "awakeningsUnlocked": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "superAwakening": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "latents": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "assistMonsterId": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "limitBroken": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "transformationState": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

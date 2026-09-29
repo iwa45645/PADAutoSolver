@@ -15,8 +15,12 @@ public class PuzzleAccessibilityService extends AccessibilityService {
     private static volatile PuzzleAccessibilityService instance;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private Drag active;
+    private boolean controlRunning;
+    private int controlEpoch;
     private volatile String foregroundPackage = "";
     public boolean isGameForeground() {
+        android.app.KeyguardManager keyguard=(android.app.KeyguardManager)getSystemService(KEYGUARD_SERVICE);
+        if(keyguard!=null&&keyguard.isKeyguardLocked())return false;
         android.view.accessibility.AccessibilityNodeInfo root = getRootInActiveWindow();
         if (root == null) return false;
         boolean game = "jp.gungho.pad".contentEquals(root.getPackageName() == null ? "" : root.getPackageName());
@@ -27,7 +31,14 @@ public class PuzzleAccessibilityService extends AccessibilityService {
 
     @Override protected void onServiceConnected() {
         super.onServiceConnected(); instance = this;
+        android.util.Log.i("PADAccessibility", "connected");
         Toast.makeText(this, "PAD Auto Solver: 自動スワイプ有効", Toast.LENGTH_SHORT).show();
+    }
+    @Override public boolean onUnbind(android.content.Intent intent) {
+        cancelDrag();
+        if (instance == this) instance = null;
+        android.util.Log.i("PADAccessibility", "disconnected");
+        return super.onUnbind(intent);
     }
     @Override public void onDestroy() {
         cancelDrag();
@@ -43,6 +54,7 @@ public class PuzzleAccessibilityService extends AccessibilityService {
     @Override public void onInterrupt() { cancelDrag(); }
 
     public void cancelDrag() {
+        controlEpoch++;
         mainHandler.post(() -> { if (active != null) active.cancelled = true; });
     }
 
@@ -53,15 +65,21 @@ public class PuzzleAccessibilityService extends AccessibilityService {
         performControl(x, y, y, holdMs, onDone, () -> { });
     }
     public void performControl(float x, float y, float endY, long holdMs, Runnable onDone, Runnable onFailure) {
+        if(controlRunning || active!=null || !isGameForeground()){onFailure.run();return;}
+        controlRunning=true; final int epoch=++controlEpoch;
+        java.util.concurrent.atomic.AtomicBoolean ended=new java.util.concurrent.atomic.AtomicBoolean();
+        Runnable failure=()->{if(!ended.compareAndSet(false,true))return;controlRunning=false;onFailure.run();};
+        Runnable success=()->{if(!ended.compareAndSet(false,true))return;controlRunning=false;if(epoch==controlEpoch&&isGameForeground())onDone.run();else onFailure.run();};
+        mainHandler.postDelayed(failure,holdMs+2000);
         Path path = new Path(); path.moveTo(x, y);
         if (endY != y) path.lineTo(x, endY);
         boolean accepted = dispatchGesture(new GestureDescription.Builder()
                 .addStroke(new GestureDescription.StrokeDescription(path, 0, holdMs)).build(),
                 new GestureResultCallback() {
-                    @Override public void onCompleted(GestureDescription gesture) { onDone.run(); }
-                    @Override public void onCancelled(GestureDescription gesture) { onFailure.run(); }
+                    @Override public void onCompleted(GestureDescription gesture) { mainHandler.removeCallbacks(failure);success.run(); }
+                    @Override public void onCancelled(GestureDescription gesture) { mainHandler.removeCallbacks(failure);failure.run(); }
                 }, mainHandler);
-        if (!accepted) onFailure.run();
+        if(!accepted){mainHandler.removeCallbacks(failure);failure.run();}
     }
 
     // Select one visible 5-column page; check cancellation before every tap.
@@ -83,7 +101,7 @@ public class PuzzleAccessibilityService extends AccessibilityService {
     public void performDrag(List<Integer> route, RectF rect, int cols, int rows,
                             long durationMs, Runnable onDone) {
         mainHandler.post(() -> {
-            if (active != null || route == null || route.isEmpty() || rect == null
+            if (!isGameForeground() || controlRunning || active != null || route == null || route.isEmpty() || rect == null
                     || cols < 1 || rows < 1 || rect.width() <= 0 || rect.height() <= 0) {
                 if (onDone != null) onDone.run(); return;
             }
@@ -97,6 +115,8 @@ public class PuzzleAccessibilityService extends AccessibilityService {
                 }
             }
             active = new Drag(new ArrayList<>(route), new RectF(rect), cols, rows, durationMs, onDone);
+            Drag started=active;
+            mainHandler.postDelayed(()->{if(active==started){started.cancelled=true;started.finish();}},durationMs+2500);
             active.hold();
         });
     }
@@ -127,6 +147,7 @@ public class PuzzleAccessibilityService extends AccessibilityService {
         }
         void next() {
             if (done) return;
+            if(cancelled || !isGameForeground()){finish();return;}
             Path path = new Path(); path.moveTo(x(index), y(index));
             int end = cancelled ? index : Math.min(route.size() - 1, index + 5);
             for (int i = index + 1; i <= end; i++) path.lineTo(x(i), y(i));
