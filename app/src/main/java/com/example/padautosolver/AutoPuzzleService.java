@@ -548,7 +548,7 @@ public class AutoPuzzleService extends Service {
     private void showScanPanel() {
         if(!scanMode||scanPanel!=null)return;
         scanPanel=new android.widget.LinearLayout(this);scanPanel.setOrientation(android.widget.LinearLayout.VERTICAL);scanPanel.setPadding(dp(6),dp(2),dp(6),dp(2));scanPanel.setBackgroundColor(0xEE183747);
-        scanStatus=new TextView(this);scanStatus.setText("BOX_SCAN：読み取り専用・待機中");scanStatus.setTextColor(Color.WHITE);scanStatus.setTextSize(11);scanPanel.addView(scanStatus);
+        scanStatus=new TextView(this);scanStatus.setText("BOX_SCAN：読み取り専用・待機中");scanStatus.setTextColor(Color.WHITE);scanStatus.setTextSize(11);scanStatus.setSingleLine(true);scanStatus.setEllipsize(android.text.TextUtils.TruncateAt.END);scanPanel.addView(scanStatus);
         android.widget.LinearLayout controls=new android.widget.LinearLayout(this);scanPanel.addView(controls);
         android.widget.Button start=new android.widget.Button(this);start.setText("新規");start.setTextSize(11);controls.addView(start);
         android.widget.Button resume=new android.widget.Button(this);resume.setText("再開");resume.setTextSize(11);controls.addView(resume);
@@ -561,7 +561,9 @@ public class AutoPuzzleService extends Service {
         stop.setOnClickListener(v->pauseLoop("BOX_SCAN停止。途中結果を保持しています"));
         android.widget.Button batch=new android.widget.Button(this);batch.setText("連続詳細（記録済みはスキップ）");batch.setTextSize(11);scanPanel.addView(batch,new android.widget.LinearLayout.LayoutParams(-1,dp(38)));
         batch.setOnClickListener(v->{if(busy.get())return;try{detailScanner=new BoxDetailController(this);boxScanner=null;recordDetail=false;pendingControl="";loopEnabled=true;lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(200);}catch(Exception e){pauseLoop(e.getMessage());}});
-        WindowManager.LayoutParams p=new WindowManager.LayoutParams(dp(300),WindowManager.LayoutParams.WRAP_CONTENT,WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,PixelFormat.TRANSLUCENT);p.gravity=Gravity.TOP|Gravity.LEFT;p.x=dp(4);p.y=dp(80);
+        android.widget.Button candidates=new android.widget.Button(this);candidates.setText("候補詳細（基本＋長押しスキル）");candidates.setTextSize(11);scanPanel.addView(candidates,new android.widget.LinearLayout.LayoutParams(-1,dp(38)));
+        candidates.setOnClickListener(v->{if(busy.get())return;try{detailScanner=new BoxDetailController(this,true);boxScanner=null;recordDetail=false;pendingControl="";loopEnabled=true;lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(200);}catch(Exception e){pauseLoop(e.getMessage());}});
+        WindowManager.LayoutParams p=new WindowManager.LayoutParams(dp(300),WindowManager.LayoutParams.WRAP_CONTENT,WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,PixelFormat.TRANSLUCENT);p.gravity=Gravity.TOP|Gravity.LEFT;p.x=dp(4);p.y=dp(8);
         try{windowManager.addView(scanPanel,p);}catch(RuntimeException e){scanPanel=null;scanStatus=null;}
     }
 
@@ -660,6 +662,10 @@ public class AutoPuzzleService extends Service {
                 if (destroyed || generation != captureGeneration || !loopEnabled) return;
                 if (service == null || !service.isGameForeground()) { scheduleLoop(1000); return; }
                 android.util.Log.i("PADSolver", "stageAction=" + decision.status);
+                if(decision.heldFrame!=null) {
+                    performHeldCapture(service,decision,generation);
+                    return;
+                }
                 if (decision.selectionTaps > 0) {
                     if (saleStatus != null) saleStatus.setText("30枠を連続選択中…（停止できます）");
                     final int epoch = ++selectionEpoch;
@@ -674,12 +680,14 @@ public class AutoPuzzleService extends Service {
                             }, () -> { if (epoch == selectionEpoch) pauseLoop("選択を中断しました。選択状態を確認してください"); });
                     return;
                 }
+                final int controlEpoch=selectionEpoch;
                 service.performControl(target.x, target.y, decision.endY < 0 ? target.y : decision.endY, decision.holdMs, () -> {
+                    if(destroyed||generation!=captureGeneration||!loopEnabled||mediaProjection==null||controlEpoch!=selectionEpoch)return;
                     if (decision.completed != null) decision.completed.run();
                     pendingControl = ""; roundGate.reset();
                     lastLoopProgress = android.os.SystemClock.elapsedRealtime();
                     scheduleLoop(navigator != null && navigator.sales.active() ? 900 : 1800);
-                }, () -> pauseLoop("操作が中断されたため停止しました。画面を確認してください"));
+                }, () -> {if(controlEpoch==selectionEpoch&&loopEnabled)pauseLoop("操作が中断されたため停止しました。画面を確認してください");});
             });
         } else {
             pendingControl = "";
@@ -688,8 +696,48 @@ public class AutoPuzzleService extends Service {
         }
     }
 
+    private void performHeldCapture(PuzzleAccessibilityService service, StagePolicy.Decision decision, int generation) {
+        final int epoch=selectionEpoch;
+        final long started=android.os.SystemClock.elapsedRealtime();
+        java.util.function.BooleanSupplier current=()->!destroyed && generation==captureGeneration
+                && loopEnabled && epoch==selectionEpoch && mediaProjection!=null;
+        final boolean[] done={false,false,false}; // gesture released, evidence saved, terminal callback
+        Runnable finish=()->{
+            if(!current.getAsBoolean()||done[2]||!done[0]||!done[1])return;
+            done[2]=true;
+            if(decision.completed!=null)decision.completed.run();
+            pendingControl="";lastLoopProgress=android.os.SystemClock.elapsedRealtime();
+            scheduleLoop(900);
+        };
+        Runnable fail=()->{if(done[2]||!current.getAsBoolean())return;done[2]=true;service.cancelDrag();pauseLoop("長押し中の画像を保存できないため停止しました");};
+        service.performControl(decision.target.x,decision.target.y,decision.target.y,decision.holdMs,
+                ()->{if(!current.getAsBoolean())return;done[0]=true;finish.run();},fail);
+        mainHandler.postDelayed(()->{
+            if(!current.getAsBoolean()||done[2]||done[0]||!service.isGameForeground())return;
+            captureHandler.post(()->{
+                long now=android.os.SystemClock.elapsedRealtime();
+                if(!current.getAsBoolean()||latestFrame==null
+                        ||!HeldCaptureWindow.contains(started,lastFrameTime,now,decision.holdMs)) {mainHandler.post(fail);return;}
+                Bitmap copy=latestFrame.copy(Bitmap.Config.ARGB_8888,false);
+                try {solverExecutor.execute(()->{
+                    try {
+                        if(!current.getAsBoolean()||!service.isGameForeground())return;
+                        decision.heldFrame.accept(copy,current);
+                        mainHandler.post(()->{if(!current.getAsBoolean())return;done[1]=true;finish.run();});
+                    } catch(Exception e) {
+                        android.util.Log.w("PADSolver","heldCaptureFailure",e);
+                        mainHandler.post(fail);
+                    } finally {copy.recycle();}
+                });} catch(java.util.concurrent.RejectedExecutionException e) {copy.recycle();mainHandler.post(fail);}
+            });
+        },1200);
+        mainHandler.postDelayed(fail,18000);
+    }
+
     private void pauseLoop(String message) {
         selectionEpoch++;
+        PuzzleAccessibilityService accessibility=PuzzleAccessibilityService.getInstance();
+        if(accessibility!=null)accessibility.cancelDrag();
         android.util.Log.i("PADSolver", "paused=" + message);
         getSharedPreferences("pad_solver", MODE_PRIVATE).edit()
                 .putString("lastStopReason", message)

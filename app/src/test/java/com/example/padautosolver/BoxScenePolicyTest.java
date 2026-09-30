@@ -5,6 +5,11 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class BoxScenePolicyTest {
+ @org.junit.Test public void acceptsObservedMissingKanaOnlyWithAllAndRejectsSale(){
+  org.junit.Assert.assertTrue(BoxScenePolicy.isBox(java.util.Arrays.asList(new StagePolicy.Item("戻るモスターBOH",400,585),new StagePolicy.Item("ALL未設定",100,725)),2712));
+  org.junit.Assert.assertFalse(BoxScenePolicy.isBox(java.util.Arrays.asList(new StagePolicy.Item("戻るモスターBOH",400,585)),2712));
+  org.junit.Assert.assertFalse(BoxScenePolicy.isBox(java.util.Arrays.asList(new StagePolicy.Item("売却モスターBOH",400,585),new StagePolicy.Item("ALL",100,725)),2712));
+ }
     private StagePolicy.Item item(String text, float y) { return new StagePolicy.Item(text, 100, y); }
     @Test public void acceptsObservedHeaderOcrVariants() {
         for (String title : new String[]{"モンスターBOX", "戻るモンスターBOR", "モンスターBOH"})

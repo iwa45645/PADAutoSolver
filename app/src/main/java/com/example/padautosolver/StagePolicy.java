@@ -10,6 +10,9 @@ final class StagePolicy {
         Item(String text, float x, float y) { this.rawText = text; this.text = normalize(text); this.x = x; this.y = y; }
     }
     static final class Decision {
+        interface HeldFrameConsumer {
+            void accept(android.graphics.Bitmap frame, java.util.function.BooleanSupplier current) throws Exception;
+        }
         final Item target;
         final String status;
         final boolean stop;
@@ -17,6 +20,7 @@ final class StagePolicy {
         int selectionTaps = 0;
         float endY = -1;
         Runnable completed;
+        HeldFrameConsumer heldFrame;
         Decision(Item target, String status, boolean stop) { this.target = target; this.status = status; this.stop = stop; }
     }
     private boolean battled, results, selectedTarget, selectedDifficulty;

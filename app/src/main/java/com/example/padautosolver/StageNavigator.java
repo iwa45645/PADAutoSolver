@@ -76,13 +76,30 @@ final class StageNavigator {
         }
         return header;
     }
+    List<StagePolicy.Item> readDetailSkillHeadings(Bitmap frame) throws Exception {
+        return readCrop(frame,.01f,.60f,.99f,.87f,false,false,2);
+    }
+    DetailIdentity readCandidateIdentity(Bitmap frame, int expectedId) throws Exception {
+        DetailIdentity header=DetailIdentity.parse(readDetailHeader(frame),frame.getHeight());
+        if(header!=null&&header.id==expectedId)return header;
+        // Isolate only the number row. Stars and the Japanese name can merge with its digits.
+        for(boolean white:new boolean[]{true,false}) {
+            List<StagePolicy.Item> number=readCrop(frame,.155f,.196f,.43f,.219f,white,white,4);
+            DetailIdentity seen=DetailIdentity.parse(number,frame.getHeight());
+            if(seen!=null&&seen.id==expectedId)return new DetailIdentity(seen.id,header==null?null:header.name);
+        }
+        return null;
+    }
     private List<StagePolicy.Item> readCrop(Bitmap frame, float l, float t, float r, float b) throws Exception {
         return readCrop(frame,l,t,r,b,true,false);
     }
     private List<StagePolicy.Item> readCrop(Bitmap frame,float l,float t,float r,float b,boolean threshold,boolean whiteOnly) throws Exception {
+        return readCrop(frame,l,t,r,b,threshold,whiteOnly,2);
+    }
+    private List<StagePolicy.Item> readCrop(Bitmap frame,float l,float t,float r,float b,boolean threshold,boolean whiteOnly,int zoom) throws Exception {
         int left = Math.round(frame.getWidth() * l), top = Math.round(frame.getHeight() * t);
         Bitmap crop = Bitmap.createBitmap(frame, left, top, Math.round(frame.getWidth() * (r-l)), Math.round(frame.getHeight() * (b-t)));
-        Bitmap enlarged = Bitmap.createScaledBitmap(crop, crop.getWidth() * 2, crop.getHeight() * 2, true);
+        Bitmap enlarged = Bitmap.createScaledBitmap(crop, crop.getWidth() * zoom, crop.getHeight() * zoom, true);
         crop.recycle();
         // Isolate bright game text from colored outlines and the dark textured background.
         if(threshold) {
@@ -102,7 +119,7 @@ final class StageNavigator {
         List<StagePolicy.Item> out = new ArrayList<>();
         for (Text.TextBlock block : result.getTextBlocks()) for (Text.Line line : block.getLines()) {
             Rect box = line.getBoundingBox();
-            if (box != null) out.add(new StagePolicy.Item(line.getText(), left + box.exactCenterX()/2, top + box.exactCenterY()/2));
+            if (box != null) out.add(new StagePolicy.Item(line.getText(), left + box.exactCenterX()/zoom, top + box.exactCenterY()/zoom));
         }
         if(whiteOnly)android.util.Log.i("PADSolver","detailHeader="+result.getText());
         return out;

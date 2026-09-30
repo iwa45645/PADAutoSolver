@@ -23,9 +23,26 @@ final class BoxDetailController {
     private DetailIdentity pendingIdentity;
     private String pendingHeader;
     private StagePolicy.Decision queued;
+    private final boolean candidatesOnly;
+    private final Map<String,JSONObject> candidateReviews;
+    private CandidateDetailProbe probe;
 
     BoxDetailController(Context context)throws Exception {
+        this(context, false);
+    }
+
+    BoxDetailController(Context context, boolean candidatesOnly)throws Exception {
         repo=new InventoryRepository(context);
+        this.candidatesOnly=candidatesOnly;
+        candidateReviews=new HashMap<>();
+        if(candidatesOnly) {
+            File review=new File(repo.root,"identity_review.json");
+            if(!review.isFile())throw new Exception("所持一覧へ画像照合JSONを取り込んでください");
+            JSONObject bundle=new JSONObject(new String(java.nio.file.Files.readAllBytes(review.toPath()),java.nio.charset.StandardCharsets.UTF_8));
+            for(Map.Entry<String,JSONObject> entry:InventoryReview.validate(bundle,repo.inventory).entrySet())
+                if(entry.getValue().optBoolean("inspectNext"))candidateReviews.put(entry.getKey(),entry.getValue());
+            if(candidateReviews.isEmpty())throw new Exception("追加検査の対象がありません");
+        }
         config=new BoxCalibration(context.getSharedPreferences("pad_solver",0));config.validate();
         if(repo.items.length()==0)throw new Exception("先にBOX画像を走査してください");
         reference=new long[repo.items.length()];
@@ -48,6 +65,10 @@ final class BoxDetailController {
         if(inDetail) {
             List<StagePolicy.Item> header=navigator.readDetailHeader(frame);
             DetailIdentity identity=DetailIdentity.parse(header,frame.getHeight());
+            if(candidatesOnly) {
+                JSONObject review=candidateReviews.get(repo.items.getJSONObject(target).getString("instanceId"));
+                identity=CandidateDetailProbe.readIdentity(repo,frame,navigator,review);
+            }
             boolean detail=identity!=null||DetailIdentity.hasHeader(header,frame.getHeight());
             StringBuilder headerKey=new StringBuilder();
             for(StagePolicy.Item line:header)headerKey.append(line.rawText).append('|');
@@ -67,7 +88,11 @@ final class BoxDetailController {
                 if(reads>=6)return stop("詳細OCRが一致しないため停止 #"+(target+1));
                 return waitFor("番号・名前の再読込 #"+(target+1));
             }
-            save(frame,items,header,identity==null?new DetailIdentity(0,null):identity);
+            if(candidatesOnly) {
+                if(probe==null)probe=new CandidateDetailProbe(repo,target,candidateReviews.get(repo.items.getJSONObject(target).getString("instanceId")));
+                StagePolicy.Decision d=probe.inspect(frame,navigator,items,identity);
+                if(d!=null)return d;
+            } else save(frame,items,header,identity==null?new DetailIdentity(0,null):identity);
             returning=true;
             return back(frame);
         }
@@ -87,6 +112,8 @@ final class BoxDetailController {
             return stop("BOXの並び・個体が保存画像と一致しません。順序変更や追加を確認してください");
         }
         misses=0;
+        if(candidatesOnly && remainingCandidates()==0)
+            return stop("候補"+candidateReviews.size()+"枠の基本画面・長押しスキル画像を記録。覚醒・潜在・アシスト等は未検証です");
         float top=rows.get(0).y;
         boolean still=BoxPageStability.samePosition(pendingStart,pendingTop,pendingCount,start,top,cells.size(),config.columns,Math.round(config.pitchY*frame.getHeight()));
         android.util.Log.i("PADSolver","boxDetailPosition start="+start+" top="+top+" count="+cells.size()+" stable="+still);
@@ -107,21 +134,37 @@ final class BoxDetailController {
         for(int cell=0;cell<cells.size();cell++) {
             int index=start+cell;
             JSONObject entry=repo.items.getJSONObject(index);
-            if(((entry.optString("detailStatus").equals("identity_observed")||entry.optString("detailStatus").equals("identity_unresolved")) && entry.optJSONObject("observedIdentity")!=null && entry.getJSONObject("observedIdentity").optInt("readerVersion")==2)||entry.getJSONObject("recognition").optBoolean("userConfirmed"))continue;
+            if(candidatesOnly) {
+                if(!needsCandidate(entry))continue;
+            } else if(((entry.optString("detailStatus").equals("identity_observed")||entry.optString("detailStatus").equals("identity_unresolved")) && entry.optJSONObject("observedIdentity")!=null && entry.getJSONObject("observedIdentity").optInt("readerVersion")==2)||entry.getJSONObject("recognition").optBoolean("userConfirmed"))continue;
             Rect r=cells.get(cell);
             StagePolicy.Decision d=action("BOX_DETAIL_OPEN",r.centerX(),r.centerY(),"個体詳細を開く #"+(index+1)+" / "+reference.length);
             d.holdMs=800;
-            d.completed=()->{target=index;inDetail=true;returning=false;stable=reads=misses=0;pendingIdentity=null;pendingHeader=null;queued=null;};
+            d.completed=()->{target=index;probe=null;inDetail=true;returning=false;stable=reads=misses=0;pendingIdentity=null;pendingHeader=null;queued=null;};
             queuedIndex=index;queued=d;return d;
         }
         if(start+cells.size()==reference.length) {
+            if(candidatesOnly)return stop("一覧末尾に到達。未検査候補"+remainingCandidates()+"枠：BOX先頭へ戻して候補詳細を再開してください");
             repo.inventory.put("identityTraversalReachedEnd",true);repo.save();
             return stop("詳細の末尾まで記録しました。OCR結果・育成状態の照合が必要です");
         }
         if(unchanged>=3)return stop("詳細走査のスクロールが進まないため停止");
-        StagePolicy.Decision d=action("BOX_DETAIL_SCROLL",frame.getWidth()*.46f,frame.getHeight()*.78f,"記録済みの行をスクロール（今回"+visited+"件）");
+        String progress=candidatesOnly?"候補の残り"+remainingCandidates()+"枠":"今回"+visited+"件";
+        StagePolicy.Decision d=action("BOX_DETAIL_SCROLL",frame.getWidth()*.46f,frame.getHeight()*.78f,"記録済みの行をスクロール（"+progress+"）");
         d.endY=frame.getHeight()*(.78f-config.pitchY*1.5f);d.holdMs=1000;
         d.completed=()->{previousStart=start;scrolled=true;stable=0;queued=null;};queuedIndex=-1;queued=d;return d;
+    }
+
+    private boolean needsCandidate(JSONObject item)throws Exception {
+        if(!candidateReviews.containsKey(item.getString("instanceId")))return false;
+        JSONObject captured=item.optJSONObject("candidateDetailCapture");
+        return captured==null || captured.optInt("readerVersion")!=1
+                || !"base_and_skill_observed_unverified".equals(captured.optString("status"));
+    }
+    private int remainingCandidates()throws Exception {
+        int count=0;
+        for(int i=0;i<repo.items.length();i++)if(needsCandidate(repo.items.getJSONObject(i)))count++;
+        return count;
     }
 
     private void prepareVariants(Bitmap frame)throws Exception {
