@@ -59,4 +59,13 @@ public class UraShuraStartupTest {
         var c3=new UraShuraStartup(8);var f3=frame(1000,1);var d3=c3.inspect(f3,1000);
         assertThrows(IllegalStateException.class,()->c3.markDispatched(frame(1200,2),d3,1200));
     }
+    @Test public void unknownBoardBlocksEvenTheFirstAssist(){
+        var f=frame(1000,1);f.boardVerified=false;
+        assertEquals("BOARD_UNKNOWN",new UraShuraStartup(8).inspect(f,1000).reason);
+    }
+    @Test public void stuckGestureDoesNotSuppressPostconditionWatchdog(){
+        var c=new UraShuraStartup(8);var before=frame(1000,1);c.markDispatched(before,c.inspect(before,1000),1000);
+        var after=frame(9100,2);after.gestureRunning=true;
+        assertEquals("POSTCONDITION_TIMEOUT:0",c.inspect(after,9100).reason);
+    }
 }

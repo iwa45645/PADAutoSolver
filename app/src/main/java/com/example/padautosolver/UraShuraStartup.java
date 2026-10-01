@@ -53,10 +53,10 @@ public final class UraShuraStartup {
         if(!Double.isFinite(f.floorConfidence)||!Double.isFinite(f.enemyConfidence)||f.floorConfidence<.95||f.enemyConfidence<.95)return stop("FLOOR_OR_ENEMY_UNKNOWN");
         if(f.floor==2)return stop("B2_CAPTURE_REQUIRED");
         if(f.floor!=1)return stop("FLOOR_MISMATCH");
+        if(awaitingSequence>=0&&now-awaitingTime>8000)return stop("POSTCONDITION_TIMEOUT:"+step);
         if(f.gestureRunning)return new Decision(Kind.WAIT,-1,null,"GESTURE_RUNNING");
         if(f.skills==null||f.skills.length!=6)return stop("SKILL_CAPTURE_REQUIRED");
         if(awaitingSequence>=0){
-            if(now-awaitingTime>8000)return stop("POSTCONDITION_TIMEOUT:"+step);
             if(f.sequence<=awaitingSequence||f.time<=awaitingTime)return new Decision(Kind.WAIT,-1,null,"NEW_POST_FRAME_REQUIRED");
             if(!f.postObservationComplete)return new Decision(Kind.WAIT,-1,null,"POST_OBSERVATION_PENDING");
             int slot=SLOTS[step];SkillState state=f.skills[slot];
@@ -69,8 +69,8 @@ public final class UraShuraStartup {
             // The post-frame is not also permission to send the next action.
             return new Decision(Kind.WAIT,-1,null,"POSTCONDITION_VERIFIED");
         }
+        if(!f.boardVerified)return stop("BOARD_UNKNOWN");
         if(step==SLOTS.length){
-            if(!f.boardVerified)return stop("BOARD_UNKNOWN");
             return new Decision(Kind.PUZZLE,-1,null,"ESPER_MION_WATER_TWO_COMBOS_COMBO_DROP");
         }
         int slot=SLOTS[step];SkillState state=f.skills[slot];
