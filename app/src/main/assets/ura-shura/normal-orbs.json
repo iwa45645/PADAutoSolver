@@ -1306,5 +1306,341 @@
   {
     "file": "normal-water-tag-plus-5.png",
     "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-0-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-0-5.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-0-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-0-13.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-0-14.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-0-16.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-0-18.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-0-19.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-0-20.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-0-22.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-0-23.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-0-25.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-0-26.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-0-29.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-1-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-1-5.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-1-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-1-13.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-1-14.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-1-16.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-1-18.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-1-19.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-1-20.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-1-22.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-1-23.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-1-25.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-1-26.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-1-29.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-2-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-2-5.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-2-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-2-13.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-2-14.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-2-16.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-2-18.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-2-19.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-2-20.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-2-22.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-2-23.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-2-25.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-2-26.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-2-29.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-3-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-3-5.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-3-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-3-13.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-3-14.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-3-16.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-3-18.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-3-19.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-3-20.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-3-22.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-3-23.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-3-25.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-3-26.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-3-29.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-4-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-4-5.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-4-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-4-13.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-4-14.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-4-16.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-4-18.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-4-19.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-4-20.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-4-22.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-4-23.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-4-25.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-4-26.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-4-29.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-5-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-5-5.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-5-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-5-13.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-5-14.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-5-16.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-5-18.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-5-19.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-5-20.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-5-22.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-5-23.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-5-25.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-5-26.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-enhanced-run2-5-29.png",
+    "color": 3
   }
 ]
