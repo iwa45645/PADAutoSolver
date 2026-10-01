@@ -22,6 +22,12 @@ Motorola edge 60 pro、Android 16、1220×2712、シリアル末尾BZT2。
 
 二回目はフレンドのミオンだけを開き、自身の五枠を照合せずに本体から潜入できた。ルカ、エスペル、セッカの発動を実機で確認。ルカの確認を再開した際にルカのアシストを再発動していない。セッカのスキル名の「フ」が「7」とOCRされる停止を確認し、独立した残りターンOCRに加え、実機から検査した使用後スキル名の画像照合を追加した。
 
+二回目の続きでユキネ、ミオン、青オーディンの使用後確認と吸収無効2Tの実表示を確認し、06:55:45に本体からパズルを実行した。ネイティブ保存画像にBattle 2/22、続く階層メニューにも2/22を確認。本体自身がobservedFloorAfterPuzzle=2を記録してB1_CLEAR_VERIFIED_B2_CURRENT_INSTRUCTION_REQUIREDで停止した。初回に失敗した階層メニューへの移行も通過した。現在の試練の実画像は「全ての毒を消してみるがいい」。指示画像は保存できたが、B2のパズルはまだ実行していない。
+
+強化水ドロップの光の変化とコンボタグの重なりは、実画像を検査した参照を追加して対応した。再開時の各枠の照合は、残りターンの数字が重ならない二つの画像領域がそれぞれ一致することを求める。現在の解像度・スキン以外への一般化は未検証。
+
+コード368064806a58f11dcc5322abc5d94d0dce04ba2aに対してJVM140テスト、Debug/Release Lint、固定署名APKビルドが成功。GitHub ActionsのDebugとsigned-previewも成功：[Run 36931729092](https://github.com/iwa45645/PADAutoSolver/actions/runs/36931729092)。packageName com.example.padautosolver、versionCode 13、versionName 0.4.0-dev10、署名SHA-256 8f0319a7674ac4c94cae72f7f53c887d7d909fc997e0852f674fad41a3994ffc。
+
 初回B1のネイティブ実行記録ID：51bf7846-bd0c-47a9-9633-45a007e77241。
 二回目の実行記録ID：b2abd9b6-1b6d-4ecb-937a-80ba219087b5。
 記録PNG・JSONは端末のアプリ専用Download/ura-runtimeに保存される。個人の完全な画面や署名情報はGitに含めない。
