@@ -14,12 +14,20 @@ public final class PuzzleSolver {
         public final int combos;
         public final int matchedOrbs;
         public final int exploredDepth;
+        public final int waterCombos, healCombos;
+        public final boolean goalSatisfied;
 
         Result(List<Integer> path, int combos, int matchedOrbs, int exploredDepth) {
+            this(path, combos, matchedOrbs, exploredDepth, 0, 0, true);
+        }
+        Result(List<Integer> path, int combos, int matchedOrbs, int exploredDepth,
+               int waterCombos, int healCombos, boolean goalSatisfied) {
             this.path = path;
             this.combos = combos;
             this.matchedOrbs = matchedOrbs;
             this.exploredDepth = exploredDepth;
+            this.waterCombos = waterCombos; this.healCombos = healCombos;
+            this.goalSatisfied = goalSatisfied;
         }
     }
 
@@ -34,22 +42,33 @@ public final class PuzzleSolver {
     }
 
     public static Result solve(byte[] initial, int cols, int rows, int maxSteps, int beamWidth, long timeBudgetMs) {
+        return solve(initial, cols, rows, maxSteps, beamWidth, timeBudgetMs, null);
+    }
+
+    public static Result solve(byte[] initial, int cols, int rows, int maxSteps, int beamWidth,
+                               long timeBudgetMs, PuzzleGoal goal) {
+        return solve(initial,cols,rows,maxSteps,beamWidth,timeBudgetMs,goal,0);
+    }
+
+    public static Result solve(byte[] initial, int cols, int rows, int maxSteps, int beamWidth,
+                               long timeBudgetMs, PuzzleGoal goal, long comboDropMask) {
         if (cols < 3 || rows < 3 || cols * rows > 63 || initial == null || initial.length != cols * rows
                 || maxSteps < 0 || maxSteps > 50 || beamWidth < 1 || beamWidth > 5000) {
             throw new IllegalArgumentException("Invalid board size");
         }
         for (byte color : initial) {
-            if (color < 0 || color > 5) throw new IllegalArgumentException("Invalid orb color");
+            if (color < 0 || color > (goal == null ? 5 : 9)) throw new IllegalArgumentException("Unknown/invalid orb color");
         }
 
-        long basePacked = evaluatePacked(initial, cols, rows);
+        if(comboDropMask<0||(comboDropMask>>>initial.length)!=0)throw new IllegalArgumentException("Combo drop outside board");
+        long basePacked = evaluateForGoal(initial, cols, rows, goal, comboDropMask);
         int baseHeuristic = unpackHeuristic(basePacked);
         int baseObjective = unpackObjective(basePacked);
 
         List<Node> beam = new ArrayList<>(initial.length);
         Node best = null;
         for (int start = 0; start < initial.length; start++) {
-            Node n = new Node(initial.clone(), start, -1, null, 0, baseHeuristic, baseObjective);
+            Node n = new Node(initial.clone(), start, -1, null, 0, baseHeuristic, baseObjective,comboDropMask);
             beam.add(n);
             if (betterFinal(n, best)) best = n;
         }
@@ -81,14 +100,17 @@ public final class PuzzleSolver {
                     nextBoard[node.pos] = nextBoard[nextPos];
                     nextBoard[nextPos] = tmp;
 
-                    long key = stateHash(nextBoard, nextPos, node.pos);
+                    long nextComboDropMask=node.comboDropMask;
+                    if(((nextComboDropMask>>>node.pos)&1)!=((nextComboDropMask>>>nextPos)&1))
+                        nextComboDropMask^=(1L<<node.pos)|(1L<<nextPos);
+                    long key = stateHash(nextBoard, nextPos, node.pos)^Long.rotateLeft(nextComboDropMask,17);
                     if (!seen.add(key)) continue;
 
-                    long packed = evaluatePacked(nextBoard, cols, rows);
+                    long packed = evaluateForGoal(nextBoard, cols, rows, goal,nextComboDropMask);
                     int heuristic = unpackHeuristic(packed);
                     int objective = unpackObjective(packed);
                     Node child = new Node(nextBoard, nextPos, node.pos, node,
-                            depth, heuristic, objective);
+                            depth, heuristic, objective,nextComboDropMask);
 
                     if (betterFinal(child, best)) best = child;
 
@@ -109,9 +131,91 @@ public final class PuzzleSolver {
         }
 
         List<Integer> path = reconstruct(best);
-        int combos = best.objective / 1000;
-        int matched = best.objective % 1000;
-        return new Result(path, combos, matched, best.depth);
+        if (goal == null) return new Result(path, best.objective / 1000, best.objective % 1000, best.depth);
+        MatchStats stats = analyze(best.board, cols, rows,best.comboDropMask);
+        return new Result(path, stats.combos, stats.matched, best.depth, stats.colorCombos[3],
+                stats.colorCombos[5], goal.satisfied(stats, initial.length));
+    }
+
+    private static long evaluateForGoal(byte[] b, int cols, int rows, PuzzleGoal goal,long comboDropMask) {
+        if (goal == null) return evaluatePacked(b, cols, rows);
+        MatchStats stats = analyze(b, cols, rows,comboDropMask);
+        int objective = goal.score(stats, b.length);
+        int heuristic = objective * 100 + potentialScore(b, cols, rows) * 20;
+        return ((long)heuristic << 32) | (objective & 0xffffffffL);
+    }
+
+    public static final class MatchStats {
+        public int combos, matched, comboDropsMatched;
+        public final int[] colorCombos = new int[10], squares = new int[10], lShapes = new int[10], crosses = new int[10];
+    }
+
+    /** Deterministic cascades only: no invented skyfall, roulette timing, or obscured cells. */
+    public static MatchStats analyze(byte[] initial, int cols, int rows) {
+        return analyze(initial,cols,rows,0);
+    }
+    public static MatchStats analyze(byte[] initial, int cols, int rows,long comboDropMask) {
+        if (initial == null || cols < 3 || rows < 3 || cols * rows > 63 || initial.length != cols * rows)
+            throw new IllegalArgumentException("Invalid board");
+        for (byte value : initial) if (value < 0 || value > 9) throw new IllegalArgumentException("Unknown board");
+        if(comboDropMask<0||(comboDropMask>>>initial.length)!=0)throw new IllegalArgumentException("Invalid combo drop mask");
+        MatchStats result = new MatchStats();
+        byte[] board = initial.clone();
+        long mask;
+        while ((mask = findMatchMask(board, cols, rows)) != 0) {
+            long remaining = mask;
+            while (remaining != 0) {
+                int start = Long.numberOfTrailingZeros(remaining);
+                byte color = board[start];
+                long component = 0, frontier = 1L << start;
+                while (frontier != 0) {
+                    int p = Long.numberOfTrailingZeros(frontier);
+                    long bit = 1L << p; frontier &= ~bit;
+                    if ((component & bit) != 0) continue;
+                    component |= bit;
+                    int x = p % cols, y = p / cols;
+                    if (x > 0) frontier = addIfSame(frontier, component, mask, board, p-1, color);
+                    if (x+1 < cols) frontier = addIfSame(frontier, component, mask, board, p+1, color);
+                    if (y > 0) frontier = addIfSame(frontier, component, mask, board, p-cols, color);
+                    if (y+1 < rows) frontier = addIfSame(frontier, component, mask, board, p+cols, color);
+                }
+                remaining &= ~component;
+                result.combos++; result.colorCombos[color]++;
+                int size = Long.bitCount(component);
+                if (size == 9) {
+                    for (int y=0;y<=rows-3;y++) for(int x=0;x<=cols-3;x++) {
+                        long shape=0;for(int dy=0;dy<3;dy++)for(int dx=0;dx<3;dx++)shape|=1L<<((y+dy)*cols+x+dx);
+                        if (shape == component) result.squares[color]++;
+                    }
+                }
+                if (size == 5) {
+                    for (int y=0;y<rows;y++) for(int x=0;x<cols;x++) {
+                        int p=y*cols+x;
+                        if (x>0 && x+1<cols && y>0 && y+1<rows && component ==
+                                ((1L<<p)|(1L<<(p-1))|(1L<<(p+1))|(1L<<(p-cols))|(1L<<(p+cols)))) result.crosses[color]++;
+                        for(int dx:new int[]{-1,1})for(int dy:new int[]{-1,1}) {
+                            if(x+2*dx<0||x+2*dx>=cols||y+2*dy<0||y+2*dy>=rows)continue;
+                            long shape=(1L<<p)|(1L<<(p+dx))|(1L<<(p+2*dx))|(1L<<(p+dy*cols))|(1L<<(p+2*dy*cols));
+                            if(shape==component)result.lShapes[color]++;
+                        }
+                    }
+                }
+            }
+            result.matched += Long.bitCount(mask);
+            result.comboDropsMatched+=Long.bitCount(mask&comboDropMask);
+            comboDropMask&=~mask;
+            for(int p=0;p<board.length;p++)if((mask&(1L<<p))!=0)board[p]=-1;
+            for(int x=0;x<cols;x++) {
+                int write=rows-1;
+                for(int y=rows-1;y>=0;y--)if(board[y*cols+x]>=0){
+                    int from=y*cols+x,to=write--*cols+x;board[to]=board[from];
+                    if(from!=to){boolean tagged=(comboDropMask&(1L<<from))!=0;
+                        comboDropMask&=~((1L<<from)|(1L<<to));if(tagged)comboDropMask|=1L<<to;}
+                }
+                while(write>=0)board[write--*cols+x]=-1;
+            }
+        }
+        return result;
     }
 
     private static int compareBeam(Node a, Node b) {
@@ -308,9 +412,10 @@ public final class PuzzleSolver {
         final int depth;
         final int heuristic;
         final int objective;
+        final long comboDropMask;
 
         Node(byte[] board, int pos, int prevPos, Node parent, int depth,
-             int heuristic, int objective) {
+             int heuristic, int objective,long comboDropMask) {
             this.board = board;
             this.pos = pos;
             this.prevPos = prevPos;
@@ -318,6 +423,7 @@ public final class PuzzleSolver {
             this.depth = depth;
             this.heuristic = heuristic;
             this.objective = objective;
+            this.comboDropMask=comboDropMask;
         }
     }
 }
