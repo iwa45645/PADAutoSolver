@@ -36,11 +36,13 @@ final class UraBattleVision {
     private static boolean white(int pixel){return ((pixel>>16)&255)>220&&((pixel>>8)&255)>220&&(pixel&255)>220;}
     /** Resume-state check only: a changed transformation in one slot cannot be diluted by the whole screen. */
     static boolean sameRunPortraits(Bitmap previous,Bitmap live) {
-        for(int slot=0;slot<6;slot++) {
-            int x=60+slot*203;Bitmap before=Bitmap.createBitmap(previous,x,1390,100,60);
-            Bitmap scaled=Bitmap.createScaledBitmap(before,48,32,true);int[] ref=pixels(scaled);scaled.recycle();before.recycle();double best=1;
-            for(int dx=-8;dx<=8;dx+=4)for(int dy=-40;dy<=40;dy+=4){
-                Bitmap crop=Bitmap.createBitmap(live,x+dx,1390+dy,100,60),small=Bitmap.createScaledBitmap(crop,48,32,true);
+        // The middle of a portrait temporarily displays the remaining turns (e.g. Sekka's 35).
+        // Both independent artwork bands must match; never compare the blinking digit overlay.
+        for(int slot=0;slot<6;slot++)for(int y:new int[]{1380,1500}) {
+            int x=60+slot*203;Bitmap before=Bitmap.createBitmap(previous,x,y,100,30);
+            Bitmap scaled=Bitmap.createScaledBitmap(before,48,16,true);int[] ref=pixels(scaled);scaled.recycle();before.recycle();double best=1;
+            for(int dx=-8;dx<=8;dx+=4)for(int dy=-8;dy<=8;dy+=4){
+                Bitmap crop=Bitmap.createBitmap(live,x+dx,y+dy,100,30),small=Bitmap.createScaledBitmap(crop,48,16,true);
                 best=Math.min(best,TeamIconMatch.distance(ref,pixels(small)));small.recycle();crop.recycle();
             }
             if(best>.04)return false;
