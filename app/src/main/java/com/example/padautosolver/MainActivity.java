@@ -112,15 +112,29 @@ public class MainActivity extends Activity {
         android.widget.RadioButton farming = new android.widget.RadioButton(this); farming.setId(View.generateViewId()); farming.setText("周回モード：パズル・クリア後の進行");
         android.widget.RadioButton selling = new android.widget.RadioButton(this); selling.setId(View.generateViewId()); selling.setText("売却モード：30枠選択・合計MP30のみ連続売却");
         android.widget.RadioButton scanning = new android.widget.RadioButton(this); scanning.setId(View.generateViewId()); scanning.setText("BOX_SCAN：所持BOXを読み取り（変更操作なし）");
-        modes.addView(farming); modes.addView(selling); modes.addView(scanning);
-        modes.check(prefs.getString("operationMode", "farm").equals("BOX_SCAN") ? scanning.getId() : prefs.getString("operationMode", "farm").equals("sale") ? selling.getId() : farming.getId());
-        modes.setOnCheckedChangeListener((group,id) -> prefs.edit().putString("operationMode", id==scanning.getId()?"BOX_SCAN":id==selling.getId()?"sale":"farm").apply());
+        android.widget.RadioButton ura = new android.widget.RadioButton(this); ura.setId(View.generateViewId()); ura.setText("裏魔門：固定編成照合・Dry Run（読み取り専用）");
+        modes.addView(farming); modes.addView(selling); modes.addView(scanning);modes.addView(ura);
+        String savedMode=prefs.getString("operationMode", "farm");
+        modes.check(savedMode.startsWith("URA_SHURA")?ura.getId():savedMode.equals("BOX_SCAN")?scanning.getId():savedMode.equals("sale")?selling.getId():farming.getId());
+        modes.setOnCheckedChangeListener((group,id) -> prefs.edit().putString("operationMode", id==ura.getId()?"URA_SHURA_DRY_RUN":id==scanning.getId()?"BOX_SCAN":id==selling.getId()?"sale":"farm").apply());
         root.addView(modes, lp());
         TextView modeHelp = new TextView(this); modeHelp.setText("モードを切り替えると実行を停止します。画面共有中なら、ゲームに戻って各モードの開始ボタンを押してください。"); root.addView(modeHelp, lp());
 
         Button inventory = button("所持一覧・BOXキャリブレーション・詳細確認");
         inventory.setOnClickListener(v -> startActivity(new Intent(this, InventoryActivity.class)));
         root.addView(inventory, lp());
+
+        Button fixedTeam=button("裏魔門の確定編成と確認状況");
+        fixedTeam.setOnClickListener(v -> {
+            String message="ユーザー確定編成（変更しません）\nエスペル14094／セッカ7333／オーディン3391／ユキネ10042／ルカ2955／助っ人ミオン9411\n"
+                    +"装備8766／5418／なし／8110／10862。助っ人装備・潜在は毎回確認します。\n\n"
+                    +"保存画像のスキブ17・封印6を記録。現在の合算値と各個体の照合を通すまで潜入しません。\n"
+                    +"開幕：ルカ装備→エスペル→セッカ→ユキネ→ミオン→オーディン。\n"
+                    +"水2コンボ＋コンボドロップ発動、回復を優先します。\n\n"
+                    +"開発段階：固定編成のアイコン照合と読み取りログ。B1スキル・全階層の実行は未接続です。";
+            new android.app.AlertDialog.Builder(this).setTitle("裏魔門・固定TeamProfile").setMessage(message).setPositiveButton("閉じる",null).show();
+        });
+        root.addView(fixedTeam,lp());
 
         Button capture = button("③ 画面キャプチャを開始");
         captureButton = capture;
@@ -275,7 +289,11 @@ public class MainActivity extends Activity {
                 } else {
                     startService(service);
                 }
-                Toast.makeText(this, "準備完了。パズドラを開くと自動で進行します", Toast.LENGTH_LONG).show();
+                String mode=prefs.getString("operationMode","farm");
+                Toast.makeText(this, mode.startsWith("URA_SHURA")?"読み取り準備完了。裏魔門の潜入確認で専用パネルから照合してください":
+                        mode.equals("BOX_SCAN")?"BOX_SCAN準備完了。BOXパネルから開始してください":
+                        mode.equals("sale")?"売却準備完了。専用パネルから開始してください":
+                        "準備完了。パズドラを開くと自動で進行します", Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(this, "画面キャプチャが許可されませんでした", Toast.LENGTH_SHORT).show();
             }

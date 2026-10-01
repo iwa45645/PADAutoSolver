@@ -61,6 +61,10 @@ public class AutoPuzzleService extends Service {
     private TextView saleStatus;
     private volatile boolean saleMode;
     private volatile boolean scanMode;
+    private volatile boolean uraMode;
+    private android.widget.LinearLayout uraPanel;
+    private TextView uraStatus;
+    private UraShuraInspector uraInspector;
     private volatile boolean recordDetail;
     private BoxScanController boxScanner;
     private BoxDetailController detailScanner;
@@ -90,6 +94,7 @@ public class AutoPuzzleService extends Service {
     private RectF lastBoardRect;
     private Bitmap latestFrame;
     private long lastFrameTime;
+    private long latestFrameSequence;
 
     private final SharedPreferences.OnSharedPreferenceChangeListener modeListener = (prefs,key) -> {
         if (!"operationMode".equals(key)) return;
@@ -100,6 +105,8 @@ public class AutoPuzzleService extends Service {
             if(accessibility!=null) accessibility.cancelDrag();
             saleMode=prefs.getString("operationMode","farm").equals("sale");
             scanMode=prefs.getString("operationMode","farm").equals("BOX_SCAN");
+            uraMode=isUraMode(prefs.getString("operationMode","farm"));
+            uraInspector=null;
             boxScanner=null; detailScanner=null; recordDetail=false;
             pendingControl="";
             removeBubble();
@@ -112,6 +119,7 @@ public class AutoPuzzleService extends Service {
         super.onCreate();
         saleMode=getSharedPreferences("pad_solver",MODE_PRIVATE).getString("operationMode","farm").equals("sale");
         scanMode=getSharedPreferences("pad_solver",MODE_PRIVATE).getString("operationMode","farm").equals("BOX_SCAN");
+        uraMode=isUraMode(getSharedPreferences("pad_solver",MODE_PRIVATE).getString("operationMode","farm"));
         getSharedPreferences("pad_solver",MODE_PRIVATE).registerOnSharedPreferenceChangeListener(modeListener);
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         captureThread = new HandlerThread("pad-capture");
@@ -209,18 +217,19 @@ public class AutoPuzzleService extends Service {
 
         imageReader = ImageReader.newInstance(captureWidth, captureHeight,
                 PixelFormat.RGBA_8888, 3);
-        final int frameGeneration = captureGeneration;
         imageReader.setOnImageAvailableListener(reader -> {
             Image image = null;
             try {
                 image = reader.acquireLatestImage();
-                if (image == null || destroyed || frameGeneration != captureGeneration) return;
+                // Mode switches invalidate plans, not the still-live projection callback.
+                if (image == null || destroyed || mediaProjection != session || imageReader != reader) return;
                 long now = android.os.SystemClock.elapsedRealtime();
                 if (now - lastFrameTime < 150) return;
                 lastFrameTime = now;
                 Bitmap next = imageToBitmap(image, captureWidth, captureHeight);
                 if (latestFrame != null) latestFrame.recycle();
                 latestFrame = next;
+                latestFrameSequence++;
             } catch (IllegalStateException ignored) {
                 // Capture was released while the callback was queued.
             } finally { if (image != null) image.close(); }
@@ -237,12 +246,13 @@ public class AutoPuzzleService extends Service {
 
         saleMode=getSharedPreferences("pad_solver",MODE_PRIVATE).getString("operationMode","farm").equals("sale");
         scanMode=getSharedPreferences("pad_solver",MODE_PRIVATE).getString("operationMode","farm").equals("BOX_SCAN");
-        loopEnabled = !saleMode && !scanMode;
+        uraMode=isUraMode(getSharedPreferences("pad_solver",MODE_PRIVATE).getString("operationMode","farm"));
+        loopEnabled = !saleMode && !scanMode && !uraMode;
         showBubble();
         roundGate.reset();
         lastLoopProgress = android.os.SystemClock.elapsedRealtime();
         scheduleLoop(1000);
-        toast(scanMode ? "BOX_SCAN：キャリブレーション後、BOXパネルから開始" : saleMode ? "売却モード：専用パネルから開始してください" : "周回モードを開始しました");
+        toast(uraMode?"裏魔門：読み取り専用パネルから照合してください":scanMode ? "BOX_SCAN：キャリブレーション後、BOXパネルから開始" : saleMode ? "売却モード：専用パネルから開始してください" : "周回モードを開始しました");
     }
 
     private void requestFreshFrame() {
@@ -256,12 +266,13 @@ public class AutoPuzzleService extends Service {
                 return;
             }
             Bitmap copy = latestFrame.copy(Bitmap.Config.ARGB_8888, false);
-            try { solverExecutor.execute(() -> processFrame(copy, generation)); }
+            final long capturedAt=lastFrameTime,sequence=latestFrameSequence;
+            try { solverExecutor.execute(() -> processFrame(copy, generation,capturedAt,sequence)); }
             catch (java.util.concurrent.RejectedExecutionException stopped) { copy.recycle(); }
         });
     }
 
-    private void processFrame(Bitmap bitmap, int generation) {
+    private void processFrame(Bitmap bitmap, int generation,long capturedAt,long sequence) {
         try {
             if (destroyed || generation != captureGeneration) { bitmap.recycle(); return; }
             PuzzleAccessibilityService foreground = PuzzleAccessibilityService.getInstance();
@@ -274,6 +285,16 @@ public class AutoPuzzleService extends Service {
                 scheduleLoop(1000); return;
             }
             SharedPreferences prefs = getSharedPreferences("pad_solver", MODE_PRIVATE);
+            // Every Ura mode is intercepted, including manual ◎ requests. Never fall into FARM.
+            if(uraMode) {
+                if(navigator==null)navigator=new StageNavigator();
+                if(uraInspector==null)uraInspector=new UraShuraInspector(this);
+                String status=uraInspector.inspect(bitmap,navigator,capturedAt,android.os.SystemClock.elapsedRealtime(),
+                        generation,foreground!=null&&foreground.isGameForeground());
+                bitmap.recycle();busy.set(false);
+                mainHandler.post(()->{if(!destroyed&&generation==captureGeneration&&uraStatus!=null)uraStatus.setText(status);});
+                return;
+            }
             if (scanMode) {
                 if(navigator==null) navigator=new StageNavigator();
                 StagePolicy.Decision decision;
@@ -476,7 +497,8 @@ public class AutoPuzzleService extends Service {
                 showLoopBubble();
                 showSalePanel();
                 showScanPanel();
-                if (saleMode || scanMode) bubble.setVisibility(View.GONE);
+                showUraPanel();
+                if (saleMode || scanMode || uraMode) bubble.setVisibility(View.GONE);
             } catch (Exception e) {
                 bubble = null;
                 toast("フローティングボタン表示に失敗しました");
@@ -567,6 +589,34 @@ public class AutoPuzzleService extends Service {
         try{windowManager.addView(scanPanel,p);}catch(RuntimeException e){scanPanel=null;scanStatus=null;}
     }
 
+    private static boolean isUraMode(String value) {
+        return value!=null&&(value.startsWith("URA_SHURA")||value.equals("TEAM_ANALYSIS"));
+    }
+
+    private void showUraPanel() {
+        if(!uraMode||uraPanel!=null)return;
+        uraPanel=new android.widget.LinearLayout(this);uraPanel.setOrientation(android.widget.LinearLayout.VERTICAL);
+        uraPanel.setPadding(dp(6),dp(4),dp(6),dp(4));uraPanel.setBackgroundColor(0xEE182847);
+        uraStatus=new TextView(this);uraStatus.setText("裏魔門：読み取り専用\n潜入確認画面で照合してください。\n実際のスキル・パズル操作は行いません。");
+        uraStatus.setTextColor(Color.WHITE);uraStatus.setTextSize(11);uraStatus.setMaxLines(5);
+        uraStatus.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        uraPanel.addView(uraStatus,new android.widget.LinearLayout.LayoutParams(-1,dp(85)));
+        android.widget.Button inspect=new android.widget.Button(this);inspect.setText("編成照合／B1予定を表示");inspect.setTextSize(11);
+        inspect.setMinHeight(0);inspect.setMinimumHeight(0);uraPanel.addView(inspect,new android.widget.LinearLayout.LayoutParams(-1,dp(36)));
+        inspect.setOnClickListener(v->{
+            if(mediaProjection==null||!busy.compareAndSet(false,true))return;
+            uraStatus.setText("現在の画面を照合中…");
+            // Rendering the changed panel lets the projection deliver a new image first.
+            final int generation=captureGeneration;
+            mainHandler.postDelayed(()->{if(!destroyed&&generation==captureGeneration&&uraMode)requestFreshFrame();else busy.set(false);},350);
+        });
+        WindowManager.LayoutParams p=new WindowManager.LayoutParams(dp(270),WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                |WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,PixelFormat.TRANSLUCENT);
+        p.gravity=Gravity.TOP|Gravity.START;p.x=dp(4);p.y=dp(4);
+        try{windowManager.addView(uraPanel,p);}catch(RuntimeException e){uraPanel=null;uraStatus=null;}
+    }
+
     private void showSalePanel() {
         if (salePanel != null || !saleMode) return;
         salePanel = new android.widget.LinearLayout(this);
@@ -609,7 +659,7 @@ public class AutoPuzzleService extends Service {
     }
 
     private void showLoopBubble() {
-        if (loopBubble != null || saleMode || scanMode) return;
+        if (loopBubble != null || saleMode || scanMode || uraMode) return;
         loopBubble = new TextView(this);
         loopBubble.setText(loopEnabled ? "Ⅱ 周回" : "▶ 周回"); loopBubble.setTextColor(Color.WHITE);
         loopBubble.setTextSize(16f); loopBubble.setGravity(Gravity.CENTER);
@@ -797,6 +847,7 @@ public class AutoPuzzleService extends Service {
     }
 
     private void removeBubble() {
+        if(uraPanel!=null){try{windowManager.removeView(uraPanel);}catch(Exception ignored){}uraPanel=null;uraStatus=null;}
         if(scanPanel!=null){try{windowManager.removeView(scanPanel);}catch(Exception ignored){}scanPanel=null;scanStatus=null;}
         if (salePanel != null) {
             try { windowManager.removeView(salePanel); } catch (Exception ignored) {}
