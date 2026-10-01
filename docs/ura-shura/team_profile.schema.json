@@ -1,175 +1,333 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "PADAutoSolver Team Profile",
-  "type": "object",
-  "required": [
-    "schemaVersion",
-    "profileId",
-    "dungeonId",
-    "inventoryScanSessionId",
-    "slots",
-    "verifiedAgainstGame"
-  ],
-  "properties": {
-    "schemaVersion": {
-      "type": "integer",
-      "minimum": 1
-    },
-    "profileId": {
-      "type": "string"
-    },
-    "displayName": {
-      "type": "string"
-    },
-    "dungeonId": {
-      "const": "ura_shura"
-    },
-    "inventoryScanSessionId": {
-      "type": "string"
-    },
-    "verifiedAgainstGame": {
-      "type": "boolean"
-    },
-    "helperAcquisition": {
-      "type": "string"
-    },
-    "slots": {
-      "type": "array",
-      "minItems": 6,
-      "maxItems": 6,
-      "items": {
-        "type": "object",
-        "required": [
-          "position",
-          "instanceId",
-          "monsterId",
-          "roles",
-          "skillCoordinate"
-        ],
-        "properties": {
-          "position": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 5
-          },
-          "instanceId": {
-            "type": "string"
-          },
-          "monsterId": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "assistMonsterId": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "minimum": 1
-          },
-          "roles": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "latents": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "superAwakening": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "skillCoordinate": {
+  "oneOf": [
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "PADAutoSolver Team Profile",
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "profileId",
+        "dungeonId",
+        "inventoryScanSessionId",
+        "slots",
+        "verifiedAgainstGame"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "profileId": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "dungeonId": {
+          "const": "ura_shura"
+        },
+        "inventoryScanSessionId": {
+          "type": "string"
+        },
+        "verifiedAgainstGame": {
+          "type": "boolean"
+        },
+        "helperAcquisition": {
+          "type": "string"
+        },
+        "slots": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {
             "type": "object",
             "required": [
-              "xNorm",
-              "yNorm"
+              "position",
+              "instanceId",
+              "monsterId",
+              "roles",
+              "skillCoordinate"
             ],
             "properties": {
-              "xNorm": {
-                "type": "number",
+              "position": {
+                "type": "integer",
                 "minimum": 0,
-                "maximum": 1
+                "maximum": 5
               },
-              "yNorm": {
-                "type": "number",
+              "instanceId": {
+                "type": "string"
+              },
+              "monsterId": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "assistMonsterId": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "roles": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "latents": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "superAwakening": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "skillCoordinate": {
+                "type": "object",
+                "required": [
+                  "xNorm",
+                  "yNorm"
+                ],
+                "properties": {
+                  "xNorm": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "yNorm": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requirementCoverage": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "requirementId",
+              "covered",
+              "evidence"
+            ],
+            "properties": {
+              "requirementId": {
+                "type": "string"
+              },
+              "covered": {
+                "type": "boolean"
+              },
+              "evidence": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "skillSchedule": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "floor",
+              "phase",
+              "action"
+            ],
+            "properties": {
+              "floor": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "phase": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string"
+              },
+              "slot": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
                 "minimum": 0,
-                "maximum": 1
+                "maximum": 5
+              },
+              "preconditions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "postconditions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
               }
             }
           }
         }
       }
     },
-    "requirementCoverage": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "requirementId",
-          "covered",
-          "evidence"
-        ],
-        "properties": {
-          "requirementId": {
-            "type": "string"
-          },
-          "covered": {
-            "type": "boolean"
-          },
-          "evidence": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "skillSchedule": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "floor",
-          "phase",
-          "action"
-        ],
-        "properties": {
-          "floor": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "phase": {
-            "type": "string"
-          },
-          "action": {
-            "type": "string"
-          },
-          "slot": {
-            "type": [
-              "integer",
-              "null"
+    {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "profileId",
+        "dungeonId",
+        "slots",
+        "userConfirmedComposition",
+        "lockedComposition",
+        "verifiedAgainstGame",
+        "expectedSkillBoost",
+        "expectedSealResist",
+        "helperMonsterNo",
+        "helperRuntimeValidation",
+        "lastUserConfirmedAt"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 2
+        },
+        "profileId": {
+          "type": "string"
+        },
+        "dungeonId": {
+          "const": "ura_shura"
+        },
+        "slots": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "required": [
+              "position",
+              "monsterNo",
+              "assistNo",
+              "level",
+              "plus",
+              "skillCooldown",
+              "delayResistTurns",
+              "latentAwakenings",
+              "superAwakening",
+              "transformStage",
+              "instanceId",
+              "runtimeAssistAndLatents"
             ],
-            "minimum": 0,
-            "maximum": 5
-          },
-          "preconditions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "postconditions": {
-            "type": "array",
-            "items": {
-              "type": "string"
+            "properties": {
+              "position": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 5
+              },
+              "monsterNo": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "assistNo": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "level": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "plus": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 300
+              },
+              "skillCooldown": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "delayResistTurns": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "latentAwakenings": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "superAwakening": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "transformStage": {
+                "enum": [
+                  "before",
+                  "none"
+                ]
+              },
+              "instanceId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "runtimeAssistAndLatents": {
+                "type": "boolean"
+              }
             }
           }
+        },
+        "userConfirmedComposition": {
+          "const": true
+        },
+        "lockedComposition": {
+          "const": true
+        },
+        "verifiedAgainstGame": {
+          "type": "boolean"
+        },
+        "expectedSkillBoost": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expectedSealResist": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "helperMonsterNo": {
+          "const": 9411
+        },
+        "helperRuntimeValidation": {
+          "const": true
+        },
+        "lastUserConfirmedAt": {
+          "type": "string"
         }
       }
     }
-  }
+  ]
 }

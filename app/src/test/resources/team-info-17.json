@@ -1,0 +1,28 @@
+{
+  "capturedDate": "2026-10-02",
+  "captureSize": [
+    1220,
+    2712
+  ],
+  "userReported": {
+    "skillBoost": 17,
+    "sealResist": 6,
+    "teamHp": 3,
+    "helperIncluded": true,
+    "superIncluded": true
+  },
+  "visuallyObserved": {
+    "skillBoost": 17,
+    "normalSkillBoostCount": 3,
+    "plusSkillBoostCount": 7,
+    "sealResist": 6,
+    "teamHp": 3,
+    "helperCheckboxOn": true,
+    "superCheckboxOn": true,
+    "moveTimeSeconds": 7.0
+  },
+  "limitations": [
+    "助っ人未選択の自チーム画面。助っ人選択後の合算値は未取得。",
+    "このfixtureは表示値のリプレイ用。現在の画面の代用や実行許可には使用禁止。"
+  ]
+}
