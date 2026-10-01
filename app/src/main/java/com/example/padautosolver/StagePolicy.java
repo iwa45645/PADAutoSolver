@@ -13,14 +13,24 @@ final class StagePolicy {
         interface HeldFrameConsumer {
             void accept(android.graphics.Bitmap frame, java.util.function.BooleanSupplier current) throws Exception;
         }
+        interface HeldStampedFrameConsumer {
+            void accept(android.graphics.Bitmap frame,java.util.function.BooleanSupplier current,long capturedAt,long sequence)throws Exception;
+        }
         final Item target;
         final String status;
         final boolean stop;
         long holdMs = 80;
+        long nextFrameDelayMs=1000;
         int selectionTaps = 0;
         float endY = -1;
         Runnable completed;
         HeldFrameConsumer heldFrame;
+        HeldStampedFrameConsumer heldStampedFrame;
+        List<Integer> puzzlePath;
+        android.graphics.RectF puzzleRect;
+        int puzzleCols,puzzleRows;
+        long puzzleDurationMs;
+        UraPuzzlePlan previewPlan;
         Decision(Item target, String status, boolean stop) { this.target = target; this.status = status; this.stop = stop; }
     }
     private boolean battled, results, selectedTarget, selectedDifficulty;

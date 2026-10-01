@@ -20,7 +20,8 @@ public final class PuzzleGoal {
     }
     public static PuzzleGoal water() { return new PuzzleGoal(Type.WATER_TWO_COMBOS, 3, 0); }
     public static PuzzleGoal waterAndHeal() { return new PuzzleGoal(Type.WATER_TWO_COMBOS_AND_HEAL, 3, 0); }
-    public static PuzzleGoal esperMion() { return new PuzzleGoal(Type.WATER_TWO_COMBOS,3,0,true); }
+    // The in-game leader icon is WATER COMBO ENHANCE+, not COMBO DROP GENERATION.
+    public static PuzzleGoal esperMion() { return water(); }
     boolean satisfied(PuzzleSolver.MatchStats s, int cells) {
         if(requiresComboDrop && s.comboDropsMatched==0)return false;
         switch (type) {

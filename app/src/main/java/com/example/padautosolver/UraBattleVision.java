@@ -1,0 +1,107 @@
+package com.example.padautosolver;
+import android.content.Context;
+import android.graphics.*;
+import java.io.*;
+import java.util.*;
+import org.json.*;
+final class UraBattleVision {
+    private final Context context;private final Map<String,Bitmap> templates=new HashMap<>();
+    private final Map<String,int[]> orbReferences=new HashMap<>();
+    private JSONArray normalReferences;
+    double[] boardDistances;
+    UraBattleVision(Context context){this.context=context;}
+    private Bitmap template(String name)throws Exception {
+        Bitmap b=templates.get(name);if(b==null)try(InputStream in=context.getAssets().open("ura-shura/"+name)){b=BitmapFactory.decodeStream(in);templates.put(name,b);}return b;
+    }
+    static int[] pixels(Bitmap b){int[] p=new int[b.getWidth()*b.getHeight()];b.getPixels(p,0,b.getWidth(),0,0,b.getWidth(),b.getHeight());return p;}
+    double distance(Bitmap frame,String name,int x,int y,int w,int h)throws Exception {
+        Bitmap ref=template(name),crop=Bitmap.createBitmap(frame,x,y,w,h);
+        Bitmap a=Bitmap.createScaledBitmap(crop,48,32,true),b=Bitmap.createScaledBitmap(ref,48,32,true);
+        try{return TeamIconMatch.distance(pixels(a),pixels(b));}finally{if(a!=crop)a.recycle();crop.recycle();if(b!=ref)b.recycle();}
+    }
+    boolean initialTeam(Bitmap frame)throws Exception {
+        return portrait(frame,5);
+    }
+    boolean openingNotStarted(Bitmap frame)throws Exception{return portrait(frame,0)&&portrait(frame,3);}
+    /** Exact reviewed post-transform skill heading; cooldowns still require independent literal OCR. */
+    boolean sekkaPostHeading(Bitmap frame)throws Exception {
+        return distance(frame,"post-sekka-skill-header.png",130,230,490,50)<.025;
+    }
+    boolean menuFloorOne(Bitmap frame)throws Exception {
+        Bitmap ref=template("b1-floor-one.png"),crop=Bitmap.createBitmap(frame,650,975,50,70);
+        int[] a=pixels(ref),b=pixels(crop);crop.recycle();int different=0,white=0;
+        for(int i=0;i<a.length;i++){boolean x=white(a[i]),y=white(b[i]);if(x!=y)different++;if(y)white++;}
+        return white>150&&different/(double)a.length<.04;
+    }
+    private static boolean white(int pixel){return ((pixel>>16)&255)>220&&((pixel>>8)&255)>220&&(pixel&255)>220;}
+    /** Resume-state check only: a changed transformation in one slot cannot be diluted by the whole screen. */
+    static boolean sameRunPortraits(Bitmap previous,Bitmap live) {
+        for(int slot=0;slot<6;slot++) {
+            int x=60+slot*203;Bitmap before=Bitmap.createBitmap(previous,x,1390,100,60);
+            Bitmap scaled=Bitmap.createScaledBitmap(before,48,32,true);int[] ref=pixels(scaled);scaled.recycle();before.recycle();double best=1;
+            for(int dx=-8;dx<=8;dx+=4)for(int dy=-40;dy<=40;dy+=4){
+                Bitmap crop=Bitmap.createBitmap(live,x+dx,1390+dy,100,60),small=Bitmap.createScaledBitmap(crop,48,32,true);
+                best=Math.min(best,TeamIconMatch.distance(ref,pixels(small)));small.recycle();crop.recycle();
+            }
+            if(best>.04)return false;
+        }return true;
+    }
+    private boolean portrait(Bitmap frame,int i)throws Exception {
+            double same=1,other=1;
+            for(int dx=-8;dx<=8;dx+=4)for(int dy=-40;dy<=40;dy+=4) {
+                same=Math.min(same,distance(frame,"b1-face-"+i+".png",60+i*203+dx,1390+dy,100,60));
+                for(int j=0;j<6;j++)if(j!=i)other=Math.min(other,distance(frame,"b1-face-"+j+".png",60+i*203+dx,1390+dy,100,60));
+            }
+            if(same>.04||other-same<.05)return false;
+        return true;
+    }
+    double enemyDistance(Bitmap frame)throws Exception {
+        int[][] origins={{137,1010},{556,1010},{958,1010}};double worst=0;
+        for(int i=0;i<3;i++) {
+            double best=1;
+            for(int dx=-12;dx<=12;dx+=4)for(int dy=-12;dy<=12;dy+=4)
+                best=Math.min(best,distance(frame,"b1-enemy-"+i+".png",origins[i][0]+dx,origins[i][1]+dy,150,110));
+            worst=Math.max(worst,best);
+        }
+        return worst;
+    }
+    boolean active(Bitmap frame,StagePolicy.Item target) {
+        if(target==null||target.x<120||target.y<1500||target.x>1100||target.y>2500)return false;
+        Bitmap crop=Bitmap.createBitmap(frame,Math.round(target.x)-65,Math.round(target.y)-35,130,70);
+        try{return UraDialogPolicy.brightTextFraction(pixels(crop))>.08;}finally{crop.recycle();}
+    }
+    boolean backControl(Bitmap frame,UraDialogPolicy.Read read)throws Exception {
+        if(read==null||read.back.y<1600||read.back.y>2500)return false;
+        double best=1;
+        for(int dy=-8;dy<=8;dy+=2)best=Math.min(best,distance(frame,"b1-back-control.png",675,Math.round(read.back.y)-34+dy,234,68));
+        return best<.045;
+    }
+    byte[] board(Bitmap frame)throws Exception {
+        if(normalReferences==null)try(InputStream in=context.getAssets().open("ura-shura/normal-orbs.json")) {
+            ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] bytes=new byte[4096];int read;
+            while((read=in.read(bytes))!=-1)out.write(bytes,0,read);
+            normalReferences=new JSONArray(out.toString("UTF-8"));
+        }
+        // B1 normal-orb fixtures only. Unrecognised artwork is UNKNOWN, never a hue-only guess.
+        byte[] board=new byte[30];boardDistances=new double[30];
+        for(int cell=0;cell<30;cell++) {
+            float size=1220f/6,top=2712-84-5*size;
+            Bitmap crop=Bitmap.createBitmap(frame,Math.round((cell%6+.5f)*size)-80,Math.round(top+(cell/6+.5f)*size)-80,160,160);
+            Bitmap small=Bitmap.createScaledBitmap(crop,48,48,true);int[] live=pixels(small);small.recycle();crop.recycle();
+            double[] byColor={1,1,1,1,1,1};
+            for(int i=0;i<normalReferences.length();i++) {
+                JSONObject reference=normalReferences.getJSONObject(i);
+                int refColor=reference.getInt("color");String name=reference.getString("file");
+                int[] ref=orbReferences.get(name);
+                if(ref==null){Bitmap scaled=Bitmap.createScaledBitmap(template(name),48,48,true);ref=pixels(scaled);scaled.recycle();orbReferences.put(name,ref);}
+                byColor[refColor]=Math.min(byColor[refColor],TeamIconMatch.distance(live,ref));
+            }
+            int color=0;for(int c=1;c<6;c++)if(byColor[c]<byColor[color])color=c;
+            double other=1;for(int c=0;c<6;c++)if(c!=color)other=Math.min(other,byColor[c]);
+            boardDistances[cell]=byColor[color];
+            if(byColor[color]>.07||other-byColor[color]<.035)return null;
+            board[cell]=(byte)color;
+        }
+        return board;
+    }
+}

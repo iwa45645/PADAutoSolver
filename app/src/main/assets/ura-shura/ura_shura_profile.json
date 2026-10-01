@@ -110,7 +110,6 @@
       ],
       "puzzleGoals": [
         "WATER_TWO_COMBOS",
-        "MATCH_COMBO_DROP",
         "HEAL_PREFERRED"
       ],
       "failureConditions": [

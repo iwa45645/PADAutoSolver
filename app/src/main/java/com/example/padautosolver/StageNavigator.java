@@ -79,6 +79,39 @@ final class StageNavigator {
     List<StagePolicy.Item> readDetailSkillHeadings(Bitmap frame) throws Exception {
         return readCrop(frame,.01f,.60f,.99f,.87f,false,false,2);
     }
+    List<StagePolicy.Item> readUraCooldowns(Bitmap frame)throws Exception {
+        return readCrop(frame,.82f,.805f,.99f,.874f,true,false,4);
+    }
+    List<StagePolicy.Item> readUraPreentry(Bitmap frame)throws Exception {
+        List<StagePolicy.Item> lines=readItems(frame);
+        // Re-read only the actual entry control at full resolution; do not repair its wording.
+        lines.addAll(readCrop(frame,.25f,.77f,.75f,.84f,false,false,3));
+        return lines;
+    }
+    List<StagePolicy.Item> readUraDialog(Bitmap frame)throws Exception {
+        return readCrop(frame,.03f,.55f,.97f,.94f,false,false,2);
+    }
+    List<StagePolicy.Item> readUraCombat(Bitmap frame)throws Exception {
+        List<StagePolicy.Item> lines=readCrop(frame,.01f,.18f,.99f,.81f,false,false,2);
+        // Separate Menu from the adjacent coin/chest digits.
+        lines.addAll(readCrop(frame,.86f,.19f,.998f,.22f,false,false,3));
+        if(UraCombatText.joined(lines).contains("裏魔門の守護者")) {
+            for(var item:readCrop(frame,.53f,.357f,.65f,.387f,true,true,4))
+                lines.add(new StagePolicy.Item("UFLOOR_"+item.rawText,item.x,item.y));
+        }
+        return lines;
+    }
+    List<StagePolicy.Item> readUraHeldSkill(Bitmap frame)throws Exception {
+        List<StagePolicy.Item> out=readCrop(frame,.02f,.20f,.97f,.40f,false,false,3);
+        for(var item:readCrop(frame,.002f,.083f,.74f,.110f,false,false,3))
+            out.add(new StagePolicy.Item("USH1_"+item.rawText,item.x,item.y));
+        // The same cooldowns are repeated in much larger text at the top-right during a hold.
+        for(var item:readCrop(frame,.64f,.063f,.995f,.112f,true,false,4,true))
+            out.add(new StagePolicy.Item("UCD1_"+item.rawText,item.x,item.y));
+        for(var item:readCrop(frame,.64f,.115f,.995f,.165f,true,false,4,true))
+            out.add(new StagePolicy.Item("UCD2_"+item.rawText,item.x,item.y));
+        return out;
+    }
     DetailIdentity readCandidateIdentity(Bitmap frame, int expectedId) throws Exception {
         DetailIdentity header=DetailIdentity.parse(readDetailHeader(frame),frame.getHeight());
         if(header!=null&&header.id==expectedId)return header;
@@ -97,6 +130,9 @@ final class StageNavigator {
         return readCrop(frame,l,t,r,b,threshold,whiteOnly,2);
     }
     private List<StagePolicy.Item> readCrop(Bitmap frame,float l,float t,float r,float b,boolean threshold,boolean whiteOnly,int zoom) throws Exception {
+        return readCrop(frame,l,t,r,b,threshold,whiteOnly,zoom,false);
+    }
+    private List<StagePolicy.Item> readCrop(Bitmap frame,float l,float t,float r,float b,boolean threshold,boolean whiteOnly,int zoom,boolean whiteYellow) throws Exception {
         int left = Math.round(frame.getWidth() * l), top = Math.round(frame.getHeight() * t);
         Bitmap crop = Bitmap.createBitmap(frame, left, top, Math.round(frame.getWidth() * (r-l)), Math.round(frame.getHeight() * (b-t)));
         Bitmap enlarged = Bitmap.createScaledBitmap(crop, crop.getWidth() * zoom, crop.getHeight() * zoom, true);
@@ -108,7 +144,8 @@ final class StageNavigator {
         for (int i = 0; i < pixels.length; i++) {
             int red = (pixels[i] >> 16) & 255, green = (pixels[i] >> 8) & 255, blue = pixels[i] & 255;
             int max = Math.max(red, Math.max(green, blue)), min = Math.min(red, Math.min(green, blue));
-            boolean ink=whiteOnly ? min > 190 : max > 155 && (min > 105 || max - min > 85);
+            boolean ink=whiteYellow ? min>180||(red>200&&green>180&&blue<130)
+                :whiteOnly ? min > 190 : max > 155 && (min > 105 || max - min > 85);
             pixels[i] = ink ? 0xff000000 : 0xffffffff;
         }
         enlarged.setPixels(pixels, 0, enlarged.getWidth(), 0, 0, enlarged.getWidth(), enlarged.getHeight());

@@ -18,16 +18,21 @@ public class PuzzleGoalTest {
         var s=PuzzleSolver.analyze(board("333012","333450","012451","125012","450125"),6,5);
         assertEquals(1,s.colorCombos[3]);assertFalse(PuzzleGoal.water().satisfied(s,30));
     }
-    @Test public void esperRequiresActualMatchedComboDrop(){
+    @Test public void esperWaterComboEnhanceIconRequiresWaterTwoCombos(){
         byte[] b=board("333012","012450","123333","501245","555120");
-        assertFalse(PuzzleGoal.esperMion().satisfied(PuzzleSolver.analyze(b,6,5),30));
+        assertTrue(PuzzleGoal.esperMion().satisfied(PuzzleSolver.analyze(b,6,5),30));
         assertTrue(PuzzleGoal.esperMion().satisfied(PuzzleSolver.analyze(b,6,5,1L),30));
-        assertFalse(PuzzleGoal.esperMion().satisfied(PuzzleSolver.analyze(b,6,5,1L<<5),30));
+        assertTrue(PuzzleGoal.esperMion().satisfied(PuzzleSolver.analyze(b,6,5,1L<<5),30));
+        assertFalse(PuzzleGoal.esperMion().requiresComboDrop);
+        var taggedGoal=new PuzzleGoal(PuzzleGoal.Type.WATER_TWO_COMBOS,3,0,true);
+        assertFalse(taggedGoal.satisfied(PuzzleSolver.analyze(b,6,5),30));
+        assertFalse(taggedGoal.satisfied(PuzzleSolver.analyze(b,6,5,1L<<5),30));
     }
     @Test public void solveTracksComboDropThroughSwapsAndReplaysRoute(){
         byte[] b=board("330312","012450","123333","501245","555120");
         long mask=1L<<3;
-        var result=PuzzleSolver.solve(b,6,5,4,300,0,PuzzleGoal.esperMion(),mask);
+        var goal=new PuzzleGoal(PuzzleGoal.Type.WATER_TWO_COMBOS,3,0,true);
+        var result=PuzzleSolver.solve(b,6,5,4,300,0,goal,mask);
         for(int i=1;i<result.path.size();i++) {
             int from=result.path.get(i-1),to=result.path.get(i);
             assertEquals(1,Math.abs(from%6-to%6)+Math.abs(from/6-to/6));
@@ -35,7 +40,7 @@ public class PuzzleGoalTest {
             if(((mask>>>from)&1)!=((mask>>>to)&1))mask^=(1L<<from)|(1L<<to);
         }
         var s=PuzzleSolver.analyze(b,6,5,mask);assertTrue(result.goalSatisfied);
-        assertTrue(PuzzleGoal.esperMion().satisfied(s,30));assertEquals(s.combos,result.combos);
+        assertTrue(goal.satisfied(s,30));assertEquals(s.combos,result.combos);
     }
     @Test public void unsupportedLuciferInstructionAndUnknownCellAbort(){
         assertThrows(IllegalArgumentException.class,()->new PuzzleGoal(PuzzleGoal.Type.SPECIAL_LUCIFER,3,0));

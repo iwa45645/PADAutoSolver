@@ -143,8 +143,9 @@
   "verificationStatus": "own_details_captured_helper_runtime_check_required",
   "leaderActivation": {
     "waterCombos": 2,
-    "matchedComboDropRequired": true,
-    "evidence": "2026-10-02 No.14095実機リーダースキル表示"
+    "matchedComboDropRequired": false,
+    "requiredAwakeningActivation": "WATER_COMBO_ENHANCE",
+    "evidence": "2026-10-02 No.14095実機表示の水3個＋アイコンを再確認。コンボドロップ生成ではない。"
   },
   "note": "所持個体IDは未結合。助っ人の装備・潜在・スキル状態は毎回照合。実測17は保存画像の表示値であり、以降の編成を承認する値ではない。"
 }

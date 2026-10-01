@@ -64,7 +64,13 @@ public class AutoPuzzleService extends Service {
     private volatile boolean uraMode;
     private android.widget.LinearLayout uraPanel;
     private TextView uraStatus;
+    private int uraResumeAttempts;
+    private View uraPreview;
     private UraShuraInspector uraInspector;
+    private UraPreflightController uraPreflight;
+    private UraBattleController uraBattle;
+    private boolean uraResumeRequested;
+    private volatile long uraDecisionCapturedAt;
     private volatile boolean recordDetail;
     private BoxScanController boxScanner;
     private BoxDetailController detailScanner;
@@ -107,6 +113,8 @@ public class AutoPuzzleService extends Service {
             scanMode=prefs.getString("operationMode","farm").equals("BOX_SCAN");
             uraMode=isUraMode(prefs.getString("operationMode","farm"));
             uraInspector=null;
+            uraPreflight=null;
+            uraBattle=null;
             boxScanner=null; detailScanner=null; recordDetail=false;
             pendingControl="";
             removeBubble();
@@ -288,6 +296,29 @@ public class AutoPuzzleService extends Service {
             // Every Ura mode is intercepted, including manual ◎ requests. Never fall into FARM.
             if(uraMode) {
                 if(navigator==null)navigator=new StageNavigator();
+                if(loopEnabled&&uraResumeRequested) {
+                    uraResumeRequested=false;
+                    if(prefs.getString("operationMode","").equals("URA_SHURA_AUTO")) {
+                        UraBattleController resumed=UraBattleController.resumePausedB1(this,bitmap);
+                        if(resumed==null)resumed=UraBattleController.currentB1(this,bitmap);
+                        if(resumed!=null){uraBattle=resumed;uraPreflight=null;}
+                        else if(UraBattleController.isB1(this,bitmap)) {
+                            bitmap.recycle();
+                            if(++uraResumeAttempts<4){uraResumeRequested=true;scheduleLoop(500);return;}
+                            pauseLoop("B1_RESUME_CAPTURE_REQUIRED：発動済みの状態を読み直せないため停止");return;
+                        }
+                    }
+                }
+                if(loopEnabled&&(uraPreflight!=null||uraBattle!=null)) {
+                    long now=android.os.SystemClock.elapsedRealtime();
+                    if(now<capturedAt||now-capturedAt>1500){bitmap.recycle();scheduleLoop(250);return;}
+                    StagePolicy.Decision decision=uraBattle!=null?uraBattle.inspect(bitmap,navigator,capturedAt,sequence):uraPreflight.inspect(bitmap,navigator,sequence);
+                    uraDecisionCapturedAt=capturedAt;
+                    bitmap.recycle();
+                    mainHandler.post(()->{if(uraStatus!=null)uraStatus.setText(decision.status);});
+                    if(uraPreflight!=null&&uraPreflight.validated&&uraBattle==null){uraBattle=new UraBattleController(this,uraPreflight.helperAssistTotal,prefs.getString("operationMode","").equals("URA_SHURA_DRY_RUN"));scheduleLoop(350);return;}
+                    handleStageDecision(decision,generation);return;
+                }
                 if(uraInspector==null)uraInspector=new UraShuraInspector(this);
                 String status=uraInspector.inspect(bitmap,navigator,capturedAt,android.os.SystemClock.elapsedRealtime(),
                         generation,foreground!=null&&foreground.isGameForeground());
@@ -597,18 +628,30 @@ public class AutoPuzzleService extends Service {
         if(!uraMode||uraPanel!=null)return;
         uraPanel=new android.widget.LinearLayout(this);uraPanel.setOrientation(android.widget.LinearLayout.VERTICAL);
         uraPanel.setPadding(dp(6),dp(4),dp(6),dp(4));uraPanel.setBackgroundColor(0xEE182847);
-        uraStatus=new TextView(this);uraStatus.setText("裏魔門：読み取り専用\n潜入確認画面で照合してください。\n実際のスキル・パズル操作は行いません。");
-        uraStatus.setTextColor(Color.WHITE);uraStatus.setTextSize(11);uraStatus.setMaxLines(5);
+        uraStatus=new TextView(this);uraStatus.setText("裏魔門：フレンドのミオンだけ確認\n潜入確認または停止中のB1から開始できます。\n停止ボタンで中断できます。");
+        uraStatus.setTextColor(Color.WHITE);uraStatus.setTextSize(11);uraStatus.setMaxLines(3);
         uraStatus.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        uraPanel.addView(uraStatus,new android.widget.LinearLayout.LayoutParams(-1,dp(85)));
-        android.widget.Button inspect=new android.widget.Button(this);inspect.setText("編成照合／B1予定を表示");inspect.setTextSize(11);
+        uraPanel.addView(uraStatus,new android.widget.LinearLayout.LayoutParams(-1,dp(55)));
+        android.widget.Button inspect=new android.widget.Button(this);inspect.setText("現在のB1でDry Run（発動なし）");inspect.setTextSize(11);
         inspect.setMinHeight(0);inspect.setMinimumHeight(0);uraPanel.addView(inspect,new android.widget.LinearLayout.LayoutParams(-1,dp(36)));
         inspect.setOnClickListener(v->{
-            if(mediaProjection==null||!busy.compareAndSet(false,true))return;
-            uraStatus.setText("現在の画面を照合中…");
-            // Rendering the changed panel lets the projection deliver a new image first.
-            final int generation=captureGeneration;
-            mainHandler.postDelayed(()->{if(!destroyed&&generation==captureGeneration&&uraMode)requestFreshFrame();else busy.set(false);},350);
+            if(mediaProjection==null||busy.get())return;
+            clearUraPreview();
+            try{uraBattle=UraBattleController.readOnlyB1(this);uraPreflight=null;pendingControl="";loopEnabled=true;
+                lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(350);
+            }catch(Exception e){pauseLoop("Dry Runを開始できません："+e.getMessage());}
+        });
+        android.widget.Button preflight=new android.widget.Button(this);preflight.setText("自動攻略：ミオン確認／実戦を再開");preflight.setTextSize(11);
+        preflight.setMinHeight(0);preflight.setMinimumHeight(0);uraPanel.addView(preflight,new android.widget.LinearLayout.LayoutParams(-1,dp(36)));
+        preflight.setOnClickListener(v->{
+            android.util.Log.i("PADSolver","uraStart projection="+(mediaProjection!=null)+" busy="+busy.get()+" loop="+loopEnabled+" frames="+latestFrameSequence);
+            if(mediaProjection==null){uraStatus.setText("③から画面全体の共有を開始してください");return;}
+            if(loopEnabled||busy.get()){uraStatus.setText("処理中です。停止してから再開してください");return;}
+            clearUraPreview();
+            uraResumeAttempts=0;
+            try{uraPreflight=new UraPreflightController(this);uraBattle=null;uraResumeRequested=true;pendingControl="";loopEnabled=true;
+                lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(350);
+            }catch(Exception e){pauseLoop("編成確認を開始できません："+e.getMessage());}
         });
         WindowManager.LayoutParams p=new WindowManager.LayoutParams(dp(270),WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
@@ -695,7 +738,13 @@ public class AutoPuzzleService extends Service {
         handleStageDecision(decision, generation);
     }
 
+    private void clearUraPreview(){if(uraPreview!=null&&uraPanel!=null)uraPanel.removeView(uraPreview);uraPreview=null;}
     private void handleStageDecision(StagePolicy.Decision decision, int generation) {
+        if(decision.previewPlan!=null)mainHandler.post(()->{
+            if(destroyed||generation!=captureGeneration||uraPanel==null)return;
+            clearUraPreview();uraPreview=new UraRoutePreview(this,decision.previewPlan);
+            uraPanel.addView(uraPreview,new android.widget.LinearLayout.LayoutParams(dp(180),dp(150)));
+        });
         if (destroyed || generation != captureGeneration || !loopEnabled) return;
         if (decision.stop) { pauseLoop(decision.status); return; }
         long now = android.os.SystemClock.elapsedRealtime();
@@ -711,8 +760,19 @@ public class AutoPuzzleService extends Service {
                 PuzzleAccessibilityService service = PuzzleAccessibilityService.getInstance();
                 if (destroyed || generation != captureGeneration || !loopEnabled) return;
                 if (service == null || !service.isGameForeground()) { scheduleLoop(1000); return; }
+                if(uraMode&&android.os.SystemClock.elapsedRealtime()-uraDecisionCapturedAt>1500){pendingControl="";scheduleLoop(250);return;}
                 android.util.Log.i("PADSolver", "stageAction=" + decision.status);
-                if(decision.heldFrame!=null) {
+                if(decision.puzzlePath!=null) {
+                    clearUraPreview(); // Do not cover enemy messages during result/next-floor capture.
+                    final int puzzleEpoch=selectionEpoch;
+                    service.performDrag(decision.puzzlePath,decision.puzzleRect,decision.puzzleCols,decision.puzzleRows,decision.puzzleDurationMs,()->{
+                        if(destroyed||generation!=captureGeneration||!loopEnabled||puzzleEpoch!=selectionEpoch)return;
+                        if(decision.completed!=null)decision.completed.run();pendingControl="";
+                        lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(250);
+                    },()->{if(loopEnabled&&puzzleEpoch==selectionEpoch)pauseLoop("DRAG_CANCELLED：パズル結果を確認するまで再実行しません");});
+                    return;
+                }
+                if(decision.heldFrame!=null||decision.heldStampedFrame!=null) {
                     performHeldCapture(service,decision,generation);
                     return;
                 }
@@ -742,11 +802,14 @@ public class AutoPuzzleService extends Service {
         } else {
             pendingControl = "";
             if (now - lastLoopProgress > 60000) pauseLoop("自動で進められない画面のため一時停止しました");
-            else scheduleLoop(1000);
+            else scheduleLoop(decision.nextFrameDelayMs);
         }
     }
 
     private void performHeldCapture(PuzzleAccessibilityService service, StagePolicy.Decision decision, int generation) {
+        // The controls overlap the blue skill tooltip. Keep Stop visible, but remove
+        // the panel from the captured image until the held evidence has been read.
+        if(uraPanel!=null)uraPanel.setVisibility(android.view.View.INVISIBLE);
         final int epoch=selectionEpoch;
         final long started=android.os.SystemClock.elapsedRealtime();
         java.util.function.BooleanSupplier current=()->!destroyed && generation==captureGeneration
@@ -755,11 +818,12 @@ public class AutoPuzzleService extends Service {
         Runnable finish=()->{
             if(!current.getAsBoolean()||done[2]||!done[0]||!done[1])return;
             done[2]=true;
+            if(uraPanel!=null)uraPanel.setVisibility(android.view.View.VISIBLE);
             if(decision.completed!=null)decision.completed.run();
             pendingControl="";lastLoopProgress=android.os.SystemClock.elapsedRealtime();
             scheduleLoop(900);
         };
-        Runnable fail=()->{if(done[2]||!current.getAsBoolean())return;done[2]=true;service.cancelDrag();pauseLoop("長押し中の画像を保存できないため停止しました");};
+        Runnable fail=()->{if(done[2]||!current.getAsBoolean())return;done[2]=true;if(uraPanel!=null)uraPanel.setVisibility(android.view.View.VISIBLE);service.cancelDrag();pauseLoop("長押し中の画像を保存できないため停止しました");};
         service.performControl(decision.target.x,decision.target.y,decision.target.y,decision.holdMs,
                 ()->{if(!current.getAsBoolean())return;done[0]=true;finish.run();},fail);
         mainHandler.postDelayed(()->{
@@ -769,10 +833,12 @@ public class AutoPuzzleService extends Service {
                 if(!current.getAsBoolean()||latestFrame==null
                         ||!HeldCaptureWindow.contains(started,lastFrameTime,now,decision.holdMs)) {mainHandler.post(fail);return;}
                 Bitmap copy=latestFrame.copy(Bitmap.Config.ARGB_8888,false);
+                final long heldAt=lastFrameTime,heldSequence=latestFrameSequence;
                 try {solverExecutor.execute(()->{
                     try {
                         if(!current.getAsBoolean()||!service.isGameForeground())return;
-                        decision.heldFrame.accept(copy,current);
+                        if(decision.heldStampedFrame!=null)decision.heldStampedFrame.accept(copy,current,heldAt,heldSequence);
+                        else decision.heldFrame.accept(copy,current);
                         mainHandler.post(()->{if(!current.getAsBoolean())return;done[1]=true;finish.run();});
                     } catch(Exception e) {
                         android.util.Log.w("PADSolver","heldCaptureFailure",e);
@@ -785,6 +851,7 @@ public class AutoPuzzleService extends Service {
     }
 
     private void pauseLoop(String message) {
+        if(uraPanel!=null)mainHandler.post(()->{if(uraPanel!=null)uraPanel.setVisibility(android.view.View.VISIBLE);});
         selectionEpoch++;
         PuzzleAccessibilityService accessibility=PuzzleAccessibilityService.getInstance();
         if(accessibility!=null)accessibility.cancelDrag();
@@ -795,6 +862,7 @@ public class AutoPuzzleService extends Service {
         loopEnabled = false; busy.set(false);
         mainHandler.post(() -> { if (loopBubble != null) loopBubble.setText("▶ 周回");
             if (saleMode && saleStatus != null) saleStatus.setText(message);
+            if(uraMode&&uraStatus!=null)uraStatus.setText(message);
             if(scanMode && scanStatus!=null)scanStatus.setText(message); });
         toast(message);
     }
@@ -882,6 +950,7 @@ public class AutoPuzzleService extends Service {
     }
 
     private void toast(String message) {
+        if(uraMode)return; // Toasts cover skill/board evidence in MediaProjection; the dedicated panel reports status.
         mainHandler.post(() -> Toast.makeText(this, message, Toast.LENGTH_LONG).show());
     }
 

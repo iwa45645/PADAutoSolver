@@ -71,7 +71,7 @@ public final class UraShuraStartup {
         }
         if(!f.boardVerified)return stop("BOARD_UNKNOWN");
         if(step==SLOTS.length){
-            return new Decision(Kind.PUZZLE,-1,null,"ESPER_MION_WATER_TWO_COMBOS_COMBO_DROP");
+            return new Decision(Kind.PUZZLE,-1,null,"ESPER_MION_WATER_TWO_COMBOS");
         }
         int slot=SLOTS[step];SkillState state=f.skills[slot];
         if(state==null||!state.identityVerified||!state.skillVerified||state.monsterNo!=BEFORE[step])return stop("SKILL_IDENTITY_MISMATCH:"+slot);

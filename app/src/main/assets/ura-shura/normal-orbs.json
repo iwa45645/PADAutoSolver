@@ -1,0 +1,1310 @@
+[
+  {
+    "file": "normal-0-0.png",
+    "color": 0
+  },
+  {
+    "file": "normal-4-1.png",
+    "color": 4
+  },
+  {
+    "file": "normal-4-2.png",
+    "color": 4
+  },
+  {
+    "file": "normal-0-3.png",
+    "color": 0
+  },
+  {
+    "file": "normal-1-4.png",
+    "color": 1
+  },
+  {
+    "file": "normal-5-5.png",
+    "color": 5
+  },
+  {
+    "file": "normal-3-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-0-7.png",
+    "color": 0
+  },
+  {
+    "file": "normal-2-8.png",
+    "color": 2
+  },
+  {
+    "file": "normal-3-9.png",
+    "color": 3
+  },
+  {
+    "file": "normal-3-10.png",
+    "color": 3
+  },
+  {
+    "file": "normal-2-11.png",
+    "color": 2
+  },
+  {
+    "file": "normal-5-12.png",
+    "color": 5
+  },
+  {
+    "file": "normal-5-13.png",
+    "color": 5
+  },
+  {
+    "file": "normal-4-14.png",
+    "color": 4
+  },
+  {
+    "file": "normal-2-15.png",
+    "color": 2
+  },
+  {
+    "file": "normal-3-16.png",
+    "color": 3
+  },
+  {
+    "file": "normal-4-17.png",
+    "color": 4
+  },
+  {
+    "file": "normal-2-18.png",
+    "color": 2
+  },
+  {
+    "file": "normal-5-19.png",
+    "color": 5
+  },
+  {
+    "file": "normal-2-20.png",
+    "color": 2
+  },
+  {
+    "file": "normal-3-21.png",
+    "color": 3
+  },
+  {
+    "file": "normal-0-22.png",
+    "color": 0
+  },
+  {
+    "file": "normal-2-23.png",
+    "color": 2
+  },
+  {
+    "file": "normal-4-24.png",
+    "color": 4
+  },
+  {
+    "file": "normal-3-25.png",
+    "color": 3
+  },
+  {
+    "file": "normal-4-26.png",
+    "color": 4
+  },
+  {
+    "file": "normal-3-27.png",
+    "color": 3
+  },
+  {
+    "file": "normal-0-28.png",
+    "color": 0
+  },
+  {
+    "file": "normal-1-29.png",
+    "color": 1
+  },
+  {
+    "file": "normal-glow-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-glow-10.png",
+    "color": 3
+  },
+  {
+    "file": "normal-glow-16.png",
+    "color": 3
+  },
+  {
+    "file": "normal-run2-2-0.png",
+    "color": 2
+  },
+  {
+    "file": "normal-run2-1-1.png",
+    "color": 1
+  },
+  {
+    "file": "normal-run2-3-2.png",
+    "color": 3
+  },
+  {
+    "file": "normal-run2-1-3.png",
+    "color": 1
+  },
+  {
+    "file": "normal-run2-5-4.png",
+    "color": 5
+  },
+  {
+    "file": "normal-run2-4-5.png",
+    "color": 4
+  },
+  {
+    "file": "normal-run2-1-6.png",
+    "color": 1
+  },
+  {
+    "file": "normal-run2-5-7.png",
+    "color": 5
+  },
+  {
+    "file": "normal-run2-0-8.png",
+    "color": 0
+  },
+  {
+    "file": "normal-run2-5-9.png",
+    "color": 5
+  },
+  {
+    "file": "normal-run2-4-10.png",
+    "color": 4
+  },
+  {
+    "file": "normal-run2-5-11.png",
+    "color": 5
+  },
+  {
+    "file": "normal-run2-4-12.png",
+    "color": 4
+  },
+  {
+    "file": "normal-run2-1-13.png",
+    "color": 1
+  },
+  {
+    "file": "normal-run2-2-14.png",
+    "color": 2
+  },
+  {
+    "file": "normal-run2-2-15.png",
+    "color": 2
+  },
+  {
+    "file": "normal-run2-4-16.png",
+    "color": 4
+  },
+  {
+    "file": "normal-run2-1-17.png",
+    "color": 1
+  },
+  {
+    "file": "normal-run2-4-18.png",
+    "color": 4
+  },
+  {
+    "file": "normal-run2-1-19.png",
+    "color": 1
+  },
+  {
+    "file": "normal-run2-0-20.png",
+    "color": 0
+  },
+  {
+    "file": "normal-run2-2-21.png",
+    "color": 2
+  },
+  {
+    "file": "normal-run2-3-22.png",
+    "color": 3
+  },
+  {
+    "file": "normal-run2-4-23.png",
+    "color": 4
+  },
+  {
+    "file": "normal-run2-2-24.png",
+    "color": 2
+  },
+  {
+    "file": "normal-run2-4-25.png",
+    "color": 4
+  },
+  {
+    "file": "normal-run2-5-26.png",
+    "color": 5
+  },
+  {
+    "file": "normal-run2-0-27.png",
+    "color": 0
+  },
+  {
+    "file": "normal-run2-0-28.png",
+    "color": 0
+  },
+  {
+    "file": "normal-run2-4-29.png",
+    "color": 4
+  },
+  {
+    "file": "normal-run2-glow-7.png",
+    "color": 5
+  },
+  {
+    "file": "normal-run2-glow-9.png",
+    "color": 5
+  },
+  {
+    "file": "normal-run2-glow-11.png",
+    "color": 5
+  },
+  {
+    "file": "normal-run2-glow-26.png",
+    "color": 5
+  },
+  {
+    "file": "normal-run2-glow-29.png",
+    "color": 4
+  },
+  {
+    "file": "normal-water-low-2.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-low-22.png",
+    "color": 3
+  },
+  {
+    "file": "normal-cycle-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-cycle-1.png",
+    "color": 5
+  },
+  {
+    "file": "normal-cycle-2.png",
+    "color": 4
+  },
+  {
+    "file": "normal-cycle-3.png",
+    "color": 3
+  },
+  {
+    "file": "normal-cycle-4.png",
+    "color": 5
+  },
+  {
+    "file": "normal-cycle-5.png",
+    "color": 4
+  },
+  {
+    "file": "normal-cycle-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-cycle-7.png",
+    "color": 5
+  },
+  {
+    "file": "normal-cycle-8.png",
+    "color": 4
+  },
+  {
+    "file": "normal-cycle-9.png",
+    "color": 3
+  },
+  {
+    "file": "normal-cycle-10.png",
+    "color": 5
+  },
+  {
+    "file": "normal-cycle-11.png",
+    "color": 4
+  },
+  {
+    "file": "normal-cycle-12.png",
+    "color": 3
+  },
+  {
+    "file": "normal-cycle-13.png",
+    "color": 5
+  },
+  {
+    "file": "normal-cycle-14.png",
+    "color": 4
+  },
+  {
+    "file": "normal-cycle-15.png",
+    "color": 3
+  },
+  {
+    "file": "normal-cycle-16.png",
+    "color": 5
+  },
+  {
+    "file": "normal-cycle-17.png",
+    "color": 4
+  },
+  {
+    "file": "normal-cycle-18.png",
+    "color": 3
+  },
+  {
+    "file": "normal-cycle-19.png",
+    "color": 5
+  },
+  {
+    "file": "normal-cycle-20.png",
+    "color": 4
+  },
+  {
+    "file": "normal-cycle-21.png",
+    "color": 3
+  },
+  {
+    "file": "normal-cycle-22.png",
+    "color": 5
+  },
+  {
+    "file": "normal-cycle-23.png",
+    "color": 4
+  },
+  {
+    "file": "normal-cycle-24.png",
+    "color": 3
+  },
+  {
+    "file": "normal-cycle-25.png",
+    "color": 5
+  },
+  {
+    "file": "normal-cycle-26.png",
+    "color": 4
+  },
+  {
+    "file": "normal-cycle-27.png",
+    "color": 3
+  },
+  {
+    "file": "normal-cycle-28.png",
+    "color": 5
+  },
+  {
+    "file": "normal-cycle-29.png",
+    "color": 4
+  },
+  {
+    "file": "normal-cycle-30.png",
+    "color": 3
+  },
+  {
+    "file": "normal-cycle-31.png",
+    "color": 5
+  },
+  {
+    "file": "normal-cycle-32.png",
+    "color": 4
+  },
+  {
+    "file": "normal-cycle-33.png",
+    "color": 3
+  },
+  {
+    "file": "normal-cycle-34.png",
+    "color": 5
+  },
+  {
+    "file": "normal-cycle-35.png",
+    "color": 4
+  },
+  {
+    "file": "normal-ruka-cycle-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-1.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-2.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-3.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-4.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-5.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-7.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-8.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-9.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-10.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-11.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-12.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-13.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-14.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-15.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-16.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-17.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-18.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-19.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-20.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-21.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-22.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-23.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-24.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-25.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-26.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-27.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-28.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-29.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-30.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-31.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-32.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-33.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-34.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-35.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-36.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-37.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-38.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-39.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-40.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-41.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-42.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-43.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-44.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-45.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-46.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-47.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-48.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-49.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-50.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-51.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-52.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-53.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-54.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-55.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-56.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-cycle-57.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-58.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-cycle-59.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-1.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-2.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-3.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-4.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-5.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-7.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-8.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-9.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-10.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-11.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-12.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-13.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-14.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-15.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-16.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-17.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-18.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-19.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-20.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-21.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-22.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-23.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-24.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-25.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-26.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-27.png",
+    "color": 3
+  },
+  {
+    "file": "normal-ruka-position-28.png",
+    "color": 5
+  },
+  {
+    "file": "normal-ruka-position-29.png",
+    "color": 5
+  },
+  {
+    "file": "normal-yukine-enhanced-0-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-0-3.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-0-5.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-0-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-0-11.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-0-12.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-0-13.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-0-14.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-0-15.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-0-18.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-0-19.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-0-21.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-0-23.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-0-24.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-0-27.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-3.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-5.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-11.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-12.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-13.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-14.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-15.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-18.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-19.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-21.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-23.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-24.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-1-27.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-3.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-5.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-11.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-12.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-13.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-14.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-15.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-18.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-19.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-21.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-23.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-24.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-2-27.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-3.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-5.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-11.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-12.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-13.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-14.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-15.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-18.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-19.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-21.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-23.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-24.png",
+    "color": 3
+  },
+  {
+    "file": "normal-yukine-enhanced-3-27.png",
+    "color": 3
+  },
+  {
+    "file": "normal-third-board-0-0.png",
+    "color": 0
+  },
+  {
+    "file": "normal-third-board-0-1.png",
+    "color": 1
+  },
+  {
+    "file": "normal-third-board-0-2.png",
+    "color": 0
+  },
+  {
+    "file": "normal-third-board-0-3.png",
+    "color": 5
+  },
+  {
+    "file": "normal-third-board-0-4.png",
+    "color": 2
+  },
+  {
+    "file": "normal-third-board-0-5.png",
+    "color": 5
+  },
+  {
+    "file": "normal-third-board-0-6.png",
+    "color": 3
+  },
+  {
+    "file": "normal-third-board-0-7.png",
+    "color": 5
+  },
+  {
+    "file": "normal-third-board-0-8.png",
+    "color": 4
+  },
+  {
+    "file": "normal-third-board-0-9.png",
+    "color": 5
+  },
+  {
+    "file": "normal-third-board-0-10.png",
+    "color": 2
+  },
+  {
+    "file": "normal-third-board-0-11.png",
+    "color": 3
+  },
+  {
+    "file": "normal-third-board-0-12.png",
+    "color": 2
+  },
+  {
+    "file": "normal-third-board-0-13.png",
+    "color": 0
+  },
+  {
+    "file": "normal-third-board-0-14.png",
+    "color": 4
+  },
+  {
+    "file": "normal-third-board-0-15.png",
+    "color": 3
+  },
+  {
+    "file": "normal-third-board-0-16.png",
+    "color": 4
+  },
+  {
+    "file": "normal-third-board-0-17.png",
+    "color": 5
+  },
+  {
+    "file": "normal-third-board-0-18.png",
+    "color": 3
+  },
+  {
+    "file": "normal-third-board-0-19.png",
+    "color": 3
+  },
+  {
+    "file": "normal-third-board-0-20.png",
+    "color": 1
+  },
+  {
+    "file": "normal-third-board-0-21.png",
+    "color": 0
+  },
+  {
+    "file": "normal-third-board-0-22.png",
+    "color": 1
+  },
+  {
+    "file": "normal-third-board-0-23.png",
+    "color": 4
+  },
+  {
+    "file": "normal-third-board-0-24.png",
+    "color": 0
+  },
+  {
+    "file": "normal-third-board-0-25.png",
+    "color": 1
+  },
+  {
+    "file": "normal-third-board-0-26.png",
+    "color": 2
+  },
+  {
+    "file": "normal-third-board-0-27.png",
+    "color": 4
+  },
+  {
+    "file": "normal-third-board-0-28.png",
+    "color": 0
+  },
+  {
+    "file": "normal-third-board-0-29.png",
+    "color": 4
+  },
+  {
+    "file": "normal-third-board-1-4.png",
+    "color": 2
+  },
+  {
+    "file": "normal-third-board-1-22.png",
+    "color": 1
+  },
+  {
+    "file": "normal-third-board-1-24.png",
+    "color": 0
+  },
+  {
+    "file": "normal-third-board-1-27.png",
+    "color": 4
+  },
+  {
+    "file": "normal-third-board-2-4.png",
+    "color": 2
+  },
+  {
+    "file": "normal-third-board-2-22.png",
+    "color": 1
+  },
+  {
+    "file": "normal-third-board-2-24.png",
+    "color": 0
+  },
+  {
+    "file": "normal-third-board-2-27.png",
+    "color": 4
+  },
+  {
+    "file": "normal-third-board-3-4.png",
+    "color": 2
+  },
+  {
+    "file": "normal-third-board-3-22.png",
+    "color": 1
+  },
+  {
+    "file": "normal-third-board-3-24.png",
+    "color": 0
+  },
+  {
+    "file": "normal-third-board-3-27.png",
+    "color": 4
+  },
+  {
+    "file": "normal-third-board-4-4.png",
+    "color": 2
+  },
+  {
+    "file": "normal-third-board-4-22.png",
+    "color": 1
+  },
+  {
+    "file": "normal-third-board-4-24.png",
+    "color": 0
+  },
+  {
+    "file": "normal-third-board-4-27.png",
+    "color": 4
+  },
+  {
+    "file": "normal-third-board-5-4.png",
+    "color": 2
+  },
+  {
+    "file": "normal-third-board-5-22.png",
+    "color": 1
+  },
+  {
+    "file": "normal-third-board-5-24.png",
+    "color": 0
+  },
+  {
+    "file": "normal-third-board-5-27.png",
+    "color": 4
+  },
+  {
+    "file": "normal-third-board-6-4.png",
+    "color": 2
+  },
+  {
+    "file": "normal-third-board-6-22.png",
+    "color": 1
+  },
+  {
+    "file": "normal-third-board-6-24.png",
+    "color": 0
+  },
+  {
+    "file": "normal-third-board-6-27.png",
+    "color": 4
+  },
+  {
+    "file": "normal-third-board-7-4.png",
+    "color": 2
+  },
+  {
+    "file": "normal-third-board-7-22.png",
+    "color": 1
+  },
+  {
+    "file": "normal-third-board-7-24.png",
+    "color": 0
+  },
+  {
+    "file": "normal-third-board-7-27.png",
+    "color": 4
+  },
+  {
+    "file": "normal-water-tag-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-tag-1.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-tag-2.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-tag-3.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-tag-4.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-tag-5.png",
+    "color": 3
+  },
+  {
+    "file": "normal-reviewed-heal-glow.png",
+    "color": 5
+  },
+  {
+    "file": "normal-water-tag-plus-0.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-tag-plus-1.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-tag-plus-2.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-tag-plus-3.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-tag-plus-4.png",
+    "color": 3
+  },
+  {
+    "file": "normal-water-tag-plus-5.png",
+    "color": 3
+  }
+]
