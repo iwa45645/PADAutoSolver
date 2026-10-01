@@ -1,0 +1,19 @@
+{
+  "capturedDate": "2026-10-02",
+  "monsterNo": 9411,
+  "level": 99,
+  "plus": 300,
+  "baseCooldown": 22,
+  "assistNo": 14052,
+  "assistAdditionalCooldown": 16,
+  "assistTotalCooldown": 38,
+  "latentDelayResistance": 4,
+  "otherLatents": [
+    "HP_PLUS",
+    "HP_PLUS"
+  ],
+  "transformedMonsterNo": 9412,
+  "transformedCooldown": 2,
+  "scope": "observed_sample_only_not_pinned",
+  "requiresRuntimeValidation": true
+}

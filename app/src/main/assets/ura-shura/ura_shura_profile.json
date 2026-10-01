@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "id": "ura_shura",
+  "displayName": "裏魔門の守護者",
+  "dataStatus": "startup_logic_tested_runtime_binding_pending",
+  "automaticEntryEnabled": false,
+  "floors": [
+    {
+      "floor": 1,
+      "recognitionStatus": "capture_required",
+      "possibleEnemies": [],
+      "skillDelays": [
+        3,
+        4,
+        5
+      ],
+      "safeStallAllowed": false,
+      "steps": [
+        {
+          "slot": 4,
+          "layer": "ASSIST",
+          "monsterNo": 2955,
+          "assistNo": 10862,
+          "skill": "かつての水柱",
+          "preconditions": [
+            "assist_ready_from_UI",
+            "identity_verified"
+          ],
+          "postconditions": [
+            "skill_consumed_from_UI",
+            "board_verified",
+            "water_count_at_least_9"
+          ]
+        },
+        {
+          "slot": 0,
+          "layer": "BASE",
+          "monsterNo": 14094,
+          "afterMonsterNo": 14095,
+          "baseCooldownAfter": 5,
+          "haste": 4,
+          "preconditions": [
+            "base_ready_from_UI",
+            "water_count_at_least_9"
+          ],
+          "postconditions": [
+            "transform_verified",
+            "haste_verified"
+          ]
+        },
+        {
+          "slot": 1,
+          "layer": "BASE",
+          "monsterNo": 7333,
+          "afterMonsterNo": 7334,
+          "baseCooldownAfter": 4,
+          "haste": 2,
+          "preconditions": [
+            "base_ready_from_UI"
+          ],
+          "postconditions": [
+            "transform_verified",
+            "haste_verified"
+          ]
+        },
+        {
+          "slot": 3,
+          "layer": "BASE",
+          "monsterNo": 10042,
+          "afterMonsterNo": 10043,
+          "baseCooldownAfter": 3,
+          "haste": 2,
+          "preconditions": [
+            "base_ready_from_UI"
+          ],
+          "postconditions": [
+            "transform_verified",
+            "haste_verified"
+          ]
+        },
+        {
+          "slot": 5,
+          "layer": "BASE",
+          "monsterNo": 9411,
+          "afterMonsterNo": 9412,
+          "baseCooldownAfter": 2,
+          "haste": 0,
+          "preconditions": [
+            "helper_runtime_verified",
+            "base_ready_from_UI"
+          ],
+          "postconditions": [
+            "transform_verified",
+            "skill_consumed_from_UI"
+          ]
+        },
+        {
+          "slot": 2,
+          "layer": "BASE",
+          "monsterNo": 3391,
+          "preconditions": [
+            "base_ready_from_UI",
+            "no_assist"
+          ],
+          "postconditions": [
+            "skill_consumed_from_UI",
+            "damage_and_attribute_absorb_void_verified"
+          ]
+        }
+      ],
+      "puzzleGoals": [
+        "WATER_TWO_COMBOS",
+        "MATCH_COMBO_DROP",
+        "HEAL_PREFERRED"
+      ],
+      "failureConditions": [
+        "TeamProfileMismatch",
+        "SKILL_READY_UNKNOWN",
+        "BOARD_UNKNOWN",
+        "POSTCONDITION_FAILED"
+      ]
+    },
+    {
+      "floor": 2,
+      "recognitionStatus": "capture_required",
+      "state": "SPECIAL_LUCIFER",
+      "possibleEnemies": [
+        "ルシファー"
+      ],
+      "safeStallAllowed": false,
+      "instructionSource": "current_device_message",
+      "puzzleGoals": [],
+      "failureConditions": [
+        "B2_CAPTURE_REQUIRED"
+      ]
+    }
+  ],
+  "unregisteredFloorAction": "STOP",
+  "evidenceNote": "変身後CD:実機の変身先表示を確認。ヘイストの実戦反映、敵/階層、B2課題は未確認。"
+}
