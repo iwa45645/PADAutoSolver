@@ -5,7 +5,13 @@ final class TeamIconMatch {
     static double distance(int[] a,int[] b) {
         if(a==null||b==null||a.length==0||a.length!=b.length)return 1;
         long error=0;
-        for(int i=0;i<a.length;i++)for(int shift:new int[]{16,8,0})error+=Math.abs(((a[i]>>>shift)&255)-((b[i]>>>shift)&255));
+        // Avoid allocating a three-element array for every pixel in every orb reference.
+        for(int i=0;i<a.length;i++) {
+            int left=a[i],right=b[i];
+            error+=Math.abs(((left>>>16)&255)-((right>>>16)&255))
+                    +Math.abs(((left>>>8)&255)-((right>>>8)&255))
+                    +Math.abs((left&255)-(right&255));
+        }
         return error/(a.length*3.0*255);
     }
     static boolean matches(int[] live,int[][] references,int slot) {

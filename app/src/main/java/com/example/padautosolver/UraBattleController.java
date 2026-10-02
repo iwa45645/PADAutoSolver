@@ -248,7 +248,7 @@ final class UraBattleController {
         List<StagePolicy.Item> lines;
         if(phase==11) {
             if(vision.board(frame)==null||vision.enemyDistance(frame)>.055)return retry(frame,List.of(),"B1_PUZZLE_SCENE_REQUIRED",time,seq);
-            lines=nav.readUraCombat(frame);
+            lines=nav.readUraMenuControl(frame);
             StagePolicy.Item menu=UraCombatText.control(lines,"MENU",500,620);
             if(menu==null)return retry(frame,lines,"MENU_CONTROL_REQUIRED",time,seq);
             return action(menu,"B1：吸収無効の現在表示を確認",()->{phase=12;reset();});
@@ -293,6 +293,8 @@ final class UraBattleController {
         }
         if(phase==16) {
             byte[] live=vision.board(frame);
+            if(live==null&&puzzlePlan!=null&&now()-puzzlePlan.plannedAt<=15000&&now()-buffsVerifiedAt<=25000)
+                return waitFor("B1：発光が収まった新しい盤面で経路を再確認");
             if(puzzlePlan==null||!puzzlePlan.current(live,now())||now()-buffsVerifiedAt>25000)return stop(frame,List.of(),"STALE_PUZZLE_OR_BUFF_EVIDENCE",time,seq);
             if(vision.enemyDistance(frame)>.055)return stop(frame,List.of(),"PUZZLE_SCENE_CHANGED",time,seq);
             StagePolicy.Decision d=action(new StagePolicy.Item("URA_B1_PUZZLE",610,1700),"B1：水2セット＋回復を連続ドラッグ",()->{enteredAt=now();phase=17;reset();});

@@ -101,6 +101,9 @@ final class StageNavigator {
         }
         return lines;
     }
+    List<StagePolicy.Item> readUraMenuControl(Bitmap frame)throws Exception {
+        return readCrop(frame,.86f,.19f,.998f,.22f,false,false,3);
+    }
     List<StagePolicy.Item> readLuciferInstruction(Bitmap frame)throws Exception {
         List<StagePolicy.Item> out=readCrop(frame,.15f,.225f,.85f,.29f,false,false,3);
         out.addAll(readCrop(frame,.15f,.225f,.85f,.29f,true,true,3));
