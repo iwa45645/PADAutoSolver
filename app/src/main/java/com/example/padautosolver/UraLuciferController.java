@@ -21,6 +21,8 @@ final class UraLuciferController {
     private byte[] previousBoard,stableBoard;
     private boolean observationOnly;
     private boolean floorEvidenceSaved,dispatchPrepared;
+    private long menuOpenedAt;
+    private int menuAttempts;
     private final UraInstructionCapture instructionCapture=new UraInstructionCapture();
     void captureInstruction(Bitmap frame,long capturedAt,long seq) {
         if(phase==4&&capturedAt>=actionAt&&capturedAt-actionAt<=15000)instructionCapture.capture(frame,capturedAt,seq);
@@ -40,6 +42,25 @@ final class UraLuciferController {
     static boolean isScene(Context context,Bitmap frame)throws Exception {return new UraBattleVision(context).lucifer(frame);}
     static UraLuciferController resume(Context context,Bitmap live)throws Exception {
         UraLuciferController c=new UraLuciferController(context);
+        File pendingState=new File(context.getFilesDir(),"ura-lucifer-state.json");
+        File pendingPicture=new File(context.getFilesDir(),"ura-lucifer-state.png");
+        if(pendingState.isFile()&&pendingPicture.isFile()) {
+            JSONObject saved=new JSONObject(new String(Files.readAllBytes(pendingState.toPath()),StandardCharsets.UTF_8));
+            // A consumed ALL gesture may already be on B3. Resume floor observation only,
+            // from the exact last native checkpoint; never recreate or replay its plan.
+            if(saved.optInt("phase")==6&&saved.optInt("trial",-1)==2&&saved.optBoolean("awaitingResult")&&"ALL".equals(saved.optString("instruction"))) {
+                Bitmap old=BitmapFactory.decodeFile(pendingPicture.getPath());boolean same=false;
+                try {
+                    byte[] oldBoard=old==null?null:c.vision.luciferBoard(old),liveBoard=c.vision.luciferBoard(live);
+                    same=oldBoard!=null&&liveBoard!=null&&Arrays.equals(oldBoard,liveBoard)&&UraBattleVision.sameRunPortraits(old,live);
+                }finally{if(old!=null)old.recycle();}
+                if(same) {
+                    for(Iterator<String> it=saved.keys();it.hasNext();){String key=it.next();c.record.put(key,saved.get(key));}
+                    c.record.remove("failureReason");c.record.put("resumeEvidence","Same native phase-6 checkpoint; floor observation only");
+                    c.phase=5;c.trial=2;c.instruction=LuciferInstruction.ALL;c.observationOnly=true;return c;
+                }
+            }
+        }
         if(!c.vision.lucifer(live))return null;
         byte[] board=c.vision.luciferBoard(live);if(board==null)return null;
         File stateFile=new File(context.getFilesDir(),"ura-lucifer-state.json");
@@ -113,11 +134,18 @@ final class UraLuciferController {
             StagePolicy.Item menu=UraCombatText.control(lines,"MENU",500,620);
             if(menu==null)return retry(frame,lines,"B2_MENU_REQUIRED",capturedAt,seq);
             int next=phase==0?1:6;
-            return action(menu,"B2：現在の階層を確認",()->{phase=next;floorEvidenceSaved=false;misses=0;});
+            return action(menu,"B2：現在の階層を確認",()->{phase=next;floorEvidenceSaved=false;misses=0;menuOpenedAt=now();menuAttempts=1;});
         }
         if(phase==1||phase==6) {
             lines=nav.readUraCombat(frame);int floor=UraCombatText.floor(lines);
-            if(floor<0||!UraCombatText.joined(lines).contains("裏魔門の守護者"))return retry(frame,lines,"B2_FLOOR_CAPTURE_REQUIRED",capturedAt,seq);
+            if(floor<0||!UraCombatText.joined(lines).contains("裏魔門の守護者")) {
+                if(UraCombatText.blocked(lines))return stop(frame,lines,"B2_GAME_OVER_OR_PURCHASE",capturedAt,seq);
+                StagePolicy.Item menu=UraCombatText.control(lines,"MENU",500,620);
+                if(now()-menuOpenedAt<2500)return waitFor("B2：階層メニューが開くまで待機");
+                if(menu!=null&&menuAttempts<3&&!UraCombatText.joined(lines).contains("裏魔門の守護者"))
+                    return action(menu,"B2：画面切替後のメニューを再確認",()->{menuOpenedAt=now();menuAttempts++;misses=0;});
+                return retry(frame,lines,"B2_FLOOR_CAPTURE_REQUIRED",capturedAt,seq);
+            }
             if(phase==1&&floor!=2)return stop(frame,lines,"B2_WRONG_FLOOR:"+floor,capturedAt,seq);
             if(phase==6&&floor!=3)return stop(frame,lines,"B2_CLEAR_NOT_VERIFIED:"+floor,capturedAt,seq);
             record.put("observedFloor",floor);

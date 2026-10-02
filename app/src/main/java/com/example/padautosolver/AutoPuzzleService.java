@@ -308,14 +308,13 @@ public class AutoPuzzleService extends Service {
                 if(loopEnabled&&uraResumeRequested) {
                     uraResumeRequested=false;
                     if(prefs.getString("operationMode","").equals("URA_SHURA_AUTO")) {
-                        if(UraLuciferController.isScene(this,bitmap)) {
-                            uraLucifer=UraLuciferController.resume(this,bitmap);
-                            if(uraLucifer==null){
+                        uraLucifer=UraLuciferController.resume(this,bitmap);
+                        if(uraLucifer!=null) {
+                            clearUraBattle();uraPreflight=null;
+                        } else if(UraLuciferController.isScene(this,bitmap)) {
                                 bitmap.recycle();
                                 if(++uraResumeAttempts<4){uraResumeRequested=true;scheduleLoop(500);return;}
                                 pauseLoop("B2_RESUME_EVIDENCE_REQUIRED：実指示と現在盤面を再確認できないため停止");return;
-                            }
-                            clearUraBattle();uraPreflight=null;
                         }
                         UraBattleController resumed=uraLucifer==null?UraBattleController.resumePausedB1(this,bitmap):null;
                         if(resumed==null&&uraLucifer==null)resumed=UraBattleController.currentB1(this,bitmap);
