@@ -28,6 +28,7 @@ final class UraBattleController {
     private Integer monitorBefore;
     private UraHeldSkillInfo heldSkill;
     private boolean heldSekkaPostHeading;
+    private boolean hasteEvidenceSaved;
     private UraPuzzlePlan puzzlePlan;
     private long buffsVerifiedAt;
     private long heldAt,heldSequence;
@@ -348,14 +349,15 @@ final class UraBattleController {
         Runnable verified=()->{lastAssistRemaining[step==1?3:0]=heldSkill.assistRemaining;advance();reset();};
         if(read!=null) {
             if(!vision.backControl(frame,read)||!read.named(step==1?BEFORE[3]:AFTER[1]))return retry(frame,lines,"HASTE_WITNESS_MODAL_REQUIRED",time,seq);
-            save(frame,lines,"post-haste-"+step,time,seq);return close(read,"ヘイスト反映を確認",verified);
+            if(!hasteEvidenceSaved){save(frame,lines,"post-haste-"+step,time,seq);hasteEvidenceSaved=true;return waitFor("ヘイストの記録後に新しい画面で戻るボタンを確認");}
+            return close(read,"ヘイスト反映を確認",verified);
         }
         if(heldSkill.baseRemaining==null||heldSkill.baseRemaining<1||vision.enemyDistance(frame)>.055||vision.board(frame)==null)return retry(frame,lines,"HASTE_WITNESS_SCENE_REQUIRED",time,seq);
         save(frame,lines,"post-haste-"+step,time,seq);verified.run();return waitFor("ヘイスト反映を確認");
     }
     private static int count(byte[] b,int color){int n=0;for(byte c:b)if(c==color)n++;return n;}
     private static long now(){return android.os.SystemClock.elapsedRealtime();}
-    private void reset(){misses=stable=0;}
+    private void reset(){misses=stable=0;hasteEvidenceSaved=false;}
     private StagePolicy.Decision close(UraDialogPolicy.Read read,String text,Runnable done){return action(read.back,text,done);}
     private StagePolicy.Decision action(StagePolicy.Item item,String text,Runnable done){StagePolicy.Decision d=new StagePolicy.Decision(item,text,false);d.holdMs=160;d.completed=done;return d;}
     private StagePolicy.Decision waitFor(String text){return new StagePolicy.Decision(null,text,false);}
