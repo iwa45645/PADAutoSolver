@@ -6,7 +6,7 @@ import android.view.View;
 final class UraRoutePreview extends View {
  private final byte[] board;private final java.util.List<Integer> route;
  private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
- private static final int[] COLORS={0xffe95535,0xffe2bd30,0xff49aa63,0xff368bdd,0xff965db2,0xffef83b0};
+ private static final int[] COLORS={0xffe95535,0xffe2bd30,0xff49aa63,0xff368bdd,0xff965db2,0xffef83b0,0xff46627a,0xffac6ac2,0xff333333,0xff442244};
  UraRoutePreview(Context context,UraPuzzlePlan plan){super(context);board=plan.previewBoard();route=plan.path;}
  @Override protected void onDraw(Canvas canvas){
   float cell=getWidth()/6f;canvas.drawColor(0xff182847);

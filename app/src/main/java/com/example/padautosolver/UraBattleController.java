@@ -20,8 +20,10 @@ final class UraBattleController {
     private final UraBattleVision vision;
     private final int helperAssistTotal;
     private final boolean dryOnly;
-    private int phase,step,misses,stable;
-    private long enteredAt,lastSequence=-1,actionSequence=-1,actionAt;
+    private volatile int phase;
+    private int step,misses,stable;
+    private volatile long enteredAt;
+    private long lastSequence=-1,actionSequence=-1,actionAt;
     private byte[] boardBefore;
     private Integer monitorBefore;
     private UraHeldSkillInfo heldSkill;
@@ -31,6 +33,11 @@ final class UraBattleController {
     private long heldAt,heldSequence;
     private final Integer[] lastAssistRemaining=new Integer[6];
     private final JSONObject run=new JSONObject();
+    private final UraInstructionCapture instructionCapture=new UraInstructionCapture();
+    void captureInstruction(Bitmap image,long time,long sequence) {
+        if(phase==17&&time>=enteredAt&&time-enteredAt<=45000)instructionCapture.capture(image,time,sequence);
+    }
+    void close(){instructionCapture.close();}
     UraBattleController(Context context,int helperAssistTotal,boolean dryOnly)throws Exception {
         this.context=context;this.vision=new UraBattleVision(context);this.helperAssistTotal=helperAssistTotal;this.dryOnly=dryOnly;
         run.put("runId",UUID.randomUUID().toString()).put("startedAt",System.currentTimeMillis()).put("helperAssistTotal",helperAssistTotal).put("dryOnly",dryOnly);
@@ -288,10 +295,11 @@ final class UraBattleController {
             byte[] live=vision.board(frame);
             if(puzzlePlan==null||!puzzlePlan.current(live,now())||now()-buffsVerifiedAt>25000)return stop(frame,List.of(),"STALE_PUZZLE_OR_BUFF_EVIDENCE",time,seq);
             if(vision.enemyDistance(frame)>.055)return stop(frame,List.of(),"PUZZLE_SCENE_CHANGED",time,seq);
-            StagePolicy.Decision d=action(new StagePolicy.Item("URA_B1_PUZZLE",610,1700),"B1：水2セット＋回復を連続ドラッグ",()->{phase=17;enteredAt=now();reset();});
+            StagePolicy.Decision d=action(new StagePolicy.Item("URA_B1_PUZZLE",610,1700),"B1：水2セット＋回復を連続ドラッグ",()->{enteredAt=now();phase=17;reset();});
             d.puzzlePath=puzzlePlan.path;d.puzzleCols=6;d.puzzleRows=5;d.puzzleRect=BoardGeometry.calculate(1220,2712,6,5,0,84);d.puzzleDurationMs=3000;return d;
         }
         if(phase==17) {
+            instructionCapture.read(context,nav,run.getString("runId"),-1,"b1-lucifer-command");
             lines=nav.readUraCombat(frame);
             save(frame,lines,"puzzle-result-observation",time,seq);
             String observed=UraCombatText.joined(lines);

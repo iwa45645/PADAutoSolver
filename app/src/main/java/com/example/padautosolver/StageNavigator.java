@@ -101,6 +101,18 @@ final class StageNavigator {
         }
         return lines;
     }
+    List<StagePolicy.Item> readLuciferInstruction(Bitmap frame)throws Exception {
+        List<StagePolicy.Item> out=readCrop(frame,.15f,.225f,.85f,.29f,false,false,3);
+        out.addAll(readCrop(frame,.15f,.225f,.85f,.29f,true,true,3));
+        return out;
+    }
+    List<StagePolicy.Item> readLuciferStrip(Bitmap strip)throws Exception {
+        List<StagePolicy.Item> out=new ArrayList<>();
+        for(var item:readCrop(strip,0,0,1,1,false,false,2))out.add(new StagePolicy.Item(item.rawText,item.x+180,item.y+620));
+        if(LuciferInstruction.read(out)==null)
+            for(var item:readCrop(strip,0,0,1,1,true,true,2))out.add(new StagePolicy.Item(item.rawText,item.x+180,item.y+620));
+        return out;
+    }
     List<StagePolicy.Item> readUraHeldSkill(Bitmap frame)throws Exception {
         List<StagePolicy.Item> out=readCrop(frame,.02f,.20f,.97f,.40f,false,false,3);
         for(var item:readCrop(frame,.002f,.083f,.74f,.110f,false,false,3))

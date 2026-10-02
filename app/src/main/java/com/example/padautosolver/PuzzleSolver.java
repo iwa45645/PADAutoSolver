@@ -147,7 +147,7 @@ public final class PuzzleSolver {
 
     public static final class MatchStats {
         public int combos, matched, comboDropsMatched;
-        public final int[] colorCombos = new int[10], squares = new int[10], lShapes = new int[10], crosses = new int[10];
+        public final int[] colorCombos = new int[10], colorMatched = new int[10], squares = new int[10], lShapes = new int[10], crosses = new int[10];
     }
 
     /** Deterministic cascades only: no invented skyfall, roulette timing, or obscured cells. */
@@ -182,6 +182,7 @@ public final class PuzzleSolver {
                 remaining &= ~component;
                 result.combos++; result.colorCombos[color]++;
                 int size = Long.bitCount(component);
+                result.colorMatched[color]+=size;
                 if (size == 9) {
                     for (int y=0;y<=rows-3;y++) for(int x=0;x<=cols-3;x++) {
                         long shape=0;for(int dy=0;dy<3;dy++)for(int dx=0;dx<3;dx++)shape|=1L<<((y+dy)*cols+x+dx);

@@ -41,7 +41,9 @@ final class UraBattleVision {
         for(int slot=0;slot<6;slot++)for(int y:new int[]{1380,1500}) {
             int x=60+slot*203;Bitmap before=Bitmap.createBitmap(previous,x,y,100,30);
             Bitmap scaled=Bitmap.createScaledBitmap(before,48,16,true);int[] ref=pixels(scaled);scaled.recycle();before.recycle();double best=1;
-            for(int dx=-8;dx<=8;dx+=4)for(int dy=-8;dy<=8;dy+=4){
+            // The six portraits bob independently by up to 20 px on this device.
+            // Keep each artwork band and its distance limit; account for that observed motion.
+            for(int dx=-8;dx<=8;dx+=4)for(int dy=-24;dy<=24;dy+=4){
                 Bitmap crop=Bitmap.createBitmap(live,x+dx,y+dy,100,30),small=Bitmap.createScaledBitmap(crop,48,16,true);
                 best=Math.min(best,TeamIconMatch.distance(ref,pixels(small)));small.recycle();crop.recycle();
             }
@@ -67,6 +69,16 @@ final class UraBattleVision {
         }
         return worst;
     }
+    boolean lucifer(Bitmap frame)throws Exception {
+        if(frame.getWidth()!=1220||frame.getHeight()!=2712)return false;
+        double best=1;
+        for(int dx=-12;dx<=12;dx+=4)for(int dy=-12;dy<=12;dy+=4)
+            best=Math.min(best,distance(frame,"b2-lucifer-face.png",370+dx,610+dy,390,380));
+        return best<.055;
+    }
+    boolean poisonInstruction(Bitmap frame)throws Exception {
+        return distance(frame,"b2-poison-instruction.png",210,635,800,80)<.025;
+    }
     boolean active(Bitmap frame,StagePolicy.Item target) {
         if(target==null||target.x<120||target.y<1500||target.x>1100||target.y>2500)return false;
         Bitmap crop=Bitmap.createBitmap(frame,Math.round(target.x)-65,Math.round(target.y)-35,130,70);
@@ -78,28 +90,31 @@ final class UraBattleVision {
         for(int dy=-8;dy<=8;dy+=2)best=Math.min(best,distance(frame,"b1-back-control.png",675,Math.round(read.back.y)-34+dy,234,68));
         return best<.045;
     }
-    byte[] board(Bitmap frame)throws Exception {
+    byte[] board(Bitmap frame)throws Exception {return board(frame,false);}
+    byte[] luciferBoard(Bitmap frame)throws Exception {return board(frame,true);}
+    private byte[] board(Bitmap frame,boolean special)throws Exception {
         if(normalReferences==null)try(InputStream in=context.getAssets().open("ura-shura/normal-orbs.json")) {
             ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] bytes=new byte[4096];int read;
             while((read=in.read(bytes))!=-1)out.write(bytes,0,read);
             normalReferences=new JSONArray(out.toString("UTF-8"));
         }
-        // B1 normal-orb fixtures only. Unrecognised artwork is UNKNOWN, never a hue-only guess.
+        // Reviewed B1/B2 orb fixtures. Unrecognised artwork is UNKNOWN, never a hue-only guess.
         byte[] board=new byte[30];boardDistances=new double[30];
         for(int cell=0;cell<30;cell++) {
             float size=1220f/6,top=2712-84-5*size;
             Bitmap crop=Bitmap.createBitmap(frame,Math.round((cell%6+.5f)*size)-80,Math.round(top+(cell/6+.5f)*size)-80,160,160);
             Bitmap small=Bitmap.createScaledBitmap(crop,48,48,true);int[] live=pixels(small);small.recycle();crop.recycle();
-            double[] byColor={1,1,1,1,1,1};
+            double[] byColor=new double[special?10:6];Arrays.fill(byColor,1);
             for(int i=0;i<normalReferences.length();i++) {
                 JSONObject reference=normalReferences.getJSONObject(i);
                 int refColor=reference.getInt("color");String name=reference.getString("file");
+                if(refColor>=byColor.length)continue;
                 int[] ref=orbReferences.get(name);
                 if(ref==null){Bitmap scaled=Bitmap.createScaledBitmap(template(name),48,48,true);ref=pixels(scaled);scaled.recycle();orbReferences.put(name,ref);}
                 byColor[refColor]=Math.min(byColor[refColor],TeamIconMatch.distance(live,ref));
             }
-            int color=0;for(int c=1;c<6;c++)if(byColor[c]<byColor[color])color=c;
-            double other=1;for(int c=0;c<6;c++)if(c!=color)other=Math.min(other,byColor[c]);
+            int color=0;for(int c=1;c<byColor.length;c++)if(byColor[c]<byColor[color])color=c;
+            double other=1;for(int c=0;c<byColor.length;c++)if(c!=color)other=Math.min(other,byColor[c]);
             boardDistances[cell]=byColor[color];
             if(byColor[color]>.07||other-byColor[color]<.035)return null;
             board[cell]=(byte)color;

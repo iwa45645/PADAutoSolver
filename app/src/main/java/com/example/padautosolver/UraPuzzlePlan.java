@@ -11,6 +11,10 @@ final class UraPuzzlePlan {
         if(source==null||source.length!=30||result==null||goal==null)throw new IllegalArgumentException("Invalid plan input");
         for(byte orb:source)if(orb<0||orb>9)throw new IllegalArgumentException("Unknown orb");
         this.board=source.clone();this.path=Collections.unmodifiableList(new ArrayList<>(result.path));this.goal=goal;this.plannedAt=plannedAt;
+        if(goal.type==PuzzleGoal.Type.CLEAR_COLOR) {
+            int count=0;for(byte orb:source)if(orb==goal.color)count++;
+            if(count!=goal.exactCombos)throw new IllegalArgumentException("Target count differs from source board");
+        }
         byte[] replay=source.clone();
         if(path.isEmpty())throw new IllegalArgumentException("Empty route");
         for(int i=0;i<path.size();i++) {

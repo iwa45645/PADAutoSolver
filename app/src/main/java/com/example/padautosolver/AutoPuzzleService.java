@@ -68,7 +68,8 @@ public class AutoPuzzleService extends Service {
     private View uraPreview;
     private UraShuraInspector uraInspector;
     private UraPreflightController uraPreflight;
-    private UraBattleController uraBattle;
+    private volatile UraBattleController uraBattle;
+    private volatile UraLuciferController uraLucifer;
     private boolean uraResumeRequested;
     private volatile long uraDecisionCapturedAt;
     private volatile boolean recordDetail;
@@ -114,7 +115,8 @@ public class AutoPuzzleService extends Service {
             uraMode=isUraMode(prefs.getString("operationMode","farm"));
             uraInspector=null;
             uraPreflight=null;
-            uraBattle=null;
+            clearUraBattle();
+            clearLucifer();
             boxScanner=null; detailScanner=null; recordDetail=false;
             pendingControl="";
             removeBubble();
@@ -238,6 +240,13 @@ public class AutoPuzzleService extends Service {
                 if (latestFrame != null) latestFrame.recycle();
                 latestFrame = next;
                 latestFrameSequence++;
+                UraBattleController battle=uraBattle;
+                UraLuciferController lucifer=uraLucifer;
+                PuzzleAccessibilityService liveAccessibility=PuzzleAccessibilityService.getInstance();
+                if(uraMode&&loopEnabled&&lucifer!=null&&liveAccessibility!=null&&liveAccessibility.isGameForeground())
+                    lucifer.captureInstruction(next,now,latestFrameSequence);
+                if(uraMode&&loopEnabled&&battle!=null&&liveAccessibility!=null&&liveAccessibility.isGameForeground())
+                    battle.captureInstruction(next,now,latestFrameSequence);
             } catch (IllegalStateException ignored) {
                 // Capture was released while the callback was queued.
             } finally { if (image != null) image.close(); }
@@ -299,23 +308,42 @@ public class AutoPuzzleService extends Service {
                 if(loopEnabled&&uraResumeRequested) {
                     uraResumeRequested=false;
                     if(prefs.getString("operationMode","").equals("URA_SHURA_AUTO")) {
-                        UraBattleController resumed=UraBattleController.resumePausedB1(this,bitmap);
-                        if(resumed==null)resumed=UraBattleController.currentB1(this,bitmap);
+                        if(UraLuciferController.isScene(this,bitmap)) {
+                            uraLucifer=UraLuciferController.resume(this,bitmap);
+                            if(uraLucifer==null){
+                                bitmap.recycle();
+                                if(++uraResumeAttempts<4){uraResumeRequested=true;scheduleLoop(500);return;}
+                                pauseLoop("B2_RESUME_EVIDENCE_REQUIRED：実指示と現在盤面を再確認できないため停止");return;
+                            }
+                            clearUraBattle();uraPreflight=null;
+                        }
+                        UraBattleController resumed=uraLucifer==null?UraBattleController.resumePausedB1(this,bitmap):null;
+                        if(resumed==null&&uraLucifer==null)resumed=UraBattleController.currentB1(this,bitmap);
                         if(resumed!=null){uraBattle=resumed;uraPreflight=null;}
                         else if(UraBattleController.isB1(this,bitmap)) {
                             bitmap.recycle();
                             if(++uraResumeAttempts<4){uraResumeRequested=true;scheduleLoop(500);return;}
                             pauseLoop("B1_RESUME_CAPTURE_REQUIRED：発動済みの状態を読み直せないため停止");return;
                         }
+                        else if(uraLucifer==null&&!UraScenePolicy.preentry(navigator.readUraPreentry(bitmap),2712)) {
+                            bitmap.recycle();
+                            if(++uraResumeAttempts<4){uraResumeRequested=true;scheduleLoop(500+uraResumeAttempts*97);return;}
+                            pauseLoop("BATTLE_RESUME_CAPTURE_REQUIRED：実戦画面を読み直せないため停止");return;
+                        }
                     }
                 }
-                if(loopEnabled&&(uraPreflight!=null||uraBattle!=null)) {
+                if(loopEnabled&&(uraPreflight!=null||uraBattle!=null||uraLucifer!=null)) {
                     long now=android.os.SystemClock.elapsedRealtime();
                     if(now<capturedAt||now-capturedAt>1500){bitmap.recycle();scheduleLoop(250);return;}
-                    StagePolicy.Decision decision=uraBattle!=null?uraBattle.inspect(bitmap,navigator,capturedAt,sequence):uraPreflight.inspect(bitmap,navigator,sequence);
+                    StagePolicy.Decision decision=uraLucifer!=null?uraLucifer.inspect(bitmap,navigator,capturedAt,sequence):uraBattle!=null?uraBattle.inspect(bitmap,navigator,capturedAt,sequence):uraPreflight.inspect(bitmap,navigator,sequence);
+                    if(decision.stop&&decision.status.equals("B1_CLEAR_VERIFIED_B2_CURRENT_INSTRUCTION_REQUIRED")) {
+                        UraLuciferController next=UraLuciferController.resume(this,bitmap);
+                        if(next!=null){uraLucifer=next;clearUraBattle();decision=new StagePolicy.Decision(null,"B1突破確認済み：B2の実指示から続行",false);}
+                    }
                     uraDecisionCapturedAt=capturedAt;
                     bitmap.recycle();
-                    mainHandler.post(()->{if(uraStatus!=null)uraStatus.setText(decision.status);});
+                    String uraDecisionStatus=decision.status;
+                    mainHandler.post(()->{if(uraStatus!=null)uraStatus.setText(uraDecisionStatus);});
                     if(uraPreflight!=null&&uraPreflight.validated&&uraBattle==null){uraBattle=new UraBattleController(this,uraPreflight.helperAssistTotal,prefs.getString("operationMode","").equals("URA_SHURA_DRY_RUN"));scheduleLoop(350);return;}
                     handleStageDecision(decision,generation);return;
                 }
@@ -637,7 +665,7 @@ public class AutoPuzzleService extends Service {
         inspect.setOnClickListener(v->{
             if(mediaProjection==null||busy.get())return;
             clearUraPreview();
-            try{uraBattle=UraBattleController.readOnlyB1(this);uraPreflight=null;pendingControl="";loopEnabled=true;
+            try{clearUraBattle();uraBattle=UraBattleController.readOnlyB1(this);clearLucifer();uraPreflight=null;pendingControl="";loopEnabled=true;
                 lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(350);
             }catch(Exception e){pauseLoop("Dry Runを開始できません："+e.getMessage());}
         });
@@ -649,7 +677,7 @@ public class AutoPuzzleService extends Service {
             if(loopEnabled||busy.get()){uraStatus.setText("処理中です。停止してから再開してください");return;}
             clearUraPreview();
             uraResumeAttempts=0;
-            try{uraPreflight=new UraPreflightController(this);uraBattle=null;uraResumeRequested=true;pendingControl="";loopEnabled=true;
+            try{uraPreflight=new UraPreflightController(this);clearUraBattle();clearLucifer();uraResumeRequested=true;pendingControl="";loopEnabled=true;
                 lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(350);
             }catch(Exception e){pauseLoop("編成確認を開始できません："+e.getMessage());}
         });
@@ -1008,8 +1036,22 @@ public class AutoPuzzleService extends Service {
         }
     }
 
+    private void clearUraBattle() {
+        UraBattleController previous=uraBattle;
+        uraBattle=null;
+        if(previous!=null)previous.close();
+    }
+
+    private void clearLucifer() {
+        UraLuciferController previous=uraLucifer;
+        uraLucifer=null;
+        if(previous!=null)previous.close();
+    }
+
     @Override
     public void onDestroy() {
+        clearUraBattle();
+        clearLucifer();
         getSharedPreferences("pad_solver",MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(modeListener);
         destroyed = true;
         loopEnabled = false;
