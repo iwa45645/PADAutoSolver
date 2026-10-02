@@ -117,6 +117,10 @@ public class PuzzleAccessibilityService extends AccessibilityService {
     }
     public void performDrag(List<Integer> route, RectF rect, int cols, int rows,
                             long durationMs, Runnable onDone,Runnable onFailure) {
+        performDrag(route,rect,cols,rows,durationMs,false,onDone,onFailure);
+    }
+    public void performDrag(List<Integer> route, RectF rect, int cols, int rows,
+                            long durationMs, boolean preciseStart, Runnable onDone,Runnable onFailure) {
         mainHandler.post(() -> {
             if (!isGameForeground() || controlRunning || active != null || route == null || route.isEmpty() || rect == null
                     || cols < 1 || rows < 1 || rect.width() <= 0 || rect.height() <= 0) {
@@ -131,7 +135,7 @@ public class PuzzleAccessibilityService extends AccessibilityService {
                     if (onFailure != null) onFailure.run(); return;
                 }
             }
-            active = new Drag(new ArrayList<>(route), new RectF(rect), cols, rows, durationMs, onDone,onFailure);
+            active = new Drag(new ArrayList<>(route), new RectF(rect), cols, rows, durationMs, preciseStart,onDone,onFailure);
             Drag started=active;
             mainHandler.postDelayed(()->{if(active==started){started.cancelled=true;started.finish(false);}},durationMs+2500);
             active.hold();
@@ -143,20 +147,23 @@ public class PuzzleAccessibilityService extends AccessibilityService {
         final RectF rect;
         final int cols, rows;
         final long perCellMs;
+        final boolean preciseStart;
         final Runnable onDone;
         final Runnable onFailure;
         int index;
         boolean cancelled, done;
         GestureDescription.StrokeDescription previous;
-        Drag(List<Integer> route, RectF rect, int cols, int rows, long limit, Runnable done,Runnable failure) {
+        Drag(List<Integer> route, RectF rect, int cols, int rows, long limit, boolean preciseStart, Runnable done,Runnable failure) {
             this.route = route; this.rect = rect; this.cols = cols; this.rows = rows; this.onDone = done;this.onFailure=failure;
-            perCellMs = Math.max(25, Math.min(route.size() <= 5 ? 100 : 60, (Math.max(200, limit) - 150) / Math.max(1, route.size() - 1)));
+            this.preciseStart=preciseStart;
+            perCellMs = Math.max(25, Math.min(preciseStart||route.size() <= 5 ? 100 : 60, (Math.max(500, limit) - (preciseStart?400:150)) / Math.max(1, route.size() - 1)));
         }
         float x(int at) { return BoardGeometry.centerX(rect, cols, route.get(at)); }
         float y(int at) { return BoardGeometry.centerY(rect, cols, rows, route.get(at)); }
         void hold() {
             Path path = new Path(); path.moveTo(x(0), y(0));
-            previous = new GestureDescription.StrokeDescription(path, 0, 100, true);
+            android.util.Log.i("PADSolver","dragStart cell="+route.get(0)+" x="+x(0)+" y="+y(0)+" precise="+preciseStart+" perCellMs="+perCellMs);
+            previous = new GestureDescription.StrokeDescription(path, 0, preciseStart?300:100, true);
             boolean accepted = dispatchGesture(new GestureDescription.Builder().addStroke(previous).build(), new GestureResultCallback() {
                 @Override public void onCompleted(GestureDescription gesture) { next(); }
                 @Override public void onCancelled(GestureDescription gesture) { android.util.Log.i("PADSolver", "dragCancelled=hold"); finish(false); }
@@ -167,9 +174,11 @@ public class PuzzleAccessibilityService extends AccessibilityService {
             if (done) return;
             if(cancelled || !isGameForeground()){finish(false);return;}
             Path path = new Path(); path.moveTo(x(index), y(index));
-            int end = cancelled ? index : Math.min(route.size() - 1, index + 5);
+            // The failed ALL board exactly matched a route missing its first swap.
+            // Keep the first movement separate so the game has acquired the starting orb.
+            int end = Math.min(route.size() - 1, index + (preciseStart&&index==0?1:5));
             for (int i = index + 1; i <= end; i++) path.lineTo(x(i), y(i));
-            boolean more = !cancelled && end < route.size() - 1;
+            boolean more = preciseStart || end < route.size() - 1;
             long duration = end == index ? 1 : (end - index) * perCellMs;
             GestureDescription.StrokeDescription stroke = previous == null
                     ? new GestureDescription.StrokeDescription(path, 0, duration, more)
@@ -178,11 +187,22 @@ public class PuzzleAccessibilityService extends AccessibilityService {
             GestureDescription gesture = new GestureDescription.Builder().addStroke(stroke).build();
             boolean accepted = dispatchGesture(gesture, new GestureResultCallback() {
                 @Override public void onCompleted(GestureDescription description) {
-                    if (more) next(); else finish(true);
+                    android.util.Log.i("PADSolver","dragReached cell="+route.get(index)+" index="+index);
+                    if(preciseStart&&index==route.size()-1)release();
+                    else if (more) next(); else finish(true);
                 }
                 @Override public void onCancelled(GestureDescription description) { android.util.Log.i("PADSolver", "dragCancelled=move"); finish(false); }
             }, mainHandler);
             if (!accepted) finish(false);
+        }
+        void release() {
+            if(done)return;
+            Path path=new Path();path.moveTo(x(index),y(index));
+            GestureDescription.StrokeDescription stroke=previous.continueStroke(path,0,100,false);
+            if(!dispatchGesture(new GestureDescription.Builder().addStroke(stroke).build(),new GestureResultCallback(){
+                @Override public void onCompleted(GestureDescription description){finish(true);}
+                @Override public void onCancelled(GestureDescription description){finish(false);}
+            },mainHandler))finish(false);
         }
         void finish(boolean success) {
             if (done) return;

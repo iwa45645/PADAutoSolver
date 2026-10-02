@@ -37,7 +37,7 @@ public class LuciferInstructionTest {
         assertTrue(LuciferInstruction.POISON.goal(b).satisfied(s,30));assertFalse(LuciferInstruction.ALL.goal(b).satisfied(s,30));
     }
     @Test public void observedTwoColorBoardCanBeFullyClearedWithoutAssumingSkyfall(){
-        byte[] b={1,1,1,3,3,1,1,3,1,1,1,3,3,1,3,3,3,1,3,3,3,3,1,1,1,1,1,3,3,3};
+        byte[] b={1,1,1,3,3,1,1,3,1,1,1,3,3,1,3,3,3,1,3,1,3,3,3,1,1,1,3,3,3,1};
         var goal=LuciferInstruction.ALL.goal(b);
         var result=PuzzleSolver.solve(b,6,5,48,3000,0,goal);
         assertTrue(result.goalSatisfied);
@@ -53,5 +53,17 @@ public class LuciferInstructionTest {
         var plan=new UraPuzzlePlan(b,result,goal,100);
         assertEquals(30,plan.stats.matched);
         assertEquals(11,plan.stats.colorMatched[1]);assertEquals(19,plan.stats.colorMatched[3]);
+    }
+    @Test public void observedFailedAllBoardMatchesMissingFirstSwap() {
+        byte[] source={1,3,3,3,1,1,3,3,3,3,1,3,3,1,3,3,3,1,1,3,3,1,3,3,3,3,3,1,1,1};
+        List<Integer> path=List.of(16,17,23,22,21,20,14,13,12,18,19,13,12,6,0,1,2,3,9,10);
+        var full=new UraPuzzlePlan(source,new PuzzleSolver.Result(path,7,30,19,0,0,true),LuciferInstruction.ALL.goal(source),100);
+        assertEquals(30,full.stats.matched);
+        byte[] missed=source.clone();
+        for(int i=2;i<path.size();i++){int from=path.get(i-1),to=path.get(i);byte swap=missed[from];missed[from]=missed[to];missed[to]=swap;}
+        byte[] observed={3,3,3,3,1,1,1,3,3,1,1,3,3,1,1,3,3,3,3,3,3,3,1,3,3,3,3,1,1,1};
+        assertArrayEquals(observed,missed);
+        assertEquals(28,PuzzleSolver.analyze(observed,6,5).matched);
+        assertFalse(LuciferInstruction.ALL.goal(source).satisfied(PuzzleSolver.analyze(observed,6,5),30));
     }
 }

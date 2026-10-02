@@ -178,7 +178,7 @@ final class UraLuciferController {
         StagePolicy.Decision d=action(new StagePolicy.Item("URA_B2_TRIAL_"+trial,610,1700),"B2："+label()+"を1回実行",()->{
             actionAt=now();phase=4;stable=misses=0;
         });
-        d.puzzlePath=plan.path;d.puzzleCols=6;d.puzzleRows=5;d.puzzleRect=BoardGeometry.calculate(1220,2712,6,5,0,84);d.puzzleDurationMs=3500;return d;
+        d.puzzlePath=plan.path;d.puzzleCols=6;d.puzzleRows=5;d.puzzleRect=BoardGeometry.calculate(1220,2712,6,5,0,84);d.puzzleDurationMs=3500;d.puzzlePreciseStart=true;return d;
     }
     private LuciferInstruction observed(Bitmap frame,List<StagePolicy.Item> lines)throws Exception {
         LuciferInstruction read=LuciferInstruction.read(lines);if(read!=null)return read;

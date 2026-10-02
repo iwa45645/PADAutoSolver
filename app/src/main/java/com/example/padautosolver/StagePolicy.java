@@ -30,6 +30,7 @@ final class StagePolicy {
         android.graphics.RectF puzzleRect;
         int puzzleCols,puzzleRows;
         long puzzleDurationMs;
+        boolean puzzlePreciseStart;
         UraPuzzlePlan previewPlan;
         Decision(Item target, String status, boolean stop) { this.target = target; this.status = status; this.stop = stop; }
     }

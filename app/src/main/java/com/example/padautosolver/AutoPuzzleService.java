@@ -793,7 +793,7 @@ public class AutoPuzzleService extends Service {
                 if(decision.puzzlePath!=null) {
                     clearUraPreview(); // Do not cover enemy messages during result/next-floor capture.
                     final int puzzleEpoch=selectionEpoch;
-                    service.performDrag(decision.puzzlePath,decision.puzzleRect,decision.puzzleCols,decision.puzzleRows,decision.puzzleDurationMs,()->{
+                    service.performDrag(decision.puzzlePath,decision.puzzleRect,decision.puzzleCols,decision.puzzleRows,decision.puzzleDurationMs,decision.puzzlePreciseStart,()->{
                         if(destroyed||generation!=captureGeneration||!loopEnabled||puzzleEpoch!=selectionEpoch)return;
                         if(decision.completed!=null)decision.completed.run();pendingControl="";
                         lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(250);
