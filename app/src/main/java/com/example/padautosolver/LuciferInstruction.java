@@ -11,6 +11,7 @@ enum LuciferInstruction {
             if(text.contains(UraDialogPolicy.clean("全ての毒を消してみるがいい")))next=POISON;
             if(text.contains(UraDialogPolicy.clean("次はコンボ禁止だ")))next=ZERO;
             if(text.contains(UraDialogPolicy.clean("全てのドロップを消してみるがいい")))next=ALL;
+            if(text.contains(UraDialogPolicy.clean("水、光を全て消すがいい")))next=ALL;
             if(next!=null){if(found!=null&&found!=next)return null;found=next;}
         }return found;
     }

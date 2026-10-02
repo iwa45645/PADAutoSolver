@@ -73,7 +73,11 @@ final class UraBattleController {
             Bitmap a=Bitmap.createBitmap(previous,24,760,1172,820),b=Bitmap.createBitmap(live,24,760,1172,820);
             Bitmap sa=Bitmap.createScaledBitmap(a,96,160,true),sb=Bitmap.createScaledBitmap(b,96,160,true);
             UraBattleVision vision=new UraBattleVision(context);byte[] oldBoard=vision.board(previous),liveBoard=vision.board(live);
-            same=oldBoard!=null&&liveBoard!=null&&Arrays.equals(oldBoard,liveBoard)
+            boolean boardMatches=oldBoard!=null&&liveBoard!=null&&Arrays.equals(oldBoard,liveBoard);
+            // A paused post-puzzle menu covers the special-orb board. Restore only menu
+            // navigation; phase 18 reads the actual floor again before returning to B2.
+            boolean verifiedB2Menu=state.getInt("phase")==18&&state.optInt("observedFloorAfterPuzzle")==2;
+            same=(boardMatches||verifiedB2Menu)
                     &&TeamIconMatch.distance(UraBattleVision.pixels(sa),UraBattleVision.pixels(sb))<.025&&UraBattleVision.sameRunPortraits(previous,live);
             sa.recycle();sb.recycle();a.recycle();b.recycle();
         }finally{previous.recycle();}
@@ -267,7 +271,13 @@ final class UraBattleController {
                 if(status==null)return retry(frame,lines,"STATUS_CONTROL_REQUIRED",time,seq);
                 return action(status,"B1：状況確認を開く",()->{phase=13;reset();});
             }
-            if(phase==18){run.put("observedFloorAfterPuzzle",floor);save(frame,lines,"after-puzzle-floor",time,seq);}
+            if(phase==18){
+                run.put("observedFloorAfterPuzzle",floor);
+                if(!run.optBoolean("postPuzzleFloorSaved")) {
+                    run.put("postPuzzleFloorSaved",true);save(frame,lines,"after-puzzle-floor",time,seq);
+                    return waitFor("実階層の記録後、新しい画面で戻るを再確認");
+                }
+            }
             StagePolicy.Item back=UraCombatText.control(lines,"戻る",2080,2220);
             if(back==null)return retry(frame,lines,"MENU_BACK_REQUIRED",time,seq);
             final int next=phase==14?15:19;

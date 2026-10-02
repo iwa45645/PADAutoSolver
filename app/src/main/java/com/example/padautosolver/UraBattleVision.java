@@ -79,6 +79,17 @@ final class UraBattleVision {
     boolean poisonInstruction(Bitmap frame)throws Exception {
         return distance(frame,"b2-poison-instruction.png",210,635,800,80)<.025;
     }
+    boolean poisonInstructionStrip(Bitmap strip)throws Exception {
+        return strip.getWidth()==860&&strip.getHeight()==150
+                &&distance(strip,"b2-poison-instruction.png",30,15,800,80)<.025;
+    }
+    LuciferInstruction luciferInstructionStrip(Bitmap strip)throws Exception {
+        if(strip.getWidth()!=860||strip.getHeight()!=150)return null;
+        boolean poison=poisonInstructionStrip(strip);
+        boolean all=distance(strip,"b2-water-light-instruction.png",30,15,800,80)<.025;
+        if(poison==all)return null;
+        return poison?LuciferInstruction.POISON:LuciferInstruction.ALL;
+    }
     boolean active(Bitmap frame,StagePolicy.Item target) {
         if(target==null||target.x<120||target.y<1500||target.x>1100||target.y>2500)return false;
         Bitmap crop=Bitmap.createBitmap(frame,Math.round(target.x)-65,Math.round(target.y)-35,130,70);

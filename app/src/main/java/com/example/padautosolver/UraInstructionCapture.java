@@ -41,6 +41,7 @@ final class UraInstructionCapture {
         List<Frame> pending=new ArrayList<>();
         synchronized(frames){while(!frames.isEmpty())pending.add(frames.removeFirst());}
         List<Read> results=new ArrayList<>();
+        UraBattleVision vision=new UraBattleVision(context);
         try {
             File dir=new File(context.getExternalFilesDir("Download"),"ura-runtime");
             if(!dir.exists()&&!dir.mkdirs())throw new IOException("Instruction log unavailable");
@@ -52,7 +53,8 @@ final class UraInstructionCapture {
                 JSONObject evidence=new JSONObject().put("runId",runId).put("trial",trial).put("capturedAt",frame.time)
                     .put("sequence",frame.sequence).put("cropX",180).put("cropY",620).put("ocr",text);
                 Files.write(new File(dir,prefix+".json").toPath(),evidence.toString(2).getBytes(StandardCharsets.UTF_8));
-                results.add(new Read(LuciferInstruction.read(lines),prefix+".json"));
+                LuciferInstruction literal=LuciferInstruction.read(lines),pixels=vision.luciferInstructionStrip(frame.image);
+                results.add(new Read(literal!=null&&pixels!=null&&literal!=pixels?null:literal!=null?literal:pixels,prefix+".json"));
             }
         }finally{for(Frame frame:pending)frame.image.recycle();}
         return results;

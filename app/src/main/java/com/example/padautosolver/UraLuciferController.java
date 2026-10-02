@@ -54,6 +54,7 @@ final class UraLuciferController {
                 c.trial=state.getInt("trial");c.instruction=LuciferInstruction.valueOf(state.getString("instruction"));
                 c.observationOnly=state.optBoolean("awaitingResult");c.previousBoard=bytes(state.optJSONArray("sourceBoard"));
                 if(c.trial<2&&state.optString("nextInstruction").equals(LuciferInstruction.values()[c.trial+1].name()))c.nextInstruction=LuciferInstruction.values()[c.trial+1];
+                if(c.observationOnly&&c.trial<2&&c.nextInstruction==null)c.recoverCapturedNext();
                 c.record.put("resumeEvidence","Same current board and six portrait bands; menu floor is recaptured");return c;
             }
         }
@@ -78,13 +79,30 @@ final class UraLuciferController {
                 if(file.getName().startsWith("b1-lucifer-command-")) {
                     List<StagePolicy.Item> text=new ArrayList<>();JSONArray ocr=observed.getJSONArray("ocr");
                     for(int i=0;i<ocr.length();i++){JSONObject line=ocr.getJSONObject(i);text.add(new StagePolicy.Item(line.getString("text"),(float)line.getDouble("x"),(float)line.getDouble("y")));}
-                    poison=image!=null&&LuciferInstruction.read(text)==LuciferInstruction.POISON;
+                    poison=image!=null&&(LuciferInstruction.read(text)==LuciferInstruction.POISON||c.vision.poisonInstructionStrip(image));
                     if(image!=null)image.recycle();image=null;
                 }
                 try{if(image!=null)poison=c.vision.poisonInstruction(image);}finally{if(image!=null)image.recycle();}
                 if(poison){c.instruction=LuciferInstruction.POISON;c.record.put("sourceB1RunId",nativeRun).put("instructionEvidence",file.getName());return c;}
             }
         }return null;
+    }
+    private void recoverCapturedNext()throws Exception {
+        File dir=new File(context.getExternalFilesDir("Download"),"ura-runtime");
+        File[] commands=dir.listFiles((d,n)->n.startsWith("lucifer-command-")&&n.endsWith(".json"));
+        if(commands==null)return;
+        Arrays.sort(commands,Comparator.comparingLong(File::lastModified).reversed());
+        for(File file:commands) {
+            JSONObject saved=new JSONObject(new String(Files.readAllBytes(file.toPath()),StandardCharsets.UTF_8));
+            if(!record.getString("runId").equals(saved.optString("runId"))||saved.optInt("trial",-1)!=trial)continue;
+            Bitmap strip=BitmapFactory.decodeFile(new File(dir,file.getName().replace(".json",".png")).getPath());
+            if(strip==null)continue;
+            LuciferInstruction pixels;
+            try{pixels=vision.luciferInstructionStrip(strip);}finally{strip.recycle();}
+            if(pixels==LuciferInstruction.values()[trial+1]) {
+                nextInstruction=pixels;record.put("nextInstruction",pixels.name()).put("nextInstructionEvidence",file.getName());return;
+            }
+        }
     }
     StagePolicy.Decision inspect(Bitmap frame,StageNavigator nav,long capturedAt,long seq)throws Exception {
         if(frame.getWidth()!=1220||frame.getHeight()!=2712)return stop(frame,List.of(),"B2_CALIBRATION_MISMATCH",capturedAt,seq);

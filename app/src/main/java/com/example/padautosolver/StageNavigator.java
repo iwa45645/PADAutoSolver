@@ -98,6 +98,7 @@ final class StageNavigator {
         if(UraCombatText.joined(lines).contains("裏魔門の守護者")) {
             for(var item:readCrop(frame,.53f,.357f,.65f,.387f,true,true,4))
                 lines.add(new StagePolicy.Item("UFLOOR_"+item.rawText,item.x,item.y));
+            lines.addAll(readCrop(frame,.37f,.766f,.63f,.818f,false,false,3));
         }
         return lines;
     }

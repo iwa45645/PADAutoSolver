@@ -8,6 +8,7 @@ public class LuciferInstructionTest {
         assertEquals(LuciferInstruction.POISON,LuciferInstruction.read(line("全ての毒を消してみるがいい")));
         assertEquals(LuciferInstruction.ZERO,LuciferInstruction.read(line("次はコンボ禁止だ")));
         assertEquals(LuciferInstruction.ALL,LuciferInstruction.read(line("全てのドロップを消してみるがいい")));
+        assertEquals(LuciferInstruction.ALL,LuciferInstruction.read(line("水、光を全て消すがいい")));
         assertNull(LuciferInstruction.read(line("全Tの毒を消しTみるがいい")));
         assertNull(LuciferInstruction.read(line("試練を乗り越えろ")));
         assertNull(LuciferInstruction.read(List.of(new StagePolicy.Item("次はコンボ禁止だ",610,300))));
@@ -43,5 +44,14 @@ public class LuciferInstructionTest {
         var plan=new UraPuzzlePlan(b,result,goal,100);
         assertEquals(30,plan.stats.matched);
         assertEquals(15,plan.stats.colorMatched[1]);assertEquals(15,plan.stats.colorMatched[3]);
+    }
+    @Test public void newTrialDoesNotAssumeFifteenOfEachColor() {
+        byte[] b={1,3,3,3,1,1,3,3,3,3,1,3,3,1,3,3,3,1,1,3,3,1,3,3,3,3,3,1,1,1};
+        var goal=LuciferInstruction.ALL.goal(b);
+        var result=PuzzleSolver.solve(b,6,5,48,3000,0,goal);
+        assertTrue(result.goalSatisfied);
+        var plan=new UraPuzzlePlan(b,result,goal,100);
+        assertEquals(30,plan.stats.matched);
+        assertEquals(11,plan.stats.colorMatched[1]);assertEquals(19,plan.stats.colorMatched[3]);
     }
 }
