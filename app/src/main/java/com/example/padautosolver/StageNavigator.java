@@ -84,12 +84,27 @@ final class StageNavigator {
     }
     List<StagePolicy.Item> readUraPreentry(Bitmap frame)throws Exception {
         List<StagePolicy.Item> lines=readItems(frame);
+        lines.addAll(readCrop(frame,.15f,.20f,.65f,.24f,false,false,3));
         // Re-read only the actual entry control at full resolution; do not repair its wording.
         lines.addAll(readCrop(frame,.25f,.77f,.75f,.84f,false,false,3));
         return lines;
     }
     List<StagePolicy.Item> readUraDialog(Bitmap frame)throws Exception {
-        return readCrop(frame,.03f,.55f,.97f,.94f,false,false,2);
+        List<StagePolicy.Item> lines=readCrop(frame,.03f,.55f,.97f,.94f,false,false,2);
+        UraDialogPolicy.Read modal=UraDialogPolicy.read(lines,frame.getHeight());
+        if(modal!=null) {
+            // Re-read the actual heading, including small kana, at higher resolution.
+            // The footer is excluded and cannot authorize the top skill.
+            float headingY=0;
+            for(var line:lines)if(line.y>frame.getHeight()*.55f&&(UraDialogPolicy.clean(line.text).startsWith("スキル"+modal.layer)
+                    ||UraDialogPolicy.clean(line.text).equals("神泉槍グングニール"))) {headingY=line.y;break;}
+            if(headingY>0) {
+                float top=(headingY-42)/frame.getHeight(),bottom=(headingY+42)/frame.getHeight();
+                lines.addAll(readCrop(frame,.16f,top,.86f,bottom,false,false,3));
+                lines.addAll(readCrop(frame,.16f,top,.86f,bottom,true,true,3));
+            }
+        }
+        return lines;
     }
     List<StagePolicy.Item> readUraCombat(Bitmap frame)throws Exception {
         List<StagePolicy.Item> lines=readCrop(frame,.01f,.18f,.99f,.81f,false,false,2);
