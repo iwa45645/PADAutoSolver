@@ -163,9 +163,15 @@ public class PuzzleAccessibilityService extends AccessibilityService {
         void hold() {
             Path path = new Path(); path.moveTo(x(0), y(0));
             android.util.Log.i("PADSolver","dragStart cell="+route.get(0)+" x="+x(0)+" y="+y(0)+" precise="+preciseStart+" perCellMs="+perCellMs);
-            previous = new GestureDescription.StrokeDescription(path, 0, preciseStart?300:100, true);
+            previous = new GestureDescription.StrokeDescription(path, 0, preciseStart?1:100, true);
             boolean accepted = dispatchGesture(new GestureDescription.Builder().addStroke(previous).build(), new GestureResultCallback() {
-                @Override public void onCompleted(GestureDescription gesture) { next(); }
+                @Override public void onCompleted(GestureDescription gesture) {
+                    // A stationary continuing stroke can complete after ACTION_DOWN,
+                    // because Android suppresses unchanged MOVE events. Keep the pointer
+                    // down explicitly before moving, rather than relying on its duration.
+                    android.util.Log.i("PADSolver","dragPointerDown cell="+route.get(0));
+                    if(preciseStart)mainHandler.postDelayed(()->next(),300);else next();
+                }
                 @Override public void onCancelled(GestureDescription gesture) { android.util.Log.i("PADSolver", "dragCancelled=hold"); finish(false); }
             }, mainHandler);
             if (!accepted) { android.util.Log.i("PADSolver", "dragRejected=hold"); finish(false); }
