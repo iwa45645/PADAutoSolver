@@ -70,11 +70,14 @@ final class UraBattleVision {
         return worst;
     }
     boolean leonis(Bitmap frame)throws Exception {
-        if(frame.getWidth()!=1220||frame.getHeight()!=2712)return false;
+        return leonisDistance(frame)<.055;
+    }
+    double leonisDistance(Bitmap frame)throws Exception {
+        if(frame.getWidth()!=1220||frame.getHeight()!=2712)return 1;
         double best=1;
         for(int dx=-12;dx<=12;dx+=4)for(int dy=-12;dy<=12;dy+=4)
             best=Math.min(best,distance(frame,"b3-leonis-face.png",180+dx,640+dy,350,390));
-        return best<.055;
+        return best;
     }
     boolean leonisFullHealth(Bitmap frame)throws Exception {
         return distance(frame,"b3-leonis-full-hp.png",180,1220,900,20)<.035;

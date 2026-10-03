@@ -46,7 +46,6 @@ final class UraB3Controller {
                 c.restore(data);int p=c.phase;
                 // Consumed actions recover observation only. Never replay skill/puzzle dispatch.
                 if(p==5||p==6)c.phase=5;
-                else if(p==9&&data.optBoolean("puzzleConsumed"))c.phase=10;
                 else if(p==9)c.phase=8;
                 else if(p==0||p==1)c.phase=0;
                 else if(p==4)c.phase=3;
@@ -174,7 +173,10 @@ final class UraB3Controller {
         if(phase==9) {
             byte[] board=vision.luciferBoard(frame);
             if(board==null&&plan!=null&&now()-plan.plannedAt<15000)return waitFor("B3：盤面の発光が収まるまで待機");
-            if(plan==null||!plan.current(board,now())||!vision.leonis(frame))return stop(frame,List.of(),"B3_STALE_PLAN",time,seq);
+            double enemyDistance=vision.leonisDistance(frame);
+            record.put("dispatchBoard",board==null?JSONObject.NULL:array(board)).put("planAgeMs",plan==null?-1:now()-plan.plannedAt).put("enemyDistance",enemyDistance);
+            if(plan==null||!plan.current(board,now()))return stop(frame,List.of(),"B3_STALE_PLAN",time,seq);
+            if(enemyDistance>=.055)return waitFor("B3：敵の発光が収まった画面で再照合");
             if(!prepared){phase=10;record.put("puzzleConsumed",true);save(frame,List.of(),"b3-puzzle-consumed",time,seq);phase=9;prepared=true;return waitFor("B3：送信前記録後の盤面を再照合");}
             StagePolicy.Decision d=action(new StagePolicy.Item("B3_PUZZLE",610,1700),"B3："+(round==0?"全闇盤面を更新":"水2セット＋回復を実行"),()->{phase=10;actionAt=now();misses=0;});
             d.puzzlePath=plan.path;d.puzzleCols=6;d.puzzleRows=5;d.puzzleRect=BoardGeometry.calculate(1220,2712,6,5,0,84);d.puzzleDurationMs=3500;d.puzzlePreciseStart=true;return d;
