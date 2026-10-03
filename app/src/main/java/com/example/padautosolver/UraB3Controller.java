@@ -167,7 +167,9 @@ final class UraB3Controller {
             record.put("sourceBoard",array(board)).put("route",new JSONArray(plan.path)).put("goal",goal.type.name()).put("predictedCombos",plan.stats.combos)
                 .put("waterCombos",plan.stats.colorCombos[3]).put("healCombos",plan.stats.colorCombos[5]).put("puzzleConsumed",false);
             phase=9;prepared=false;save(frame,List.of(),"b3-plan",time,seq);
-            StagePolicy.Decision d=waitFor(round==0?"B3：回復・軽減後に闇30個を消して盤面更新":"B3：水2セット＋回復の経路を再照合");d.previewPlan=plan;return d;
+            // The panel's expanded route preview covers Leonis' face on this device.
+            // Keep the immutable dry-run evidence in the native log and leave that ROI visible.
+            return waitFor(round==0?"B3：回復・軽減後に闇30個を消して盤面更新":"B3：水2セット＋回復の経路を再照合");
         }
         if(phase==9) {
             byte[] board=vision.luciferBoard(frame);
