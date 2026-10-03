@@ -22,6 +22,13 @@ final class UraBattleVision {
     boolean initialTeam(Bitmap frame)throws Exception {
         return portrait(frame,5);
     }
+    boolean napoleon(Bitmap frame)throws Exception {
+        if(frame.getWidth()!=1220||frame.getHeight()!=2712)return false;
+        double best=1;
+        for(int dx=-12;dx<=12;dx+=6)for(int dy=-12;dy<=12;dy+=6)
+            best=Math.min(best,distance(frame,"b5-napoleon.png",260+dx,650+dy,550,500));
+        return best<.055;
+    }
     boolean openingNotStarted(Bitmap frame)throws Exception{return portrait(frame,0)&&portrait(frame,3);}
     /** Exact reviewed post-transform skill heading; cooldowns still require independent literal OCR. */
     boolean sekkaPostHeading(Bitmap frame)throws Exception {
