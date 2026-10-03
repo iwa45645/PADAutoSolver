@@ -152,8 +152,14 @@ final class UraB4Controller {
         }
         if(phase==9) {
             long mask=vision.rouletteMask(frame);byte[] board=vision.rouletteBoard(frame,mask);
-            if(board==null&&now()-plan.plannedAt<15000)return waitFor("B4：ドロップの発光が収まるまで待機");
-            if(plan==null||!plan.current(board,mask,now())||!vision.gears(frame))return stop(frame,List.of(),"B4_STALE_ROULETTE_PLAN",time,seq);
+            if(plan==null)return stop(frame,List.of(),"B4_PLAN_REQUIRED",time,seq);
+            if(now()-plan.plannedAt>=15000){phase=7;return waitFor("B4：現在の盤面から経路を作り直す");}
+            if(board==null)return waitFor("B4：ドロップの発光が収まるまで待機");
+            record.put("dispatchMask",mask).put("dispatchBoard",array(board));
+            if(!plan.current(board,mask,now()))return stop(frame,List.of(),"B4_STALE_ROULETTE_PLAN",time,seq);
+            // The reviewed gear artwork is briefly covered by its own lightning animation.
+            // A temporary enemy miss is not a changed board and must not discard a valid route.
+            if(!vision.gears(frame))return waitFor("B4：敵の発光が収まった画面で再照合");
             if(!prepared){phase=10;record.put("attackConsumed",true);save(frame,List.of(),"b4-puzzle-consumed",time,seq);phase=9;prepared=true;return waitFor("B4：送信直前の固定マスを再照合");}
             StagePolicy.Decision d=action(new StagePolicy.Item("B4_PUZZLE",610,1700),"B4：ルーレットを避けて水2セット＋回復",()->{phase=10;actionAt=now();misses=0;});puzzle(d,plan.path);return d;
         }
@@ -176,6 +182,7 @@ final class UraB4Controller {
             long mask=vision.rouletteMask(frame);byte[] board=vision.rouletteBoard(frame,mask);
             boolean counters=true;for(int i=0;i<3;i++)counters&=vision.distance(frame,"b4-counter-wait-"+i+".png",112+i*380,730,45,55)<.09;
             if(Long.bitCount(mask)!=1||board==null||!vision.gears(frame)||!counters||vision.b3HpLowerBound(frame)<230000)return retry(frame,List.of(),"B4_EXTRA_CHARGE_HP_AND_COUNTERS_1_4_1_REQUIRED",time,seq);
+            misses=0;
             List<Integer> route=RoulettePlan.chargeRoute(board,mask);record.put("extraChargeRoute",new JSONArray(route));
             if(!prepared){extraCharged=true;phase=10;record.put("extraChargeUnshieldedMaxDamage",201700);save(frame,List.of(),"b4-extra-charge-consumed",time,seq);extraCharged=false;phase=15;prepared=true;return waitFor("B4：HP下限23万が左右の合計20万1700を超えることを再照合");}
             StagePolicy.Decision d=action(new StagePolicy.Item("B4_EXTRA_CHARGE",610,1700),"B4：必ず1コンボ消してミオンをあと1ターン溜める",()->{extraCharged=true;phase=10;actionAt=now();misses=0;});puzzle(d,route);return d;
