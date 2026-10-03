@@ -22,6 +22,7 @@ final class UraB4Controller {
     private volatile UraHeldSkillInfo held;
     private volatile boolean sekkaHeading;
     private volatile boolean rukaHeading;
+    private volatile boolean mionHeading;
     private volatile long heldAt,heldSequence;
     private RoulettePlan plan;
     private UraB4Controller(Context c){context=c;vision=new UraBattleVision(c);}
@@ -127,13 +128,14 @@ final class UraB4Controller {
                 List<StagePolicy.Item> text=nav.readUraHeldSkill(image);UraHeldSkillInfo info=UraHeldSkillInfo.readBase(text);if(!current.getAsBoolean())return;
                 held=info;heldAt=t;heldSequence=s;sekkaHeading=step==3&&vision.sekkaPostHeading(image);
                 rukaHeading=step==1&&vision.distance(image,"post-ruka-skill-header.png",130,230,490,50)<.025;
+                mionHeading=step==2&&vision.distance(image,"post-mion-skill-header.png",130,230,770,50)<.025;
                 record.put("reviewedRukaHeading",rukaHeading).put("reviewedSekkaHeading",sekkaHeading);
                 record.put("postSkill",info==null?JSONObject.NULL:new JSONObject().put("name",info.baseName).put("remaining",info.baseRemaining));save(image,text,"b4-held",t,s);
             };return d;
         }
         if(phase==6) {
             if(held==null)return retry(frame,List.of(),"B4_POST_SKILL_REQUIRED",time,seq);
-            if(heldAt<=actionAt||heldSequence<=actionSequence||!(held.baseNamed(SKILLS[step])||step==3&&sekkaHeading||step==1&&rukaHeading)||!Integer.valueOf(expectedCooldown).equals(held.baseRemaining))return stop(frame,List.of(),"B4_SKILL_POSTCONDITION:"+step,time,seq);
+            if(heldAt<=actionAt||heldSequence<=actionSequence||!(held.baseNamed(SKILLS[step])||step==3&&sekkaHeading||step==1&&rukaHeading||step==2&&mionHeading)||!Integer.valueOf(expectedCooldown).equals(held.baseRemaining))return stop(frame,List.of(),"B4_SKILL_POSTCONDITION:"+step,time,seq);
             if(!postSaved){record.put("skillVerified_"+step,expectedCooldown);save(frame,List.of(),"b4-skill-verified",time,seq);postSaved=true;return waitFor("B4：使用後証拠の保存を完了");}
             UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
             if(read!=null&&vision.backControl(frame,read))return action(read.back,"B4：スキル確認を閉じる",this::advance);
@@ -162,10 +164,10 @@ final class UraB4Controller {
         }
         if(phase==13) {
             StagePolicy.Decision d=action(new StagePolicy.Item("B4_MION_READY",1115,1425),"B4：ミオンの残りターンを長押し確認",()->{phase=14;misses=0;});d.holdMs=4000;
-            d.heldStampedFrame=(image,current,t,s)->{List<StagePolicy.Item> text=nav.readUraHeldSkill(image);UraHeldSkillInfo info=UraHeldSkillInfo.readBase(text);if(!current.getAsBoolean())return;held=info;heldAt=t;heldSequence=s;record.put("mionObservedRemaining",info==null||info.baseRemaining==null?JSONObject.NULL:info.baseRemaining);save(image,text,"b4-mion-ready",t,s);};return d;
+            d.heldStampedFrame=(image,current,t,s)->{List<StagePolicy.Item> text=nav.readUraHeldSkill(image);UraHeldSkillInfo info=UraHeldSkillInfo.readBase(text);if(!current.getAsBoolean())return;held=info;heldAt=t;heldSequence=s;mionHeading=vision.distance(image,"post-mion-skill-header.png",130,230,770,50)<.025;record.put("reviewedMionHeading",mionHeading).put("mionObservedRemaining",info==null||info.baseRemaining==null?JSONObject.NULL:info.baseRemaining);save(image,text,"b4-mion-ready",t,s);};return d;
         }
         if(phase==14) {
-            if(held==null||!held.baseNamed(SKILLS[2])||held.baseRemaining==null)return stop(frame,List.of(),"B4_MION_READINESS_UNKNOWN",time,seq);
+            if(held==null||!(held.baseNamed(SKILLS[2])||mionHeading)||held.baseRemaining==null)return stop(frame,List.of(),"B4_MION_READINESS_UNKNOWN",time,seq);
             if(held.baseRemaining==0){phase=3;step=2;return waitFor("B4：ミオンの使用可能を確認");}
             if(held.baseRemaining!=1||extraCharged)return stop(frame,List.of(),"B4_MION_COOLDOWN_UNEXPECTED",time,seq);
             waitingMion=true;phase=15;prepared=false;return waitFor("B4：今のHPで敵行動に耐えられることを確認してあと1ターンを溜める");
