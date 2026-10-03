@@ -70,6 +70,7 @@ public class AutoPuzzleService extends Service {
     private UraPreflightController uraPreflight;
     private volatile UraBattleController uraBattle;
     private volatile UraLuciferController uraLucifer;
+    private volatile UraB3Controller uraB3;
     private boolean uraResumeRequested;
     private volatile long uraDecisionCapturedAt;
     private volatile boolean recordDetail;
@@ -308,7 +309,9 @@ public class AutoPuzzleService extends Service {
                 if(loopEnabled&&uraResumeRequested) {
                     uraResumeRequested=false;
                     if(prefs.getString("operationMode","").equals("URA_SHURA_AUTO")) {
-                        uraLucifer=UraLuciferController.resume(this,bitmap);
+                        uraB3=UraB3Controller.resume(this,bitmap);
+                        uraLucifer=uraB3==null?UraLuciferController.resume(this,bitmap):null;
+                        if(uraB3!=null){clearUraBattle();uraPreflight=null;}
                         if(uraLucifer!=null) {
                             clearUraBattle();uraPreflight=null;
                         } else if(UraLuciferController.isScene(this,bitmap)) {
@@ -316,25 +319,29 @@ public class AutoPuzzleService extends Service {
                                 if(++uraResumeAttempts<4){uraResumeRequested=true;scheduleLoop(500);return;}
                                 pauseLoop("B2_RESUME_EVIDENCE_REQUIRED：実指示と現在盤面を再確認できないため停止");return;
                         }
-                        UraBattleController resumed=uraLucifer==null?UraBattleController.resumePausedB1(this,bitmap):null;
-                        if(resumed==null&&uraLucifer==null)resumed=UraBattleController.currentB1(this,bitmap);
+                        UraBattleController resumed=uraB3==null&&uraLucifer==null?UraBattleController.resumePausedB1(this,bitmap):null;
+                        if(resumed==null&&uraB3==null&&uraLucifer==null)resumed=UraBattleController.currentB1(this,bitmap);
                         if(resumed!=null){uraBattle=resumed;uraPreflight=null;}
                         else if(UraBattleController.isB1(this,bitmap)) {
                             bitmap.recycle();
                             if(++uraResumeAttempts<4){uraResumeRequested=true;scheduleLoop(500);return;}
                             pauseLoop("B1_RESUME_CAPTURE_REQUIRED：発動済みの状態を読み直せないため停止");return;
                         }
-                        else if(uraLucifer==null&&!UraScenePolicy.preentry(navigator.readUraPreentry(bitmap),2712)) {
+                        else if(uraB3==null&&uraLucifer==null&&!UraScenePolicy.preentry(navigator.readUraPreentry(bitmap),2712)) {
                             bitmap.recycle();
                             if(++uraResumeAttempts<4){uraResumeRequested=true;scheduleLoop(500+uraResumeAttempts*97);return;}
                             pauseLoop("BATTLE_RESUME_CAPTURE_REQUIRED：実戦画面を読み直せないため停止");return;
                         }
                     }
                 }
-                if(loopEnabled&&(uraPreflight!=null||uraBattle!=null||uraLucifer!=null)) {
+                if(loopEnabled&&(uraPreflight!=null||uraBattle!=null||uraLucifer!=null||uraB3!=null)) {
                     long now=android.os.SystemClock.elapsedRealtime();
                     if(now<capturedAt||now-capturedAt>1500){bitmap.recycle();scheduleLoop(250);return;}
-                    StagePolicy.Decision decision=uraLucifer!=null?uraLucifer.inspect(bitmap,navigator,capturedAt,sequence):uraBattle!=null?uraBattle.inspect(bitmap,navigator,capturedAt,sequence):uraPreflight.inspect(bitmap,navigator,sequence);
+                    StagePolicy.Decision decision=uraB3!=null?uraB3.inspect(bitmap,navigator,capturedAt,sequence):uraLucifer!=null?uraLucifer.inspect(bitmap,navigator,capturedAt,sequence):uraBattle!=null?uraBattle.inspect(bitmap,navigator,capturedAt,sequence):uraPreflight.inspect(bitmap,navigator,sequence);
+                    if(decision.stop&&decision.status.equals("B2_CLEAR_VERIFIED_B3_CAPTURE_REQUIRED")) {
+                        UraB3Controller next=UraB3Controller.resume(this,bitmap);
+                        if(next!=null){clearLucifer();uraB3=next;decision=new StagePolicy.Decision(null,"B2突破確認済み：B3の現在盤面から続行",false);}
+                    }
                     if(decision.stop&&decision.status.equals("B1_CLEAR_VERIFIED_B2_CURRENT_INSTRUCTION_REQUIRED")) {
                         UraLuciferController next=UraLuciferController.resume(this,bitmap);
                         if(next!=null){uraLucifer=next;clearUraBattle();decision=new StagePolicy.Decision(null,"B1突破確認済み：B2の実指示から続行",false);}
@@ -1042,6 +1049,7 @@ public class AutoPuzzleService extends Service {
     }
 
     private void clearLucifer() {
+        uraB3=null;
         UraLuciferController previous=uraLucifer;
         uraLucifer=null;
         if(previous!=null)previous.close();

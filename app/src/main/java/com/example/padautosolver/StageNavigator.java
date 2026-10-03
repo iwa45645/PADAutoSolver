@@ -117,6 +117,9 @@ final class StageNavigator {
         }
         return lines;
     }
+    List<StagePolicy.Item> readUraHp(Bitmap frame)throws Exception {
+        return readCrop(frame,.65f,.57f,.99f,.595f,false,false,4);
+    }
     List<StagePolicy.Item> readUraMenuControl(Bitmap frame)throws Exception {
         return readCrop(frame,.86f,.19f,.998f,.22f,false,false,3);
     }
