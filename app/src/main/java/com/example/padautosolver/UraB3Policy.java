@@ -24,4 +24,17 @@ final class UraB3Policy {
     }
     static int count(byte[] board,int color){int n=0;if(board!=null)for(byte b:board)if(b==color)n++;return n;}
     static boolean needsRuka(byte[] board){return count(board,5)<3&&count(board,0)+count(board,4)>=3;}
+    static int hpFillLowerBound(int[] scan) {
+        if(scan==null||scan.length!=1090*3)return 0;
+        int filledColumns=0;
+        for(int x=0;x<1090;x++) {
+            int filled=0;
+            for(int y=0;y<3;y++) {
+                int p=scan[y*1090+x],r=(p>>16)&255,g=(p>>8)&255,b=p&255;
+                if(r>170&&b>100&&r-g>50)filled++;
+            }
+            if(filled<2)break;filledColumns++;
+        }
+        return Math.max(0,filledColumns-9)*611045/1090;
+    }
 }

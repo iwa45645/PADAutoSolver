@@ -1,5 +1,7 @@
 package com.example.padautosolver;
 import java.util.*;
+import java.io.*;
+import java.util.zip.GZIPInputStream;
 import org.junit.Test;
 import static org.junit.Assert.*;
 public class UraB3PolicyTest {
@@ -19,5 +21,16 @@ public class UraB3PolicyTest {
         assertNull(UraB3Policy.hp(List.of(new StagePolicy.Item("3/22",0,0))));
         assertArrayEquals(new int[]{2445,611045},UraB3Policy.hp(List.of(new StagePolicy.Item("2,445/611,045",0,0))));
         assertNull(UraB3Policy.hp(List.of(new StagePolicy.Item("2445/611045",0,0),new StagePolicy.Item("2446/611045",0,0))));
+    }
+    @Test public void actualRecoveredHpBarIsAConservativeBound()throws Exception {
+        int[] scan=new int[1090*3];
+        try(DataInputStream in=new DataInputStream(new GZIPInputStream(getClass().getResourceAsStream("/b3-hp-246863.rgb.gz")))) {
+            for(int i=0;i<scan.length;i++)scan[i]=in.readInt();
+        }
+        int bound=UraB3Policy.hpFillLowerBound(scan);assertTrue(bound>=230000);assertTrue(bound<=246863);
+        // A white digit/unknown region may truncate the bound, never extrapolate the fill.
+        for(int y=0;y<3;y++)scan[y*1090+100]=0xffffffff;
+        assertTrue(UraB3Policy.hpFillLowerBound(scan)<60000);
+        assertEquals(0,UraB3Policy.hpFillLowerBound(null));
     }
 }

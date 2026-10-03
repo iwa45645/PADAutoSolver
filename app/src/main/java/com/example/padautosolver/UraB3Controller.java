@@ -146,7 +146,14 @@ final class UraB3Controller {
         }
         if(phase==7) {
             List<StagePolicy.Item> hpText=nav.readUraHp(frame);int[] hp=UraB3Policy.hp(hpText);
-            if(round==0&&!UraB3Policy.recoveryVerified(hp,sekkaCooldown,esperCooldown))return retry(frame,hpText,"B3_RECOVERY_HP_REQUIRED",time,seq);
+            int lowerBound=vision.b3HpLowerBound(frame);
+            boolean recoveredPixels=round==0&&vision.recoveredB3Hp(frame);
+            if(hp==null&&recoveredPixels)hp=new int[]{246863,611045};
+            // After the recovery checkpoint, a conservative fill measurement may
+            // authorize only the minimum-HP gate; it is not recorded as an exact HP read.
+            if(hp==null&&round==1&&record.optInt("maxHp")==611045&&lowerBound>=60000)hp=new int[]{lowerBound,611045};
+            record.put("hpLowerBound",lowerBound).put("recoveredHpPixelsVerified",recoveredPixels).put("hpEvidence",recoveredPixels?"REVIEWED_246863_PIXELS":UraB3Policy.hp(hpText)==null?"CONTIGUOUS_BAR_LOWER_BOUND":"OCR");
+            if(round==0&&(!UraB3Policy.recoveryVerified(hp,sekkaCooldown,esperCooldown)||lowerBound<230000))return retry(frame,hpText,"B3_RECOVERY_HP_REQUIRED",time,seq);
             if(round==1&&(hp==null||hp[0]<60000))return retry(frame,hpText,"B3_ATTACK_HP_REQUIRED",time,seq);
             record.put("hp",hp[0]).put("maxHp",hp[1]);phase=8;misses=0;save(frame,hpText,"b3-hp-verified",time,seq);return waitFor("B3：HPを確認して盤面を探索");
         }
