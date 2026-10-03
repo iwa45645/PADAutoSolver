@@ -11,6 +11,13 @@ final class UraHeldSkillInfo {
     boolean baseNamed(String name){String wanted=UraDialogPolicy.clean(name);return UraDialogPolicy.clean(baseName).contains(wanted)||UraDialogPolicy.clean(headerName).contains(wanted);}
     boolean assistNamed(String name){return assistName!=null&&UraDialogPolicy.clean(assistName).contains(UraDialogPolicy.clean(name));}
     boolean actorNamed(String name){return UraDialogPolicy.clean(actorName).contains(UraDialogPolicy.clean(name));}
+    /** For a base-skill postcondition, an OCR conflict in the unrelated assist row
+     * must not erase the independently read base row. Base-column conflicts still reject. */
+    static UraHeldSkillInfo readBase(List<StagePolicy.Item> lines) {
+        List<StagePolicy.Item> base=new ArrayList<>();
+        for(var line:lines)if(!line.text.startsWith("UCD2_")&&!line.text.matches(".*(?:ス)?キル[2２][:：].*"))base.add(line);
+        return read(base);
+    }
     static UraHeldSkillInfo read(List<StagePolicy.Item> lines) {
         String[] names=new String[2];Integer[] turns=new Integer[2];
         for(var line:lines) {

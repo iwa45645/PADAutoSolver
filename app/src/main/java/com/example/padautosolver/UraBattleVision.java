@@ -127,6 +127,48 @@ final class UraBattleVision {
     byte[] board(Bitmap frame)throws Exception {return board(frame,false);}
     byte[] luciferBoard(Bitmap frame)throws Exception {return board(frame,true);}
     private byte[] board(Bitmap frame,boolean special)throws Exception {
+        return board(frame,special,0);
+    }
+    byte[] rouletteBoard(Bitmap frame,long mask)throws Exception {
+        if(mask<0||(mask>>>30)!=0)return null;
+        return board(frame,true,mask);
+    }
+    long rouletteMask(Bitmap frame)throws Exception {
+        if(frame.getWidth()!=1220||frame.getHeight()!=2712)return -1;
+        long mask=0;int[][] offsets={{3,3},{173,3},{3,173},{173,173}};
+        for(int cell=0;cell<30;cell++) {
+            int yes=0,uncertain=0;
+            for(int k=0;k<4;k++) {
+                double d=distance(frame,"b4-roulette-corner-"+k+".png",10+cell%6*200+offsets[k][0],1612+cell/6*200+offsets[k][1],24,24);
+                if(d<.06)yes++;else if(d<.16)uncertain++;
+            }
+            if(yes>=3)mask|=1L<<cell;
+            else if(yes>0||uncertain>0)return -1;
+        }return mask;
+    }
+    boolean gears(Bitmap frame)throws Exception {
+        for(int i=0;i<3;i++) {
+            int x=new int[]{80,480,870}[i];double best=1;
+            for(int dx=-8;dx<=8;dx+=4)for(int dy=-8;dy<=8;dy+=4)
+                best=Math.min(best,distance(frame,"b4-gear-"+i+".png",x+dx,810+dy,290,310));
+            if(best>=.065)return false;
+        }return true;
+    }
+    boolean b4ChargeCounters(Bitmap frame)throws Exception {
+        for(int i=0;i<3;i++)if(distance(frame,"b4-count-"+i+".png",112+i*380,730,45,55)>=.09)return false;
+        return true;
+    }
+    static boolean sameStablePortraits(Bitmap old,Bitmap live) {
+        for(int slot=0;slot<6;slot++) {
+            Bitmap a=Bitmap.createBitmap(old,60+slot*203,1500,100,30),small=Bitmap.createScaledBitmap(a,48,16,true);
+            int[] ref=pixels(small);small.recycle();a.recycle();double best=1;
+            for(int dx=-8;dx<=8;dx+=4)for(int dy=-24;dy<=24;dy+=4) {
+                Bitmap b=Bitmap.createBitmap(live,60+slot*203+dx,1500+dy,100,30),s=Bitmap.createScaledBitmap(b,48,16,true);
+                best=Math.min(best,TeamIconMatch.distance(ref,pixels(s)));s.recycle();b.recycle();
+            }if(best>.04)return false;
+        }return true;
+    }
+    private byte[] board(Bitmap frame,boolean special,long ignoredMask)throws Exception {
         if(normalReferences==null)try(InputStream in=context.getAssets().open("ura-shura/normal-orbs.json")) {
             ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] bytes=new byte[4096];int read;
             while((read=in.read(bytes))!=-1)out.write(bytes,0,read);
@@ -135,6 +177,7 @@ final class UraBattleVision {
         // Reviewed B1/B2 orb fixtures. Unrecognised artwork is UNKNOWN, never a hue-only guess.
         byte[] board=new byte[30];boardDistances=new double[30];
         for(int cell=0;cell<30;cell++) {
+            if((ignoredMask&(1L<<cell))!=0){board[cell]=-1;continue;}
             float size=1220f/6,top=2712-84-5*size;
             Bitmap crop=Bitmap.createBitmap(frame,Math.round((cell%6+.5f)*size)-80,Math.round(top+(cell/6+.5f)*size)-80,160,160);
             Bitmap small=Bitmap.createScaledBitmap(crop,48,48,true);int[] live=pixels(small);small.recycle();crop.recycle();

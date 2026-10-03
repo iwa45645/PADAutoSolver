@@ -155,6 +155,13 @@ public final class PuzzleSolver {
         return analyze(initial,cols,rows,0);
     }
     public static MatchStats analyze(byte[] initial, int cols, int rows,long comboDropMask) {
+        return analyze(initial,cols,rows,comboDropMask,false);
+    }
+    /** Matches before any gravity. Roulette proofs must not rely on a snapshot's cascades. */
+    static MatchStats firstWave(byte[] initial,int cols,int rows) {
+        return analyze(initial,cols,rows,0,true);
+    }
+    private static MatchStats analyze(byte[] initial,int cols,int rows,long comboDropMask,boolean firstOnly) {
         if (initial == null || cols < 3 || rows < 3 || cols * rows > 63 || initial.length != cols * rows)
             throw new IllegalArgumentException("Invalid board");
         for (byte value : initial) if (value < 0 || value > 9) throw new IllegalArgumentException("Unknown board");
@@ -204,6 +211,7 @@ public final class PuzzleSolver {
             }
             result.matched += Long.bitCount(mask);
             result.comboDropsMatched+=Long.bitCount(mask&comboDropMask);
+            if(firstOnly)break;
             comboDropMask&=~mask;
             for(int p=0;p<board.length;p++)if((mask&(1L<<p))!=0)board[p]=-1;
             for(int x=0;x<cols;x++) {
