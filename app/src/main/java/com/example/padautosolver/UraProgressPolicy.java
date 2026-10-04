@@ -1,7 +1,7 @@
 package com.example.padautosolver;
 /** Reviewed native floor scripts; unsupported floors have no actions. */
 final class UraProgressPolicy {
-    static final int SEKKA=0,MION=1,ESPER=2,ODIN=3,RUKA=4,CHARGE=100,ATTACK=101;
+    static final int SEKKA=0,MION=1,ESPER=2,ODIN=3,RUKA=4,YUKINE_ASSIST=5,CHARGE=100,ATTACK=101;
     static int[] script(int floor) {
         if(floor==6)return new int[]{SEKKA,CHARGE,MION,ATTACK,ESPER,CHARGE,MION,ODIN,ATTACK};
         if(floor==7)return new int[]{SEKKA,CHARGE,MION,ATTACK};
@@ -16,6 +16,7 @@ final class UraProgressPolicy {
         if(floor==16)return new int[]{ODIN,CHARGE,MION,ATTACK,CHARGE,MION,ATTACK};
         if(floor==17)return new int[]{SEKKA,CHARGE,MION,ATTACK};
         if(floor==18)return new int[]{ODIN,CHARGE,MION,ATTACK};
+        if(floor==19)return new int[]{CHARGE,MION,ATTACK,YUKINE_ASSIST,SEKKA,MION,ATTACK};
         return null;
     }
     static boolean safeCharge(byte[] board,int hp,int round,int sekkaRound,int skillRound,Integer mionRemaining) {
@@ -59,9 +60,27 @@ final class UraProgressPolicy {
         return true;
     }
     static boolean safeB17Charge(byte[] board,long mask,int hp,int floor,int round,int sekkaRound,int skillRound,Integer mionRemaining){
-        if((floor!=17&&floor!=18)||mask!=UraDualRoulettePlan.MASK||board==null||board.length!=30)return false;
+        if((floor<17||floor>19)||mask!=UraDualRoulettePlan.MASK||board==null||board.length!=30)return false;
         byte[] stable=board.clone();
         for(int i=0;i<30;i++)if((mask&(1L<<i))!=0)stable[i]=0;
         return safeCharge(stable,hp,round,sekkaRound,skillRound,mionRemaining);
+    }
+    static boolean safeB19FirstCharge(byte[] board,long mask,int hp,int operation,int round,int start,Integer mionRemaining,boolean entryBars){
+        if(!entryBars||operation!=0||round!=start||hp<350000||!Integer.valueOf(1).equals(mionRemaining)||mask!=UraDualRoulettePlan.MASK||board==null||board.length!=30)return false;
+        for(int i=0;i<30;i++)if((mask&(1L<<i))==0&&(board[i]<0||board[i]>6))return false;
+        return true;
+    }
+    static boolean b19HasteAllowed(int floor,int operation,int round,int start,boolean halfBars){
+        return floor==19&&operation==3&&round==start+2&&halfBars;
+    }
+    static boolean yukineAssistReady(UraHeldSkillInfo info){
+        return yukineAssistReady(info,false);
+    }
+    static boolean yukineAssistReady(UraHeldSkillInfo info,boolean reviewedAssistHeading){
+        return info!=null&&info.baseNamed("雪花の氷乱")&&(info.assistNamed("10連ガチャパワー")||reviewedAssistHeading)
+            &&Integer.valueOf(-1).equals(info.baseRemaining)&&Integer.valueOf(0).equals(info.assistRemaining);
+    }
+    static boolean b19SecondAttackAllowed(int operation,int round,int start,int hasteRound,int sekkaRound,int skillRound,int lastSkill){
+        return operation==6&&round==start+2&&hasteRound==round&&sekkaRound==round&&skillRound==round&&lastSkill==MION;
     }
 }

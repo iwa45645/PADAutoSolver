@@ -3,6 +3,35 @@ import java.util.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 public class UraProgressPolicyTest {
+    @Test public void b19HasteCannotUseTheWrongLayerOrGuessOverchargedBaseReadiness(){
+        assertTrue(UraProgressPolicy.yukineAssistReady(new UraHeldSkillInfo("雪花の氷乱","10連ガチャパワー",-1,0)));
+        assertFalse(UraProgressPolicy.yukineAssistReady(new UraHeldSkillInfo("雪花の氷乱","10連ガチャパワー",0,0)));
+        assertFalse(UraProgressPolicy.yukineAssistReady(new UraHeldSkillInfo("雪花の氷乱","10連ガチャパワー",-1,1)));
+        assertFalse(UraProgressPolicy.yukineAssistReady(new UraHeldSkillInfo("雪花の氷乱","別アシスト",-1,0)));
+        assertFalse(UraProgressPolicy.yukineAssistReady(null));
+        assertFalse(UraProgressPolicy.yukineAssistReady(new UraHeldSkillInfo("雪花の氷乱","10連ガチャバワー",-1,0)));
+        assertTrue(UraProgressPolicy.yukineAssistReady(new UraHeldSkillInfo("雪花の氷乱","10連ガチャバワー",-1,0),true));
+        assertFalse(UraProgressPolicy.yukineAssistReady(new UraHeldSkillInfo("雪花の氷乱","10連ガチャバワー",-1,1),true));
+        assertTrue(UraProgressPolicy.b19HasteAllowed(19,3,33,31,true));
+        assertFalse(UraProgressPolicy.b19HasteAllowed(19,3,33,31,false));
+        assertFalse(UraProgressPolicy.b19HasteAllowed(19,0,31,31,true));
+        assertFalse(UraProgressPolicy.b19HasteAllowed(19,3,34,31,true));
+        assertTrue(UraProgressPolicy.b19SecondAttackAllowed(6,33,31,33,33,33,1));
+        assertFalse(UraProgressPolicy.b19SecondAttackAllowed(6,33,31,32,33,33,1));
+        assertFalse(UraProgressPolicy.b19SecondAttackAllowed(6,33,31,33,31,33,1));
+        assertFalse(UraProgressPolicy.b19SecondAttackAllowed(6,33,31,33,33,33,5));
+        assertNull(UraProgressPolicy.script(20));
+    }
+    @Test public void b19OnlyAllowsItsUnconsumedEntryTurnAndBothFullEnemyBars(){
+        byte[] b=new byte[30];b[12]=-1;b[17]=-1;long mask=UraDualRoulettePlan.MASK;
+        assertTrue(UraProgressPolicy.safeB19FirstCharge(b,mask,350000,0,31,31,1,true));
+        assertFalse(UraProgressPolicy.safeB19FirstCharge(b,mask,349999,0,31,31,1,true));
+        assertFalse(UraProgressPolicy.safeB19FirstCharge(b,mask,350000,0,32,31,1,true));
+        assertFalse(UraProgressPolicy.safeB19FirstCharge(b,mask,350000,3,31,31,1,true));
+        assertFalse(UraProgressPolicy.safeB19FirstCharge(b,mask,350000,0,31,31,1,false));
+        assertFalse(UraProgressPolicy.safeB19FirstCharge(b,mask,350000,0,31,31,0,true));
+        b[0]=7;assertFalse(UraProgressPolicy.safeB19FirstCharge(b,mask,350000,0,31,31,1,true));
+    }
     @Test public void b16SecondChargeRequiresReviewedHalfHpAndDoesNotAssumeCanceledShield(){
         byte[] b=new byte[30];
         assertTrue(UraProgressPolicy.safeB16SecondCharge(b,350000,16,4,25,23,1,true,true));

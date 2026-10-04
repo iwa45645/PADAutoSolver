@@ -9,8 +9,8 @@ import org.json.*;
 
 /** Native reviewed floor scripts, consumed checkpoints, actual next-floor proof. */
 final class UraProgressController {
-    private static final String[] SKILLS={"フィーリングガーデン","ブリリアントコンチェルト","デッドリースペードエッジ","神泉槍グングニール","ダブル防御態勢水"};
-    private static final int[] SLOTS={1,5,0,2,4},CDS={4,2,5,5,5};
+    private static final String[] SKILLS={"フィーリングガーデン","ブリリアントコンチェルト","デッドリースペードエッジ","神泉槍グングニール","ダブル防御態勢水","10連ガチャパワー"};
+    private static final int[] SLOTS={1,5,0,2,4,3},CDS={4,2,5,5,5,3};
     private final Context context;private final UraBattleVision vision;
     private final JSONObject record=new JSONObject();
     private int floor=6,operation,phase,step,round,floorStartRound,misses;
@@ -18,7 +18,7 @@ final class UraProgressController {
     private long lastSequence=-1,actionAt,actionSequence,menuAt;
     private boolean charged,saved,prepared,postSaved;
     private volatile UraHeldSkillInfo held;
-    private volatile boolean heading;
+    private volatile boolean heading,assistHeading;
     private volatile long heldAt,heldSequence;
     private UraPuzzlePlan plan;
     private UraDualRoulettePlan dualPlan;
@@ -39,7 +39,7 @@ final class UraProgressController {
                     // Before an unconsumed attack, a changed board cannot inherit a skill-use claim.
                     if(same&&(data.optInt("phase")==7||data.optInt("phase")==9)) {
                         byte[] before=c.vision.luciferBoard(old),current=c.vision.luciferBoard(live);
-                        if(data.optInt("floor")==17||data.optInt("floor")==18){
+                        if(data.optInt("floor")>=17&&data.optInt("floor")<=19){
                             before=c.vision.rouletteBoard(old,UraDualRoulettePlan.MASK);current=c.vision.rouletteBoard(live,UraDualRoulettePlan.MASK);
                             same=c.vision.rouletteMask(old)==UraDualRoulettePlan.MASK&&c.vision.rouletteMask(live)==UraDualRoulettePlan.MASK;
                         }
@@ -67,6 +67,8 @@ final class UraProgressController {
                 }
                 // The prior B13 build only inspected Sekka at operation zero; no skill was consumed.
                 if(c.floor==13&&c.operation==0&&c.step==UraProgressPolicy.SEKKA&&(c.phase==13||c.phase==14))c.phase=2;
+                // The initial B19 build only read delayed Sekka; no action was consumed.
+                if(c.floor==19&&c.operation==0&&c.round==c.floorStartRound&&c.step==UraProgressPolicy.SEKKA&&(c.phase==13||c.phase==14))c.phase=2;
                 if(c.phase==12){c.phase=0;c.operation=0;c.floorStartRound=c.round;}
                 c.record.remove("failureReason");c.actionAt=now()-18000;return c;
             }
@@ -106,7 +108,7 @@ final class UraProgressController {
             final boolean cleared=observed==floor+1;
             return action(back,"B"+floor+"：戦闘へ戻る",()->{phase=cleared?12:2;misses=0;saved=false;});
         }
-        if(phase==12)return stop(frame,List.of(),"B"+floor+"_CLEAR_VERIFIED_B"+(floor+1)+"_CAPTURE_REQUIRED",time,seq);
+        if(phase==12)return stop(frame,List.of(),floor==19?"B19突破確認：ご指定により停止（B20は操作しません）":"B"+floor+"_CLEAR_VERIFIED_B"+(floor+1)+"_CAPTURE_REQUIRED",time,seq);
         if(phase==2) {
             boolean matched=enemy(frame);long mask=mask(frame);byte[] current=board(frame);
             record.put("enemyMatched",matched).put("rouletteMask",mask).put("boardKnown",current!=null).put("boardCols",cols()).put("boardRows",rows()).put("boardDistances",vision.boardDistances==null?new JSONArray():new JSONArray(vision.boardDistances));
@@ -117,6 +119,7 @@ final class UraProgressController {
             if(floor==8&&!unmatchRecovery&&waterUnmatch(frame))return retry(frame,List.of(),"PROGRESS_WATER_UNMATCH_NOT_CLEARED",time,seq);
             if(operation>=script.length)return stop(frame,List.of(),"PROGRESS_SCRIPT_NOT_CLEARED",time,seq);
             int op=script[operation];prepared=false;
+            if(op==UraProgressPolicy.YUKINE_ASSIST&&!UraProgressPolicy.b19HasteAllowed(floor,operation,round,floorStartRound,vision.distance(frame,"progress-b19-half-hp.png",130,1205,940,50)<.025))return stop(frame,List.of(),"PROGRESS_B19_HALF_HP_REQUIRED",time,seq);
             if(op==UraProgressPolicy.CHARGE){step=UraProgressPolicy.MION;phase=16;}
             else if(op==UraProgressPolicy.ATTACK)phase=7;
             else {step=op;phase=13;}
@@ -128,9 +131,11 @@ final class UraProgressController {
             captureHeld(d,nav,"progress-readiness");return d;
         }
         if(phase==14) {
-            if(held==null||held.baseRemaining==null||!(held.baseNamed(SKILLS[step])||heading))return retry(frame,List.of(),"PROGRESS_SKILL_READINESS_UNKNOWN:"+step,time,seq);
+            boolean assist=step==UraProgressPolicy.YUKINE_ASSIST;
+            if(assist&&!UraProgressPolicy.yukineAssistReady(held,assistHeading))return retry(frame,List.of(),"PROGRESS_YUKINE_ASSIST_READINESS_REQUIRED",time,seq);
+            if(!assist&&(held==null||held.baseRemaining==null||!(held.baseNamed(SKILLS[step])||heading)))return retry(frame,List.of(),"PROGRESS_SKILL_READINESS_UNKNOWN:"+step,time,seq);
             int next=3;
-            if(held.baseRemaining!=0)return stop(frame,List.of(),"PROGRESS_SKILL_COOLDOWN:"+step+":"+held.baseRemaining,time,seq);
+            if(!assist&&held.baseRemaining!=0)return stop(frame,List.of(),"PROGRESS_SKILL_COOLDOWN:"+step+":"+held.baseRemaining,time,seq);
             UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
             if(read!=null&&vision.backControl(frame,read))return action(read.back,"B"+floor+"：確認を閉じる",()->{phase=next;prepared=false;misses=0;});
             if(board(frame)==null)return retry(frame,List.of(),"PROGRESS_READINESS_DIALOG_OR_BOARD_REQUIRED",time,seq);
@@ -160,6 +165,7 @@ final class UraProgressController {
             if(floor==16&&operation==4)safe=UraProgressPolicy.safeB16SecondCharge(board,hp,floor,operation,round,floorStartRound,mionRemaining,
                 record.optBoolean("b16BuffsInvalidated"),vision.distance(frame,"progress-b16-half-hp.png",130,1205,940,50)<.025);
             if(dual())safe=UraProgressPolicy.safeB17Charge(board,mask(frame),hp,floor,round,sekkaRound,record.optInt("lastSkillRound",-1),mionRemaining);
+            if(floor==19)safe=UraProgressPolicy.safeB19FirstCharge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining,vision.distance(frame,"progress-b19-entry-hp.png",130,1205,940,50)<.025);
             if(!enemy(frame)||mask(frame)!=expectedMask()||!safe)return retry(frame,List.of(),"PROGRESS_CHARGE_SHIELD_HP_REQUIRED",time,seq);
             List<Integer> route=dual()?RoulettePlan.chargeRoute(board,expectedMask()):UraChargeRoute.find(board,cols(),rows());misses=0;
             if(!prepared){operation++;phase=10;record.put("chargeRoute",new JSONArray(route)).put("chargeHpLowerBound",vision.b3HpLowerBound(frame)).put("chargeSourceBoard",array(board)).put("chargeCols",cols()).put("chargeRows",rows());save(frame,List.of(),"progress-charge-consumed",time,seq);operation--;phase=15;prepared=true;return waitFor("残存軽減・HP下限・実コンボを再照合");}
@@ -170,7 +176,7 @@ final class UraProgressController {
         }
         if(phase==4) {
             List<StagePolicy.Item> text=nav.readUraDialog(frame);UraDialogPolicy.Read read=UraDialogPolicy.read(text,2712);
-            if(read==null||read.layer!=1||!read.named(SKILLS[step])||!vision.backControl(frame,read)||!vision.active(frame,read.activate))return retry(frame,text,"PROGRESS_SKILL_NOT_READY_OR_IDENTITY:"+step,time,seq);
+            if(read==null||read.layer!=(step==UraProgressPolicy.YUKINE_ASSIST?2:1)||!read.named(SKILLS[step])||!vision.backControl(frame,read)||!vision.active(frame,read.activate))return retry(frame,text,"PROGRESS_SKILL_NOT_READY_OR_IDENTITY:"+step,time,seq);
             if(!prepared){phase=5;save(frame,text,"progress-skill-consumed",time,seq);phase=4;prepared=true;return waitFor("B"+floor+"：保存後に本体スキルを再照合");}
             return action(read.activate,"B"+floor+"："+SKILLS[step]+"を発動",()->{phase=5;actionAt=now();actionSequence=seq;misses=0;held=null;});
         }
@@ -180,8 +186,9 @@ final class UraProgressController {
         }
         if(phase==6) {
             if(held==null)return retry(frame,List.of(),"PROGRESS_POST_SKILL_REQUIRED",time,seq);
-            if(heldAt<=actionAt||heldSequence<=actionSequence||!(held.baseNamed(SKILLS[step])||heading)||!Integer.valueOf(CDS[step]).equals(held.baseRemaining))return stop(frame,List.of(),"PROGRESS_SKILL_POSTCONDITION:"+step,time,seq);
-            if(!postSaved){record.put("lastSkillRound",round).put("lastSkill",step);if(step==UraProgressPolicy.SEKKA)record.put("sekkaRound",round);if(step==UraProgressPolicy.ODIN)record.put("odinRound",round);if(step==UraProgressPolicy.ESPER)record.put("esperRound",round);save(frame,List.of(),"progress-skill-verified",time,seq);postSaved=true;return waitFor("B"+floor+"：使用後証拠を保存");}
+            String postName=step==UraProgressPolicy.YUKINE_ASSIST?"雪花の氷乱":SKILLS[step];
+            if(heldAt<=actionAt||heldSequence<=actionSequence||!(held.baseNamed(postName)||heading)||!Integer.valueOf(CDS[step]).equals(held.baseRemaining))return stop(frame,List.of(),"PROGRESS_SKILL_POSTCONDITION:"+step,time,seq);
+            if(!postSaved){record.put("lastSkillRound",round).put("lastSkill",step);if(step==UraProgressPolicy.SEKKA)record.put("sekkaRound",round);if(step==UraProgressPolicy.ODIN)record.put("odinRound",round);if(step==UraProgressPolicy.ESPER)record.put("esperRound",round);if(step==UraProgressPolicy.YUKINE_ASSIST)record.put("yukineAssistRound",round);save(frame,List.of(),"progress-skill-verified",time,seq);postSaved=true;return waitFor("B"+floor+"：使用後証拠を保存");}
             UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
             if(read!=null&&vision.backControl(frame,read))return action(read.back,"B"+floor+"：スキル確認を閉じる",this::finishSkill);
             if(board(frame)==null)return retry(frame,List.of(),"PROGRESS_POST_DIALOG_OR_BOARD_REQUIRED",time,seq);
@@ -196,13 +203,14 @@ final class UraProgressController {
             if(floor==11&&record.optInt("esperRound",-1)!=round)return stop(frame,List.of(),"PROGRESS_THIS_TURN_DAMAGE_VOID_REQUIRED",time,seq);
             if(floor==12&&!UraProgressPolicy.odinAbsorbActive(round,record.optInt("odinRound",-1)))return stop(frame,List.of(),"PROGRESS_DAMAGE_ABSORB_EXPIRED",time,seq);
             if(floor==18&&!UraProgressPolicy.odinAbsorbActive(round,record.optInt("odinRound",-1)))return stop(frame,List.of(),"PROGRESS_B18_DAMAGE_ABSORB_EXPIRED",time,seq);
+            if(floor==19&&operation==6&&!UraProgressPolicy.b19SecondAttackAllowed(operation,round,floorStartRound,record.optInt("yukineAssistRound",-1),record.optInt("sekkaRound",-1),record.optInt("lastSkillRound",-1),record.optInt("lastSkill",-1)))return stop(frame,List.of(),"PROGRESS_B19_HASTE_SHIELD_MION_REQUIRED",time,seq);
             if(!UraB5Policy.enoughRecovery(board)) {
                 if(!UraB5Policy.rukaCanRecover(board)||record.optInt("recoveryUsedRound",-1)==round)return stop(frame,List.of(),"PROGRESS_RECOVERY_REQUIRED",time,seq);
                 step=UraProgressPolicy.RUKA;phase=13;record.put("recoveryPending",true);save(frame,List.of(),"progress-recovery-required",time,seq);
                 return waitFor("B"+floor+"：ルカで回復を補充するため使用可能を確認");
             }
             if(dual()){
-                try{dualPlan=UraDualRoulettePlan.solve(board,expectedMask(),44,350,12000,now());}catch(IllegalArgumentException e){return stop(frame,List.of(),"PROGRESS_NO_DUAL_ROUTE:"+e.getMessage(),time,seq);}
+                try{dualPlan=UraDualRoulettePlan.solve(board,expectedMask(),44,floor==19?2000:350,12000,now());}catch(IllegalArgumentException e){return stop(frame,List.of(),"PROGRESS_NO_DUAL_ROUTE:"+e.getMessage(),time,seq);}
                 record.put("sourceBoard",array(board)).put("route",new JSONArray(dualPlan.path)).put("dualRouletteProofPairs",100);
                 phase=9;prepared=false;save(frame,List.of(),"progress-dual-plan",time,seq);return waitFor("B"+floor+"：全100色組合せで水T字・水2セット・回復を検算済み");
             }
@@ -254,7 +262,7 @@ final class UraProgressController {
         return vision.progressBoard(frame,cols(),rows());
     }
     private long mask(Bitmap frame)throws Exception {return vision.rouletteMask(frame,cols(),rows());}
-    private boolean dual(){return floor==17||floor==18;}
+    private boolean dual(){return floor>=17&&floor<=19;}
     private long expectedMask(){return dual()?UraDualRoulettePlan.MASK:0;}
     private boolean enemy(Bitmap frame)throws Exception {
         double best=1;for(int dx=-12;dx<=12;dx+=6)for(int dy=-12;dy<=12;dy+=6)best=Math.min(best,vision.distance(frame,"progress-b"+floor+"-enemy.png",260+dx,650+dy,550,500));return best<.055;
@@ -263,11 +271,14 @@ final class UraProgressController {
         return floor==8&&vision.distance(frame,"progress-b8-water-unmatch.png",1040,1240,120,80)<.035;
     }
     private void captureHeld(StagePolicy.Decision d,StageNavigator nav,String name) {
+        boolean assistRead=step==UraProgressPolicy.YUKINE_ASSIST&&phase==13;
         d.holdMs=4000;d.heldStampedFrame=(image,current,t,s)->{
-            List<StagePolicy.Item> text=nav.readUraHeldSkill(image);UraHeldSkillInfo info=UraHeldSkillInfo.readBase(text);if(!current.getAsBoolean())return;
+            List<StagePolicy.Item> text=nav.readUraHeldSkill(image);UraHeldSkillInfo info=assistRead?UraHeldSkillInfo.read(text):UraHeldSkillInfo.readBase(text);if(!current.getAsBoolean())return;
             held=info;heldAt=t;heldSequence=s;
             heading=step==0&&vision.sekkaPostHeading(image)||step==1&&vision.distance(image,"post-mion-skill-header.png",130,230,770,50)<.025||step==4&&vision.distance(image,"post-ruka-skill-header.png",130,230,490,50)<.025;
-            record.put("reviewedHeading",heading).put("heldSkill",info==null?JSONObject.NULL:new JSONObject().put("name",info.baseName).put("remaining",info.baseRemaining));save(image,text,name,t,s);
+            assistHeading=assistRead&&vision.distance(image,"post-yukine-assist-header.png",130,380,550,50)<.025;
+            record.put("reviewedAssistHeading",assistHeading);
+            record.put("reviewedHeading",heading).put("heldSkill",info==null?JSONObject.NULL:new JSONObject().put("name",info.baseName).put("remaining",info.baseRemaining).put("assistName",info.assistName).put("assistRemaining",info.assistRemaining));save(image,text,name,t,s);
         };
     }
     private void puzzle(StagePolicy.Decision d,List<Integer> route){d.puzzlePath=route;d.puzzleCols=cols();d.puzzleRows=rows();d.puzzleRect=BoardGeometry.calculate(1220,2712,cols(),rows(),0,84);d.puzzleDurationMs=3500;d.puzzlePreciseStart=true;}
