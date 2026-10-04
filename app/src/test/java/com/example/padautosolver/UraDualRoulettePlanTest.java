@@ -38,4 +38,9 @@ public class UraDualRoulettePlanTest {
         UraDualRoulettePlan p=UraDualRoulettePlan.solve(b,UraDualRoulettePlan.MASK,44,350,8000,0);
         assertFalse(p.path.contains(12));assertFalse(p.path.contains(17));
     }
+    @Test public void B18BoardRequiresKeepingASeparateWaterMatchWhileMakingT(){
+        byte[] b={3,2,3,2,4,3,3,4,3,5,5,3,-1,3,2,3,2,-1,2,3,5,3,4,3,3,4,5,2,5,3};
+        UraDualRoulettePlan p=UraDualRoulettePlan.solve(b,UraDualRoulettePlan.MASK,44,350,8000,0);
+        assertFalse(p.path.contains(12));assertFalse(p.path.contains(17));
+    }
 }

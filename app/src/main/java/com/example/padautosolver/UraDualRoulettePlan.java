@@ -44,7 +44,7 @@ final class UraDualRoulettePlan {
             while(perimeter!=0){int p=Long.numberOfTrailingZeros(perimeter);perimeter&=perimeter-1;if(board[p]!=3)value+=60;}
             bestShape=Math.max(bestShape,value);
         }
-        return (water>=2&&t>=1&&heal>=1?1000000:0)+Math.min(2,water)*10000+Math.min(1,t)*30000+Math.min(1,heal)*5000+combos*100+bestShape;
+        return (water>=2&&t>=1&&heal>=1?1000000:0)+Math.min(2,water)*10000+Math.min(1,t)*10000+Math.min(1,heal)*5000+combos*100+bestShape;
     }
     private static long[][] shapes(){
         List<long[]> shapes=new ArrayList<>();
