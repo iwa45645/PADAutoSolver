@@ -12,6 +12,7 @@ public class UraCounterGlyphTest {
     }
     @Test public void reviewedDigitsRemainRecognizableDuringGreenGlow()throws Exception{
         for(int i=0;i<4;i++)assertTrue("counter "+i,UraCounterGlyph.matches(glyph("entry-"+i),glyph("glow-"+i),34,43));
+        for(int i=0;i<4;i++)assertTrue("red flash "+i,UraCounterGlyph.matches(glyph("entry-"+i),glyph("red-"+i),34,43));
     }
     @Test public void DifferentDigitsAndMissingCaptureDoNotPass()throws Exception{
         for(int i=0;i<3;i++)for(int j=0;j<3;j++)if(i!=j)assertFalse(UraCounterGlyph.matches(glyph("entry-"+i),glyph("glow-"+j),34,43));

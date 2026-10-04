@@ -53,8 +53,8 @@ final class UraProgressController {
                 else if(c.phase==1)c.phase=0;
                 else if(c.phase==14)c.phase=13;
                 else if(c.phase==17)c.phase=16;
-                // An unchanged entry board and all four unchanged counters prove that the
-                // B15 free charge was never applied. Its cooldown is independently reread.
+                // All four unchanged counters prove that the B15 free charge was not
+                // applied. The current board and cooldown are independently reread.
                 boolean b15EntryCounters=c.floor==15&&c.vision.b15ChargeCounters(live);
                 if(UraProgressPolicy.recoverB15Charge(c.floor,c.operation,c.phase,c.round,c.floorStartRound,
                         c.record.optInt("sekkaRound",-1),c.record.optInt("lastSkillRound",-1),b15EntryCounters)){

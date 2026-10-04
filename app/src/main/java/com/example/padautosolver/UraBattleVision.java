@@ -32,7 +32,8 @@ final class UraBattleVision {
             boolean[] expected=new boolean[34*43],current=new boolean[34*43];
             for(int y=0;y<43;y++)for(int x=0;x<34;x++){
                 expected[y*34+x]=brightWhite(ref.getPixel(5+x,5+y));
-                current[y*34+x]=brightWhite(frame.getPixel(positions[i]+5+x,793+y));
+                int pixel=frame.getPixel(positions[i]+5+x,793+y);
+                current[y*34+x]=brightWhite(pixel)||((pixel>>16)&255)>235&&((pixel>>8)&255)<80&&(pixel&255)<80;
             }
             if(!UraCounterGlyph.matches(expected,current,34,43))return false;
         }return true;
