@@ -14,6 +14,7 @@ final class UraProgressPolicy {
         if(floor==14)return new int[]{ESPER,CHARGE,MION,ATTACK};
         if(floor==15)return new int[]{CHARGE,SEKKA,MION,ATTACK};
         if(floor==16)return new int[]{ODIN,CHARGE,MION,ATTACK,CHARGE,MION,ATTACK};
+        if(floor==17)return new int[]{SEKKA,CHARGE,MION,ATTACK};
         return null;
     }
     static boolean safeCharge(byte[] board,int hp,int round,int sekkaRound,int skillRound,Integer mionRemaining) {
@@ -55,5 +56,11 @@ final class UraProgressPolicy {
         if(floor!=16||operation!=4||round!=start+2||hp<350000||!buffsInvalidated||!halfHpVerified||!Integer.valueOf(1).equals(mionRemaining)||board==null||board.length!=30)return false;
         for(byte c:board)if(c<0||c>6)return false;
         return true;
+    }
+    static boolean safeB17Charge(byte[] board,long mask,int hp,int floor,int round,int sekkaRound,int skillRound,Integer mionRemaining){
+        if(floor!=17||mask!=UraDualRoulettePlan.MASK||board==null||board.length!=30)return false;
+        byte[] stable=board.clone();
+        for(int i=0;i<30;i++)if((mask&(1L<<i))!=0)stable[i]=0;
+        return safeCharge(stable,hp,round,sekkaRound,skillRound,mionRemaining);
     }
 }

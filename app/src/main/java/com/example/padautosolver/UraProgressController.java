@@ -21,6 +21,7 @@ final class UraProgressController {
     private volatile boolean heading;
     private volatile long heldAt,heldSequence;
     private UraPuzzlePlan plan;
+    private UraDualRoulettePlan dualPlan;
     private UraProgressController(Context c){context=c;vision=new UraBattleVision(c);}
     static UraProgressController resume(Context ctx,Bitmap live)throws Exception {
         if(live.getWidth()!=1220||live.getHeight()!=2712)return null;
@@ -38,7 +39,11 @@ final class UraProgressController {
                     // Before an unconsumed attack, a changed board cannot inherit a skill-use claim.
                     if(same&&(data.optInt("phase")==7||data.optInt("phase")==9)) {
                         byte[] before=c.vision.luciferBoard(old),current=c.vision.luciferBoard(live);
-                        same=before!=null&&current!=null&&Arrays.equals(before,current);
+                        if(data.optInt("floor")==17){
+                            before=c.vision.rouletteBoard(old,UraDualRoulettePlan.MASK);current=c.vision.rouletteBoard(live,UraDualRoulettePlan.MASK);
+                            same=c.vision.rouletteMask(old)==UraDualRoulettePlan.MASK&&c.vision.rouletteMask(live)==UraDualRoulettePlan.MASK;
+                        }
+                        same=same&&before!=null&&current!=null&&Arrays.equals(before,current);
                     }
                 }finally{if(old!=null)old.recycle();}
                 if(!same)return null;
@@ -108,7 +113,7 @@ final class UraProgressController {
             // Only open the reviewed recovery skill while water's unmatchable marker obscures its artwork.
             // No orb substitution and no puzzle are permitted under this exception.
             boolean unmatchRecovery=floor==8&&operation==0&&waterUnmatch(frame);
-            if(!matched||mask!=0||(current==null&&!unmatchRecovery))return retry(frame,List.of(),"PROGRESS_ENEMY_BOARD_REQUIRED",time,seq);
+            if(!matched||mask!=expectedMask()||(current==null&&!unmatchRecovery))return retry(frame,List.of(),"PROGRESS_ENEMY_BOARD_REQUIRED",time,seq);
             if(floor==8&&!unmatchRecovery&&waterUnmatch(frame))return retry(frame,List.of(),"PROGRESS_WATER_UNMATCH_NOT_CLEARED",time,seq);
             if(operation>=script.length)return stop(frame,List.of(),"PROGRESS_SCRIPT_NOT_CLEARED",time,seq);
             int op=script[operation];prepared=false;
@@ -154,8 +159,9 @@ final class UraProgressController {
             if(floor==15)safe=UraProgressPolicy.safeB15Charge(board,hp,floor,operation,round,floorStartRound,mionRemaining,vision.b15ChargeCounters(frame));
             if(floor==16&&operation==4)safe=UraProgressPolicy.safeB16SecondCharge(board,hp,floor,operation,round,floorStartRound,mionRemaining,
                 record.optBoolean("b16BuffsInvalidated"),vision.distance(frame,"progress-b16-half-hp.png",130,1205,940,50)<.025);
-            if(!enemy(frame)||mask(frame)!=0||!safe)return retry(frame,List.of(),"PROGRESS_CHARGE_SHIELD_HP_REQUIRED",time,seq);
-            List<Integer> route=UraChargeRoute.find(board,cols(),rows());misses=0;
+            if(floor==17)safe=UraProgressPolicy.safeB17Charge(board,mask(frame),hp,floor,round,sekkaRound,record.optInt("lastSkillRound",-1),mionRemaining);
+            if(!enemy(frame)||mask(frame)!=expectedMask()||!safe)return retry(frame,List.of(),"PROGRESS_CHARGE_SHIELD_HP_REQUIRED",time,seq);
+            List<Integer> route=floor==17?RoulettePlan.chargeRoute(board,expectedMask()):UraChargeRoute.find(board,cols(),rows());misses=0;
             if(!prepared){operation++;phase=10;record.put("chargeRoute",new JSONArray(route)).put("chargeHpLowerBound",vision.b3HpLowerBound(frame)).put("chargeSourceBoard",array(board)).put("chargeCols",cols()).put("chargeRows",rows());save(frame,List.of(),"progress-charge-consumed",time,seq);operation--;phase=15;prepared=true;return waitFor("残存軽減・HP下限・実コンボを再照合");}
             StagePolicy.Decision d=action(new StagePolicy.Item("PROGRESS_CHARGE",610,1700),"B"+floor+"：現在HPを確認し実コンボで充填",()->{operation++;phase=10;actionAt=now();misses=0;});puzzle(d,route);return d;
         }
@@ -184,7 +190,7 @@ final class UraProgressController {
         if(phase==7) {
             if(cols()!=6||rows()!=5)return stop(frame,List.of(),"PROGRESS_ATTACK_LAYOUT_NOT_RESTORED",time,seq);
             byte[] board=board(frame);
-            if(!enemy(frame)||mask(frame)!=0||board==null)return retry(frame,List.of(),"PROGRESS_ATTACK_BOARD_REQUIRED",time,seq);
+            if(!enemy(frame)||mask(frame)!=expectedMask()||board==null)return retry(frame,List.of(),"PROGRESS_ATTACK_BOARD_REQUIRED",time,seq);
             if(record.optInt("lastSkillRound",-1)!=round)return stop(frame,List.of(),"PROGRESS_THIS_TURN_SKILL_REQUIRED",time,seq);
             if(floor==6&&operation==8&&record.optInt("odinRound",-1)!=round)return stop(frame,List.of(),"PROGRESS_THIS_TURN_ATTRIBUTE_VOID_REQUIRED",time,seq);
             if(floor==11&&record.optInt("esperRound",-1)!=round)return stop(frame,List.of(),"PROGRESS_THIS_TURN_DAMAGE_VOID_REQUIRED",time,seq);
@@ -194,6 +200,11 @@ final class UraProgressController {
                 step=UraProgressPolicy.RUKA;phase=13;record.put("recoveryPending",true);save(frame,List.of(),"progress-recovery-required",time,seq);
                 return waitFor("B"+floor+"：ルカで回復を補充するため使用可能を確認");
             }
+            if(floor==17){
+                try{dualPlan=UraDualRoulettePlan.solve(board,expectedMask(),44,350,12000,now());}catch(IllegalArgumentException e){return stop(frame,List.of(),"PROGRESS_NO_DUAL_ROUTE:"+e.getMessage(),time,seq);}
+                record.put("sourceBoard",array(board)).put("route",new JSONArray(dualPlan.path)).put("dualRouletteProofPairs",100);
+                phase=9;prepared=false;save(frame,List.of(),"progress-dual-plan",time,seq);return waitFor("B17：全100色組合せで水T字・水2セット・回復を検算済み");
+            }
             PuzzleGoal goal=floor>=8?PuzzleGoal.esperMionAndHeal():PuzzleGoal.waterAndHeal();PuzzleSolver.Result result=PuzzleSolver.solve(board,6,5,44,2500,2400,goal);
             try{plan=new UraPuzzlePlan(board,result,goal,now());}catch(IllegalArgumentException e){return stop(frame,List.of(),"PROGRESS_NO_VALID_ROUTE:"+e.getMessage(),time,seq);}
             record.put("sourceBoard",array(board)).put("route",new JSONArray(plan.path)).put("predictedCombos",plan.stats.combos).put("waterCombos",plan.stats.colorCombos[3]).put("healCombos",plan.stats.colorCombos[5]);
@@ -201,6 +212,15 @@ final class UraProgressController {
             phase=9;prepared=false;save(frame,List.of(),"progress-plan",time,seq);return waitFor("B"+floor+"：水2セット＋回復の経路を再照合");
         }
         if(phase==9) {
+            if(floor==17){
+                if(dualPlan==null)return stop(frame,List.of(),"PROGRESS_DUAL_PLAN_REQUIRED",time,seq);
+                if(now()-dualPlan.plannedAt>=15000){phase=7;return waitFor("B17：経路の期限切れを再探索");}
+                byte[] current=board(frame);if(current==null)return waitFor("B17：固定マスの発光を待機");
+                if(!dualPlan.current(current,mask(frame),now()))return stop(frame,List.of(),"PROGRESS_STALE_DUAL_PLAN",time,seq);
+                if(!enemy(frame))return waitFor("B17：敵の発光を待機");
+                if(!prepared){phase=10;operation++;record.put("attackConsumed",true);save(frame,List.of(),"progress-dual-consumed",time,seq);operation--;phase=9;prepared=true;return waitFor("B17：送信前に固定マスと2か所を再照合");}
+                StagePolicy.Decision d=action(new StagePolicy.Item("PROGRESS_DUAL_PUZZLE",610,1700),"B17：2か所を避けて水T字・水2セット・回復",()->{operation++;phase=10;actionAt=now();misses=0;});puzzle(d,dualPlan.path);return d;
+            }
             if(plan==null)return stop(frame,List.of(),"PROGRESS_PLAN_REQUIRED",time,seq);
             if(now()-plan.plannedAt>=15000){phase=7;return waitFor("B"+floor+"：現在の盤面から作り直す");}
             byte[] board=board(frame);if(board==null)return waitFor("B"+floor+"：ドロップの発光が収まるまで待機");
@@ -228,10 +248,12 @@ final class UraProgressController {
     private int cols(){return floor==10&&round==floorStartRound?7:6;}
     private int rows(){return cols()==7?6:5;}
     private byte[] board(Bitmap frame)throws Exception {
+        if(floor==17)return vision.rouletteBoard(frame,expectedMask());
         if(cols()==7&&vision.distance(frame,"progress-b10-expanded.png",1040,1240,120,80)>=.035)return null;
         return vision.progressBoard(frame,cols(),rows());
     }
     private long mask(Bitmap frame)throws Exception {return vision.rouletteMask(frame,cols(),rows());}
+    private long expectedMask(){return floor==17?UraDualRoulettePlan.MASK:0;}
     private boolean enemy(Bitmap frame)throws Exception {
         double best=1;for(int dx=-12;dx<=12;dx+=6)for(int dy=-12;dy<=12;dy+=6)best=Math.min(best,vision.distance(frame,"progress-b"+floor+"-enemy.png",260+dx,650+dy,550,500));return best<.055;
     }
