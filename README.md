@@ -1,157 +1,73 @@
-# BOX_SCAN 開発版 0.4.0-dev07
+# PADAutoSolver
 
-固定編成は未決定です。まず通常のモンスターBOXを読み取り、所持個体と不明項目を記録します。裏修羅自動攻略はまだ有効化していません。
+パズドラの画面認識、ルート探索、AccessibilityServiceによる連続ドラッグを行うAndroidアプリです。
 
-1. 「BOX_SCAN」を選択。
-2. 「所持一覧・BOXキャリブレーション」で列数、所持数、グリッド範囲を設定し、先頭・ALL・検索空欄・フィルタなしを確認。
-3. 画面全体を共有し、通常のモンスターBOXへ戻って「新規」。売却画面には対応しません。
-4. 走査中は画面を触らず待ちます。検出不能、重なりの曖昧さ、個体数の不一致は停止理由として保存します。
-5. 所持一覧で不明個体の番号・名前を詳細画面と照合。候補の詳細タブを「詳細」で保存。
-6. 停止位置が変わっていなければ「再開」で保存済みページと照合して続行できます。所持一覧の「保存済みページから再集計」は保存画像から未確認一覧を作り直し、元セッションも保持します。
-7. 診断ZIPは所持一覧の保存ボタンから端末Downloadへ出力できます。inventory JSONは明示的な共有操作で取り出せます。画像・JSONは端末のアプリ専用領域に保持し、自動送信しません。
+現在は **0.4.0-dev41 / versionCode 44** の開発版です。裏魔門の守護者では、修正・更新・再開を挟んでB1〜B19の実出現分岐を実機で突破しています。**最終APKだけの新規潜入からの全22階クリア、安定した連続周回は未確認**です。B20〜B22の攻略処理は未実装です。
 
-カタログを導入していないため、画像を取り込んだだけでは名前・ID・育成状態は確定しません。`completeScan=false` と走査途中/未確認の状態を区別して表示します。末尾の静止だけでは全走査を完了にしません。表示枠数（素材スタックを含む）と画面の所持数を別に記録し、件数照合・個体同定まで未完了を維持します。
+## 現在の開発状況
 
-詳細画像を一括取得する場合は「連続詳細」を使います。画像照合JSONを所持一覧へ取り込んだ後は「候補詳細（基本＋長押しスキル）」で追加検査対象だけを記録できます。BOXの並び・ALL・検索なしを保存時と揃えてください。基本画面と押下中のスキル表示を保存し、記録済みはスキップします。覚醒・潜在・アシスト・変身先の検証はまだ含まれません。
+- [現在の実装・検証状況](docs/ura-shura/implementation-status.md)
+- [開発再評価と修正の優先順位（2026-10-05）](docs/ura-shura/development-review-2026-10-05.md)
+- [次の開発者向けの入口](docs/ura-shura/handoff-prompt.md)
 
-所持一覧では番号・名前・枠番号で検索し、個体ごとの保存画像を選べます。「データ出力・BOX設定」内の「追加検査の画像ZIPをDownloadへ保存」は候補の補助画像とJSONだけを書き出します。元の全BOX画像を含む診断ZIPとは出力範囲が異なります。詳細取得後の再集計は個体との対応を守るため実行できません。
+最後の実機確認は2026-10-05 08:34:03 JST。B19突破後、Battle 20/22の入口、HP611045/611045で、利用者の指定に従って本体の自動操作を停止しました。この記載は最後の観測記録であり、現在の端末状態を保証するものではありません。B20の操作は、続行指示を受けてから行います。
 
-`MonsterCatalogProvider` のJSONインポートは `source`, `license`, `version`, `monsters` が必須です。各レコードの `monsterId` と任意の `iconHash`（64bit 16進文字列）を使い、候補を生成します。候補を所持確認済みに自動昇格させません。
+## モード
 
-自動操作はゲームの利用規約に抵触する可能性があります。root、ゲーム改変、通信・メモリ改変、検知回避は使用しません。
+| モード・機能 | 現状と制約 |
+| --- | --- |
+| 通常パズル・周回 | 通常6色、6×5/7×6、盤面探索とドラッグ。裏魔門の攻略とは別の処理。最終版での回帰試験が必要 |
+| 売却 | 専用UIと周回から分離したモード。現在の利用者条件は「合計MP30なら売却、それ以外は停止」。最終版での通し回帰試験が必要 |
+| BOX_SCAN | ページと詳細画像の実機取得、再開、診断保存。全個体の確定同定・育成情報の構造化は未完了 |
+| 裏魔門の守護者 | 利用者が選んだ固定編成と実測端末に合わせた攻略。B19まで個別検証、B20〜B22未実装 |
+| ルート確認 | 盤面と目的に対する探索・検算。全階の戦闘リプレイを保証するものではない |
 
-実装済みと実機確認済みの範囲は [実装状況](docs/ura-shura/implementation-status.md) を参照してください。通常・周回・売却の既存機能は以下に記録されています。
+モードを切り替えるときは、実行中の処理を停止してから設定します。画面認識と自動操作はPAD Auto Solver本体で行い、USBは開発・インストール・観察に使用します。
 
----
+## 裏魔門で使用する固定編成
 
-# PAD Auto Solver 0.2.1
+エスパー（No.14094）、セッカ（No.7333）、青オーディン（No.3391）、ユキネ（No.10042）、花嫁ルカ（No.2955）、助っ人ミオン（No.9411）。詳細は保存済みのTeamProfileと実機検証記録を参照してください。
 
-パズル＆ドラゴンズの通常盤面を、Android端末上で「画面キャプチャ → 盤面色認識 → ルート探索 → 自動ドラッグ」するサイドロード用Androidアプリです。
+利用者の指定により、潜入前は助っ人のミオンだけを確認します。自分の5枠の再照合やBOX再走査を潜入条件に戻しません。戦闘中のスキル・盤面・再開地点の確認は引き続き必要です。
 
-## v0.2.0 の追加点
+## 利用に必要な許可
 
-- GitHub Actionsでdebug APKを自動ビルド
-- 固定の署名鍵をGitHub Secretsから読み込み、更新可能なrelease APKを作成
-- `v0.2.0` のようなタグをpushするとGitHub ReleaseへAPKを添付
-- アプリ内の「アプリの更新を確認」からGitHub Releasesの最新版を確認
-- 新版があればAPKをダウンロードし、Androidのインストール画面を開く
-- 消去後の重力による追加コンボまで評価し、コンボ数→消去数→短い手数の順でルートを選択
-- ドラッグは1本の連続ストローク。未知の新規ドロップによる落ちコンは予測しない
-- 更新APKのパッケージ名・署名・versionCodeをインストール画面の前に検査
-- キャプチャ停止・画面サイズ変更後の古いルート実行を抑止
+アプリ内の案内に従ってオーバーレイとユーザー補助を許可し、画面キャプチャを開始します。画面共有はAndroidの同意画面を伴います。APKの更新などで共有が終了した場合は再開が必要です。認識不明・操作条件不一致・利用者の停止指定では停止し、原因と保存記録を確認します。
 
-> 自動更新チェックはGitHub APIへ匿名アクセスするため、リポジトリを非公開にすると利用できません。非公開運用の場合はActions Artifact/Releaseから手動でAPKを取得してください。
+## ビルドと検証
 
-## 対応範囲
+Java 17、Gradle Wrapper 8.9、compileSdk/targetSdk 35、minSdk 26を使用します。AndroidX設定は`gradle.properties`に保持しています。
 
-- Android 8.0+（minSdk 26）
-- 6×5通常盤面
-- 7×6盤面（設定で列数を7に変更）
-- 通常6色（火・水・木・光・闇・回復）
-- Beam Searchによるルート探索
-- キャプチャ開始後、パズドラを表示すると盤面安定を確認して自動で操作を継続
-- 赤い「停止」でキャプチャと自動操作を終了。緑のボタンで連続操作を一時停止・再開
-- 「◎」は手動で1回だけ操作する補助ボタン
-- 「◎」長押しで認識中の盤面グリッドを約1.6秒表示
-- 盤面下端余白・左右余白・探索手数・探索幅・操作時間を調整可能
-
-初版系の色認識は、毒・猛毒・お邪魔・爆弾・ルーレット・特殊なドロップスキンを保証していません。
-
-## アプリ更新で最も重要なこと
-
-Androidは、既にインストール済みのアプリを上書き更新する際に**同じapplicationIdと同じ署名鍵**を要求します。
-このプロジェクトは `com.example.padautosolver` を維持し、ReleaseビルドではGitHub Secretsの固定署名鍵を使います。
-
-署名鍵は紛失しないでください。鍵が変わると、旧版をアンインストールしない限り更新できなくなります。
-
-## GitHub Secrets
-
-リポジトリの `Settings → Secrets and variables → Actions` に以下4個を登録します。
-
-- `ANDROID_KEYSTORE_BASE64`: `.jks` ファイルをbase64化した文字列
-- `ANDROID_KEYSTORE_PASSWORD`: keystoreのパスワード
-- `ANDROID_KEY_ALIAS`: キーのalias
-- `ANDROID_KEY_PASSWORD`: キーのパスワード
-
-既存の署名バックアップを使ってください。更新用に鍵を新規作成しないでください。
-
-このプロジェクトの固定署名証明書SHA-256（秘密鍵ではありません）:
-
-`8F0319A7674AC4C94CAE72F7F53C887D7D909FC997E0852F674FAD41A3994FFC`
-
-初回に別プロジェクト用の署名鍵を作る場合の参考:
-
-```bash
-keytool -genkeypair -v -keystore pad-release.jks -alias padautosolver -keyalg RSA -keysize 2048 -validity 10000
-base64 -w 0 pad-release.jks
+```ini
+android.useAndroidX=true
+android.enableJetifier=true
 ```
-
-Windows PowerShellでbase64化する場合:
 
 ```powershell
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("pad-release.jks"))
+.\gradlew.bat :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
 ```
 
-`.jks` 自体をGitリポジトリへコミットしないでください。
+コード基準点は`d084cf38c4dc22b2c2d61c95774b22f04d9e2bf4`です。保存済みのローカルJVM結果は193件成功、失敗・エラー0件。GitHub Actionsの[Run 37244335182](https://github.com/iwa45645/PADAutoSolver/actions/runs/37244335182)ではdebug検証と固定署名のpreviewビルドが成功しています。これらはビルド・ロジック検証の証拠であり、全階自動クリアの証拠ではありません。
 
-## GitHub Actions
+## 署名・配布
 
-### debug APK
+- Repository: `iwa45645/PADAutoSolver`
+- applicationId: `com.example.padautosolver`
+- 開発ブランチ: `feature/ura-shura-full-auto`
+- 固定署名を維持し、同一packageNameで上書き更新します。
+- keystoreとパスワードはコード・リポジトリへ保存しません。
+- Actions Secrets: `ANDROID_KEYSTORE_BASE64`、`ANDROID_KEYSTORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`。
+- ローカルReleaseは既存の`ANDROID_KEYSTORE_PATH`と署名用環境変数を使います。新しい鍵は生成しません。
 
-`.github/workflows/build-apk.yml`
+[通常ビルドworkflow](.github/workflows/build-apk.yml)と[Release workflow](.github/workflows/release-apk.yml)を使用します。開発用previewと安定版Releaseは区別してください。アプリ内の更新参照先はこの専用リポジトリです。更新チェックの24時間制限は起動時処理であり、常駐して定刻実行する機能ではありません。
 
-main/masterへのpush、Pull Request、または手動実行で `PADAutoSolver-debug` Artifactを作ります。
+## 設計と検証記録
 
-### 更新用release APK
+- [原設計書 v1.1](docs/ura-shura/design-v1.1.md) / [原マイルストーン](docs/ura-shura/milestones.yaml)
+- [2026-10-02：B1](docs/ura-shura/runtime-testing-2026-10-02.md)
+- [2026-10-03：B2](docs/ura-shura/runtime-testing-2026-10-03.md)
+- [2026-10-04：B3〜B5](docs/ura-shura/runtime-testing-2026-10-04.md)
+- [2026-10-05：B6〜B19、B19後停止](docs/ura-shura/runtime-testing-2026-10-05.md)
+- [整理前のREADME](docs/ura-shura/history/readme-before-review-2026-10-05.md) / [過去の進捗全文](docs/ura-shura/history/implementation-status-before-review-2026-10-05.md)
 
-`.github/workflows/release-apk.yml`
-
-署名Secretsを設定したあと、例えば以下のタグを作ります。
-
-```bash
-git tag v0.2.0
-git push origin v0.2.0
-```
-
-Actionsが `PADAutoSolver-release.apk` をビルドし、GitHub Releaseへ添付します。
-
-次回は `app/build.gradle` の `versionCode` を必ず増やし、`versionName` も `0.2.1` 等へ更新したうえで `v0.2.1` タグを作成してください。
-
-## アプリ内更新
-
-メイン画面の「アプリの更新を確認」を押すと、固定の `iwa45645/PADAutoSolver` の最新Releaseを確認します。別リポジトリでビルドしても更新先は変わりません。
-
-新版がある場合はAPKをアプリ専用領域へダウンロードし、Androidのパッケージインストーラを開きます。初回のみ「この提供元のアプリを許可」が必要です。
-
-自動チェックは起動時に前回から24時間以上経過している場合に行います。終了中のバックグラウンド定期実行ではありません。
-
-旧 `PADAutoSolver-v0.2.0-debug.apk` はAndroid Debug署名で、固定Release署名とは異なります。旧debug版からの上書き更新はできません。固定Release版v0.2.0以降は同一署名を継続します。
-
-テストとLint: `gradle :app:testDebugUnitTest :app:lintDebug`
-
-上書き検証用の非公開ローカルAPKは、同じ署名環境変数を設定して `gradle :app:assembleRelease -PappVersionName=0.2.1 -PappVersionCode=3` で生成できます。この検証APKをv0.2.0 Releaseへ添付しないでください。
-
-GitHubのリポジトリがprivateの場合、アクセストークンをアプリへ埋め込むのは危険なので、この自動取得は使わない設計です。
-
-## 使い方
-
-1. APKをインストールして起動します。
-2. 「① オーバーレイ権限を開く」から、他のアプリの上に表示する権限を許可します。
-3. Android 13以降で「制限付き設定」の警告が出る場合は、`設定 → アプリ → PAD Auto Solver → 右上の︙ → 制限付き設定を許可` を先に実行します。
-4. 「② ユーザー補助サービスを開く」から `PAD Auto Solver` を有効にします。
-5. 「③ 画面キャプチャを開始」を押します。
-6. Androidの画面共有ダイアログでは、パズドラを読み取れるよう **画面全体** の共有を選びます。
-7. パズドラに切り替え、パズル開始後に右上の「◎」をタップします。
-
-## おすすめ初期設定
-
-- 列数: 6
-- 左右余白: 0 dp
-- 下端余白: 0 dp
-- 探索手数: 30
-- 探索幅: 1200
-- 自動スワイプ: 4000 ms
-
-## 注意
-
-ゲーム側の利用規約・不正対策に抵触する可能性があります。利用する場合は規約を確認してください。AccessibilityServiceをゲーム自動化目的でGoogle Playへ公開する用途は想定していません。
+原設計と過去の記録は履歴として保持しています。現行の利用者条件・到達点は「現在の実装・検証状況」を優先して参照してください。
