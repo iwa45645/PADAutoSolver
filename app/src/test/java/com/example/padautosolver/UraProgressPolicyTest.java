@@ -3,6 +3,18 @@ import java.util.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 public class UraProgressPolicyTest {
+    @Test public void b16SecondChargeRequiresReviewedHalfHpAndDoesNotAssumeCanceledShield(){
+        byte[] b=new byte[30];
+        assertTrue(UraProgressPolicy.safeB16SecondCharge(b,350000,16,4,25,23,1,true,true));
+        assertFalse(UraProgressPolicy.safeB16SecondCharge(b,349999,16,4,25,23,1,true,true));
+        assertFalse(UraProgressPolicy.safeB16SecondCharge(b,350000,16,4,25,23,1,false,true));
+        assertFalse(UraProgressPolicy.safeB16SecondCharge(b,350000,16,4,25,23,1,true,false));
+        assertFalse(UraProgressPolicy.safeB16SecondCharge(b,350000,16,4,25,23,0,true,true));
+        assertFalse(UraProgressPolicy.safeB16SecondCharge(b,350000,16,3,25,23,1,true,true));
+        assertFalse(UraProgressPolicy.safeB16SecondCharge(b,350000,16,4,26,23,1,true,true));
+        assertFalse(UraProgressPolicy.safeB16SecondCharge(b,350000,15,4,25,23,1,true,true));
+        b[2]=7;assertFalse(UraProgressPolicy.safeB16SecondCharge(b,350000,16,4,25,23,1,true,true));
+    }
     @Test public void b15RecoveryRequiresAllUnchangedCountersAndNoSkillConsumedOnThisFloor(){
         assertTrue(UraProgressPolicy.recoverB15Charge(15,1,10,21,21,18,20,true));
         assertTrue(UraProgressPolicy.recoverB15Charge(15,1,13,22,21,18,20,true));

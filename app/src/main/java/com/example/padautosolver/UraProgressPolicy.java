@@ -13,6 +13,7 @@ final class UraProgressPolicy {
         if(floor==13)return new int[]{CHARGE,SEKKA,MION,ATTACK};
         if(floor==14)return new int[]{ESPER,CHARGE,MION,ATTACK};
         if(floor==15)return new int[]{CHARGE,SEKKA,MION,ATTACK};
+        if(floor==16)return new int[]{ODIN,CHARGE,MION,ATTACK,CHARGE,MION,ATTACK};
         return null;
     }
     static boolean safeCharge(byte[] board,int hp,int round,int sekkaRound,int skillRound,Integer mionRemaining) {
@@ -49,5 +50,10 @@ final class UraProgressPolicy {
     static boolean recoverB15Charge(int floor,int operation,int phase,int round,int start,int sekkaRound,int skillRound,boolean entryCounters){
         return floor==15&&operation==1&&(phase==10||phase==13||phase==14)&&round>=start&&round<=start+1
             &&sekkaRound<start&&skillRound<start&&entryCounters;
+    }
+    static boolean safeB16SecondCharge(byte[] board,int hp,int floor,int operation,int round,int start,Integer mionRemaining,boolean buffsInvalidated,boolean halfHpVerified){
+        if(floor!=16||operation!=4||round!=start+2||hp<350000||!buffsInvalidated||!halfHpVerified||!Integer.valueOf(1).equals(mionRemaining)||board==null||board.length!=30)return false;
+        for(byte c:board)if(c<0||c>6)return false;
+        return true;
     }
 }

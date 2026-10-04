@@ -152,6 +152,8 @@ final class UraProgressController {
                 ||UraProgressPolicy.safeB13Charge(board,hp,floor,operation,round,floorStartRound,mionRemaining)
                 ||UraProgressPolicy.safeB15Charge(board,hp,floor,operation,round,floorStartRound,mionRemaining,floor==15&&vision.b15ChargeCounters(frame));
             if(floor==15)safe=UraProgressPolicy.safeB15Charge(board,hp,floor,operation,round,floorStartRound,mionRemaining,vision.b15ChargeCounters(frame));
+            if(floor==16&&operation==4)safe=UraProgressPolicy.safeB16SecondCharge(board,hp,floor,operation,round,floorStartRound,mionRemaining,
+                record.optBoolean("b16BuffsInvalidated"),vision.distance(frame,"progress-b16-half-hp.png",130,1205,940,50)<.025);
             if(!enemy(frame)||mask(frame)!=0||!safe)return retry(frame,List.of(),"PROGRESS_CHARGE_SHIELD_HP_REQUIRED",time,seq);
             List<Integer> route=UraChargeRoute.find(board,cols(),rows());misses=0;
             if(!prepared){operation++;phase=10;record.put("chargeRoute",new JSONArray(route)).put("chargeHpLowerBound",vision.b3HpLowerBound(frame)).put("chargeSourceBoard",array(board)).put("chargeCols",cols()).put("chargeRows",rows());save(frame,List.of(),"progress-charge-consumed",time,seq);operation--;phase=15;prepared=true;return waitFor("残存軽減・HP下限・実コンボを再照合");}
@@ -211,6 +213,9 @@ final class UraProgressController {
             List<StagePolicy.Item> text=nav.readUraCombat(frame);if(UraCombatText.blocked(text))return stop(frame,text,"PROGRESS_GAME_OVER_OR_PURCHASE",time,seq);
             if(now()-actionAt<18000)return waitFor("B"+floor+"：コンボ・敵行動・階層遷移を待機");
             if(floor==15&&operation==1&&vision.b15ChargeCounters(frame))return stop(frame,text,"PROGRESS_B15_CHARGE_NOT_APPLIED",time,seq);
+            if(floor==16&&operation>=4){
+                record.put("sekkaRound",-1).put("odinRound",-1).put("esperRound",-1).put("b16BuffsInvalidated",true);
+            }
             round++;phase=0;misses=0;saved=false;save(frame,text,"progress-result",time,seq);return waitFor("B"+floor+"：パズル後の実階層を確認");
         }
         return stop(frame,List.of(),"PROGRESS_UNKNOWN_STATE",time,seq);
