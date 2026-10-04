@@ -2,7 +2,7 @@ package com.example.padautosolver;
 
 /** Hard requirements are ranked before combo count; never infer a Lucifer instruction. */
 public final class PuzzleGoal {
-    public enum Type { MAX_COMBO, WATER_TWO_COMBOS, WATER_TWO_COMBOS_AND_HEAL,
+    public enum Type { MAX_COMBO, WATER_TWO_COMBOS, WATER_TWO_COMBOS_AND_HEAL, WATER_TWO_COMBOS_HEAL_AND_T,
         FULL_CLEAR, CLEAR_COLOR, EXACT_COMBO, NO_COMBO, AVOID_MATCH, VDP, L_SHAPE, CROSS, STALL, SPECIAL_LUCIFER }
     public final Type type;
     public final int color, exactCombos;
@@ -24,13 +24,15 @@ public final class PuzzleGoal {
         return new PuzzleGoal(Type.CLEAR_COLOR,color,count);
     }
     public static PuzzleGoal waterAndHeal() { return new PuzzleGoal(Type.WATER_TWO_COMBOS_AND_HEAL, 3, 0); }
-    // The in-game leader icon is WATER COMBO ENHANCE+, not COMBO DROP GENERATION.
+    // Legacy Mion-only goal; does not claim Esper's T-shape leader activation.
     public static PuzzleGoal esperMion() { return water(); }
+    public static PuzzleGoal esperMionAndHeal() { return new PuzzleGoal(Type.WATER_TWO_COMBOS_HEAL_AND_T,3,0); }
     boolean satisfied(PuzzleSolver.MatchStats s, int cells) {
         if(requiresComboDrop && s.comboDropsMatched==0)return false;
         switch (type) {
             case WATER_TWO_COMBOS: return s.colorCombos[3] >= 2;
             case WATER_TWO_COMBOS_AND_HEAL: return s.colorCombos[3] >= 2 && s.colorCombos[5] >= 1;
+            case WATER_TWO_COMBOS_HEAL_AND_T: return s.firstColorCombos[3]>=2 && s.firstColorCombos[5]>=1 && s.firstTShapes[3]>=1;
             case FULL_CLEAR: return s.matched == cells;
             case CLEAR_COLOR: return s.colorMatched[color] == exactCombos;
             case EXACT_COMBO: return s.combos == exactCombos;
@@ -46,6 +48,7 @@ public final class PuzzleGoal {
         switch (type) {
             case WATER_TWO_COMBOS: return Math.min(2, s.colorCombos[3]) * 10000;
             case WATER_TWO_COMBOS_AND_HEAL: return Math.min(2, s.colorCombos[3]) * 10000 + Math.min(1, s.colorCombos[5]) * 1000;
+            case WATER_TWO_COMBOS_HEAL_AND_T: return Math.min(2,s.firstColorCombos[3])*10000+Math.min(1,s.firstColorCombos[5])*1000+Math.min(1,s.firstTShapes[3])*10000;
             case FULL_CLEAR: return s.matched * 500;
             case CLEAR_COLOR: return s.colorMatched[color] * 10000;
             case EXACT_COMBO: return -Math.abs(s.combos - exactCombos) * 10000;

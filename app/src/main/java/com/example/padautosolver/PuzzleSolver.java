@@ -148,6 +148,7 @@ public final class PuzzleSolver {
     public static final class MatchStats {
         public int combos, matched, comboDropsMatched;
         public final int[] colorCombos = new int[10], colorMatched = new int[10], squares = new int[10], lShapes = new int[10], crosses = new int[10];
+        public final int[] firstColorCombos = new int[10], firstTShapes = new int[10];
     }
 
     /** Deterministic cascades only: no invented skyfall, roulette timing, or obscured cells. */
@@ -168,6 +169,7 @@ public final class PuzzleSolver {
         if(comboDropMask<0||(comboDropMask>>>initial.length)!=0)throw new IllegalArgumentException("Invalid combo drop mask");
         MatchStats result = new MatchStats();
         byte[] board = initial.clone();
+        boolean firstWave=true;
         long mask;
         while ((mask = findMatchMask(board, cols, rows)) != 0) {
             long remaining = mask;
@@ -188,6 +190,7 @@ public final class PuzzleSolver {
                 }
                 remaining &= ~component;
                 result.combos++; result.colorCombos[color]++;
+                if(firstWave)result.firstColorCombos[color]++;
                 int size = Long.bitCount(component);
                 result.colorMatched[color]+=size;
                 if (size == 9) {
@@ -197,8 +200,24 @@ public final class PuzzleSolver {
                     }
                 }
                 if (size == 5) {
+                    boolean isolated=true;
+                    for(int cell=0;cell<board.length;cell++)if((component&(1L<<cell))!=0){
+                        int cx=cell%cols,cy=cell/cols;
+                        for(int[] direction:DIRS){
+                            int nx=cx+direction[0],ny=cy+direction[1];
+                            if(nx>=0&&nx<cols&&ny>=0&&ny<rows){int adjacent=ny*cols+nx;
+                                if((component&(1L<<adjacent))==0&&board[adjacent]==color)isolated=false;
+                            }
+                        }
+                    }
                     for (int y=0;y<rows;y++) for(int x=0;x<cols;x++) {
                         int p=y*cols+x;
+                        if(firstWave&&isolated)for(int direction:new int[]{-1,1}) {
+                            if(x>0&&x+1<cols&&y+2*direction>=0&&y+2*direction<rows&&component==
+                                ((1L<<p)|(1L<<(p-1))|(1L<<(p+1))|(1L<<(p+direction*cols))|(1L<<(p+2*direction*cols))))result.firstTShapes[color]++;
+                            if(y>0&&y+1<rows&&x+2*direction>=0&&x+2*direction<cols&&component==
+                                ((1L<<p)|(1L<<(p-cols))|(1L<<(p+cols))|(1L<<(p+direction))|(1L<<(p+2*direction))))result.firstTShapes[color]++;
+                        }
                         if (x>0 && x+1<cols && y>0 && y+1<rows && component ==
                                 ((1L<<p)|(1L<<(p-1))|(1L<<(p+1))|(1L<<(p-cols))|(1L<<(p+cols)))) result.crosses[color]++;
                         for(int dx:new int[]{-1,1})for(int dy:new int[]{-1,1}) {
@@ -212,6 +231,7 @@ public final class PuzzleSolver {
             result.matched += Long.bitCount(mask);
             result.comboDropsMatched+=Long.bitCount(mask&comboDropMask);
             if(firstOnly)break;
+            firstWave=false;
             comboDropMask&=~mask;
             for(int p=0;p<board.length;p++)if((mask&(1L<<p))!=0)board[p]=-1;
             for(int x=0;x<cols;x++) {

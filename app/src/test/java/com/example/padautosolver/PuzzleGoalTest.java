@@ -18,7 +18,7 @@ public class PuzzleGoalTest {
         var s=PuzzleSolver.analyze(board("333012","333450","012451","125012","450125"),6,5);
         assertEquals(1,s.colorCombos[3]);assertFalse(PuzzleGoal.water().satisfied(s,30));
     }
-    @Test public void esperWaterComboEnhanceIconRequiresWaterTwoCombos(){
+    @Test public void legacyMionWaterGoalDoesNotClaimEsperLeaderActivation(){
         byte[] b=board("333012","012450","123333","501245","555120");
         assertTrue(PuzzleGoal.esperMion().satisfied(PuzzleSolver.analyze(b,6,5),30));
         assertTrue(PuzzleGoal.esperMion().satisfied(PuzzleSolver.analyze(b,6,5,1L),30));
@@ -27,6 +27,27 @@ public class PuzzleGoalTest {
         var taggedGoal=new PuzzleGoal(PuzzleGoal.Type.WATER_TWO_COMBOS,3,0,true);
         assertFalse(taggedGoal.satisfied(PuzzleSolver.analyze(b,6,5),30));
         assertFalse(taggedGoal.satisfied(PuzzleSolver.analyze(b,6,5,1L<<5),30));
+    }
+    @Test public void esperMionRequiresExactWaterTInFirstWaveAndSeparateWaterAndHeal(){
+        String[][] rotations={
+            {"333012","030450","030120","012333","555012"},
+            {"030012","030450","333120","012333","555012"},
+            {"301012","333450","301120","012333","555012"},
+            {"013012","333450","013120","012333","555012"}
+        };
+        for(String[] rows:rotations){
+            var s=PuzzleSolver.analyze(board(rows),6,5);
+            assertEquals(1,s.firstTShapes[3]);assertTrue(PuzzleGoal.esperMionAndHeal().satisfied(s,30));
+        }
+        byte[] six=board(rotations[0]);six[3]=3;
+        assertEquals(0,PuzzleSolver.firstWave(six,6,5).firstTShapes[3]);
+        assertFalse(PuzzleGoal.esperMionAndHeal().satisfied(PuzzleSolver.analyze(six,6,5),30));
+        byte[] extraOffLine=board(rotations[0]);extraOffLine[6]=3;
+        assertEquals(0,PuzzleSolver.firstWave(extraOffLine,6,5).firstTShapes[3]);
+        byte[] missing=board(rotations[0]);missing[13]=4;
+        assertFalse(PuzzleGoal.esperMionAndHeal().satisfied(PuzzleSolver.analyze(missing,6,5),30));
+        var cascadeOnly=new PuzzleSolver.MatchStats();cascadeOnly.colorCombos[3]=2;cascadeOnly.colorCombos[5]=1;
+        assertFalse(PuzzleGoal.esperMionAndHeal().satisfied(cascadeOnly,30));
     }
     @Test public void solveTracksComboDropThroughSwapsAndReplaysRoute(){
         byte[] b=board("330312","012450","123333","501245","555120");

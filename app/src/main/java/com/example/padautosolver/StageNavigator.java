@@ -111,8 +111,10 @@ final class StageNavigator {
         // Separate Menu from the adjacent coin/chest digits.
         lines.addAll(readCrop(frame,.86f,.19f,.998f,.22f,false,false,3));
         if(UraCombatText.joined(lines).contains("裏魔門の守護者")) {
-            for(var item:readCrop(frame,.53f,.357f,.65f,.387f,true,true,4))
+            for(var item:readCrop(frame,.50f,.354f,.66f,.390f,true,true,4))
                 lines.add(new StagePolicy.Item("UFLOOR_"+item.rawText,item.x,item.y));
+            if(UraCombatText.floor(lines)<0)
+                lines.addAll(readCrop(frame,.33f,.354f,.66f,.390f,false,false,3));
             lines.addAll(readCrop(frame,.37f,.766f,.63f,.818f,false,false,3));
         }
         return lines;

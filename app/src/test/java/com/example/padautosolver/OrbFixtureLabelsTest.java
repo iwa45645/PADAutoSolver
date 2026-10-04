@@ -28,6 +28,13 @@ public class OrbFixtureLabelsTest {
         Map<String,Integer> labels=new HashMap<>();
         while(matcher.find())assertNull("Duplicate fixture",labels.put(matcher.group(1),Integer.valueOf(matcher.group(2))));
         assertTrue(labels.size()>100);
+        Map<String,Integer> identicalImages=new HashMap<>();
+        for(var entry:labels.entrySet()){
+            byte[] bytes=Files.readAllBytes(new File(root,entry.getKey()).toPath());
+            String hash=Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-256").digest(bytes));
+            Integer previous=identicalImages.putIfAbsent(hash,entry.getValue());
+            if(previous!=null)assertEquals("Identical image has conflicting color: "+entry.getKey(),previous,entry.getValue());
+        }
         String[][] pairs={
             {"b2-light-water-20261003-19.png","normal-run2-1-19.png"},
             {"b2-light-water-20261003-22.png","b2-all-20261003-0-22.png"},

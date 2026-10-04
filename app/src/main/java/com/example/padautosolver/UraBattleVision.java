@@ -19,6 +19,25 @@ final class UraBattleVision {
         Bitmap a=Bitmap.createScaledBitmap(crop,48,32,true),b=Bitmap.createScaledBitmap(ref,48,32,true);
         try{return TeamIconMatch.distance(pixels(a),pixels(b));}finally{if(a!=crop)a.recycle();crop.recycle();if(b!=ref)b.recycle();}
     }
+    /** Literal reviewed 13/22 glyphs, at the menu's calibrated position; no OCR replacement. */
+    boolean menuFloor13(Bitmap frame)throws Exception {
+        Bitmap ref=template("menu-floor13.png");int errors=0;
+        for(int y=0;y<70;y++)for(int x=0;x<175;x++)if(brightWhite(frame.getPixel(630+x,980+y))!=brightWhite(ref.getPixel(x,y)))errors++;
+        return errors<30;
+    }
+    boolean b15ChargeCounters(Bitmap frame)throws Exception {
+        int[] positions={135,410,685,960};
+        for(int i=0;i<4;i++) {
+            Bitmap ref=template("progress-b15-counter-"+i+".png");
+            boolean[] expected=new boolean[34*43],current=new boolean[34*43];
+            for(int y=0;y<43;y++)for(int x=0;x<34;x++){
+                expected[y*34+x]=brightWhite(ref.getPixel(5+x,5+y));
+                current[y*34+x]=brightWhite(frame.getPixel(positions[i]+5+x,793+y));
+            }
+            if(!UraCounterGlyph.matches(expected,current,34,43))return false;
+        }return true;
+    }
+    private static boolean brightWhite(int pixel){return ((pixel>>16)&255)>235&&((pixel>>8)&255)>235&&(pixel&255)>235;}
     boolean initialTeam(Bitmap frame)throws Exception {
         return portrait(frame,5);
     }
@@ -133,6 +152,10 @@ final class UraBattleVision {
     }
     byte[] board(Bitmap frame)throws Exception {return board(frame,false);}
     byte[] luciferBoard(Bitmap frame)throws Exception {return board(frame,true);}
+    byte[] progressBoard(Bitmap frame,int cols,int rows)throws Exception {
+        if(!((cols==6&&rows==5)||(cols==7&&rows==6)))return null;
+        return board(frame,true,0,cols,rows);
+    }
     private byte[] board(Bitmap frame,boolean special)throws Exception {
         return board(frame,special,0);
     }
@@ -141,13 +164,23 @@ final class UraBattleVision {
         return board(frame,true,mask);
     }
     long rouletteMask(Bitmap frame)throws Exception {
+        return rouletteMask(frame,6,5);
+    }
+    long rouletteMask(Bitmap frame,int cols,int rows)throws Exception {
         if(frame.getWidth()!=1220||frame.getHeight()!=2712)return -1;
+        if(!((cols==6&&rows==5)||(cols==7&&rows==6)))return -1;
         long mask=0;int[][] offsets={{3,3},{173,3},{3,173},{173,173}};
-        for(int cell=0;cell<30;cell++) {
+        float cellSize=1200f/cols,top=2712-100-rows*cellSize,scale=cellSize/200;
+        for(int cell=0;cell<cols*rows;cell++) {
             int yes=0,uncertain=0;
             for(int k=0;k<4;k++) {
-                double d=distance(frame,"b4-roulette-corner-"+k+".png",10+cell%6*200+offsets[k][0],1612+cell/6*200+offsets[k][1],24,24);
-                if(d<.06)yes++;else if(d<.16)uncertain++;
+                double d=distance(frame,"b4-roulette-corner-"+k+".png",Math.round(10+cell%cols*cellSize+offsets[k][0]*scale),Math.round(top+cell/cols*cellSize+offsets[k][1]*scale),Math.round(24*scale),Math.round(24*scale));
+                if(d<.06)yes++;else if(d<.16){
+                    // This reviewed normal light-orb pose has a bright lower-left corner.
+                    // Gold-positive corners remain positive; ambiguity requires independent normal evidence.
+                    double normal=cols==7&&k==2?distance(frame,"progress-b10-normal-light-corner.png",Math.round(10+cell%cols*cellSize+offsets[k][0]*scale),Math.round(top+cell/cols*cellSize+offsets[k][1]*scale),Math.round(24*scale),Math.round(24*scale)):1;
+                    if(!(normal<.025&&d-normal>=.08))uncertain++;
+                }
             }
             if(yes>=3)mask|=1L<<cell;
             else if(yes>0||uncertain>0)return -1;
@@ -176,17 +209,20 @@ final class UraBattleVision {
         }return true;
     }
     private byte[] board(Bitmap frame,boolean special,long ignoredMask)throws Exception {
+        return board(frame,special,ignoredMask,6,5);
+    }
+    private byte[] board(Bitmap frame,boolean special,long ignoredMask,int cols,int rows)throws Exception {
         if(normalReferences==null)try(InputStream in=context.getAssets().open("ura-shura/normal-orbs.json")) {
             ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] bytes=new byte[4096];int read;
             while((read=in.read(bytes))!=-1)out.write(bytes,0,read);
             normalReferences=new JSONArray(out.toString("UTF-8"));
         }
         // Reviewed B1/B2 orb fixtures. Unrecognised artwork is UNKNOWN, never a hue-only guess.
-        byte[] board=new byte[30];boardDistances=new double[30];
-        for(int cell=0;cell<30;cell++) {
+        byte[] board=new byte[cols*rows];boardDistances=new double[cols*rows];
+        for(int cell=0;cell<board.length;cell++) {
             if((ignoredMask&(1L<<cell))!=0){board[cell]=-1;continue;}
-            float size=1220f/6,top=2712-84-5*size;
-            Bitmap crop=Bitmap.createBitmap(frame,Math.round((cell%6+.5f)*size)-80,Math.round(top+(cell/6+.5f)*size)-80,160,160);
+            float size=1220f/cols,top=2712-84-rows*size;int cropSize=Math.round(160f*6/cols);
+            Bitmap crop=Bitmap.createBitmap(frame,Math.round((cell%cols+.5f)*size)-cropSize/2,Math.round(top+(cell/cols+.5f)*size)-cropSize/2,cropSize,cropSize);
             Bitmap small=Bitmap.createScaledBitmap(crop,48,48,true);int[] live=pixels(small);small.recycle();crop.recycle();
             double[] byColor=new double[special?10:6];Arrays.fill(byColor,1);
             for(int i=0;i<normalReferences.length();i++) {
