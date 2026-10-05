@@ -161,8 +161,11 @@ final class UraBattleVision {
         return board(frame,special,0);
     }
     byte[] rouletteBoard(Bitmap frame,long mask)throws Exception {
-        if(mask<0||(mask>>>30)!=0)return null;
-        return board(frame,true,mask);
+        return rouletteBoard(frame,mask,6,5);
+    }
+    byte[] rouletteBoard(Bitmap frame,long mask,int cols,int rows)throws Exception {
+        if(!((cols==6&&rows==5)||(cols==7&&rows==6))||mask<0||(mask>>>(cols*rows))!=0)return null;
+        return board(frame,true,mask,cols,rows);
     }
     long rouletteMask(Bitmap frame)throws Exception {
         return rouletteMask(frame,6,5);
@@ -171,11 +174,15 @@ final class UraBattleVision {
         if(frame.getWidth()!=1220||frame.getHeight()!=2712)return -1;
         if(!((cols==6&&rows==5)||(cols==7&&rows==6)))return -1;
         long mask=0;int[][] offsets={{3,3},{173,3},{3,173},{173,173}};
-        float cellSize=1200f/cols,top=2712-100-rows*cellSize,scale=cellSize/200;
+        // The reviewed 7x6 renderer fits six rows in the original board area,
+        // rather than stretching seven cells across the full 1200px width.
+        float cellSize=cols==7?166f:200f,left=cols==7?28f:10f,top=cols==7?1611f:2712-100-rows*cellSize,scale=cellSize/200;
         for(int cell=0;cell<cols*rows;cell++) {
             int yes=0,uncertain=0;
             for(int k=0;k<4;k++) {
-                double d=distance(frame,"b4-roulette-corner-"+k+".png",Math.round(10+cell%cols*cellSize+offsets[k][0]*scale),Math.round(top+cell/cols*cellSize+offsets[k][1]*scale),Math.round(24*scale),Math.round(24*scale));
+                int x=Math.round(left+cell%cols*cellSize+offsets[k][0]*scale),y=Math.round(top+cell/cols*cellSize+offsets[k][1]*scale),size=Math.round(24*scale);
+                double d=cols==7?Math.min(distance(frame,"progress-b20-roulette-21-"+k+".png",x,y,size,size),distance(frame,"progress-b20-roulette-26-"+k+".png",x,y,size,size))
+                        :distance(frame,"b4-roulette-corner-"+k+".png",x,y,size,size);
                 if(d<.06)yes++;else if(d<.16){
                     // This reviewed normal light-orb pose has a bright lower-left corner.
                     // Gold-positive corners remain positive; ambiguity requires independent normal evidence.

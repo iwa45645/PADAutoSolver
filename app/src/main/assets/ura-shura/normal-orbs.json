@@ -6482,5 +6482,389 @@
   {
     "file": "progress-b19-half-29.png",
     "color": 2
+  },
+  {
+    "file": "progress-b20-entry-0.png",
+    "color": 1
+  },
+  {
+    "file": "progress-b20-entry-1.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b20-entry-2.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b20-entry-3.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-entry-4.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-entry-5.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b20-entry-6.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b20-entry-7.png",
+    "color": 1
+  },
+  {
+    "file": "progress-b20-entry-8.png",
+    "color": 1
+  },
+  {
+    "file": "progress-b20-entry-9.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b20-entry-10.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b20-entry-11.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-entry-12.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b20-entry-13.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-entry-14.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-entry-15.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-entry-16.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-entry-17.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-entry-18.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-entry-19.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-entry-20.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b20-entry-22.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b20-entry-23.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-entry-24.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b20-entry-25.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-entry-27.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-entry-28.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b20-entry-29.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b20-entry-30.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-entry-31.png",
+    "color": 1
+  },
+  {
+    "file": "progress-b20-entry-32.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-entry-33.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-entry-34.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-entry-35.png",
+    "color": 1
+  },
+  {
+    "file": "progress-b20-entry-36.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-entry-37.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b20-entry-38.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-entry-39.png",
+    "color": 2
+  },
+  {
+    "file": "progress-b20-entry-40.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-entry-41.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b20-charge1-0.png",
+    "color": 1
+  },
+  {
+    "file": "progress-b20-charge1-1.png",
+    "color": 1
+  },
+  {
+    "file": "progress-b20-charge1-2.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b20-charge1-3.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b20-charge1-4.png",
+    "color": 1
+  },
+  {
+    "file": "progress-b20-charge1-5.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b20-charge1-6.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-charge1-7.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-charge1-8.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-charge1-9.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-charge1-10.png",
+    "color": 2
+  },
+  {
+    "file": "progress-b20-charge1-11.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-charge1-13.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b20-charge1-14.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-charge1-15.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b20-charge1-16.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-charge1-18.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b20-charge1-19.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b20-charge1-20.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-charge1-21.png",
+    "color": 1
+  },
+  {
+    "file": "progress-b20-charge1-22.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-charge1-23.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-charge1-24.png",
+    "color": 1
+  },
+  {
+    "file": "progress-b20-charge1-25.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b20-charge1-26.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b20-charge1-27.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b20-charge1-28.png",
+    "color": 2
+  },
+  {
+    "file": "progress-b20-charge1-29.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b21-entry-0.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b21-entry-1.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b21-entry-2.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b21-entry-3.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b21-entry-4.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b21-entry-5.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b21-entry-6.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b21-entry-7.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b21-entry-8.png",
+    "color": 0
+  },
+  {
+    "file": "progress-b21-entry-9.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b21-entry-10.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b21-entry-11.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b21-entry-13.png",
+    "color": 1
+  },
+  {
+    "file": "progress-b21-entry-14.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b21-entry-15.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b21-entry-16.png",
+    "color": 2
+  },
+  {
+    "file": "progress-b21-entry-18.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b21-entry-19.png",
+    "color": 1
+  },
+  {
+    "file": "progress-b21-entry-20.png",
+    "color": 1
+  },
+  {
+    "file": "progress-b21-entry-21.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b21-entry-22.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b21-entry-23.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b21-entry-24.png",
+    "color": 3
+  },
+  {
+    "file": "progress-b21-entry-25.png",
+    "color": 5
+  },
+  {
+    "file": "progress-b21-entry-26.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b21-entry-27.png",
+    "color": 4
+  },
+  {
+    "file": "progress-b21-entry-28.png",
+    "color": 2
+  },
+  {
+    "file": "progress-b21-entry-29.png",
+    "color": 4
   }
 ]

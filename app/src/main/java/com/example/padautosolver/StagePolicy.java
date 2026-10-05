@@ -10,6 +10,7 @@ final class StagePolicy {
         Item(String text, float x, float y) { this.rawText = text; this.text = normalize(text); this.x = x; this.y = y; }
     }
     static final class Decision {
+        interface DispatchPreparation { void prepare() throws Exception; }
         interface HeldFrameConsumer {
             void accept(android.graphics.Bitmap frame, java.util.function.BooleanSupplier current) throws Exception;
         }
@@ -21,9 +22,11 @@ final class StagePolicy {
         final boolean stop;
         long holdMs = 80;
         long nextFrameDelayMs=1000;
+        long capturedAt;
         int selectionTaps = 0;
         float endY = -1;
         Runnable completed;
+        DispatchPreparation beforeDispatch;
         HeldFrameConsumer heldFrame;
         HeldStampedFrameConsumer heldStampedFrame;
         List<Integer> puzzlePath;

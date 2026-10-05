@@ -17,6 +17,8 @@ final class UraProgressPolicy {
         if(floor==17)return new int[]{SEKKA,CHARGE,MION,ATTACK};
         if(floor==18)return new int[]{ODIN,CHARGE,MION,ATTACK};
         if(floor==19)return new int[]{CHARGE,MION,ATTACK,YUKINE_ASSIST,SEKKA,MION,ATTACK};
+        if(floor==20)return new int[]{ODIN,CHARGE,MION,ATTACK,ESPER,CHARGE,MION,ATTACK};
+        if(floor==21)return new int[]{CHARGE,SEKKA,MION,ATTACK};
         return null;
     }
     static boolean safeCharge(byte[] board,int hp,int round,int sekkaRound,int skillRound,Integer mionRemaining) {
@@ -82,5 +84,24 @@ final class UraProgressPolicy {
     }
     static boolean b19SecondAttackAllowed(int operation,int round,int start,int hasteRound,int sekkaRound,int skillRound,int lastSkill){
         return operation==6&&round==start+2&&hasteRound==round&&sekkaRound==round&&skillRound==round&&lastSkill==MION;
+    }
+    static long b20Mask(int round,int start) {
+        int turns=round-start;
+        if(turns<0)return -1;
+        return turns==0?(1L<<21)|(1L<<26):turns<3?UraDualRoulettePlan.MASK:0;
+    }
+    /** Known Yo You entry: HP bounds exceed 153000*1.4 without assuming leader shields. */
+    static boolean safeB20Charge(byte[] board,long mask,int hp,int operation,int round,int start,Integer mionRemaining) {
+        int turns=round-start,cols=turns==0?7:6,rows=turns==0?6:5;
+        if(!((operation==1&&turns==0)||(operation==5&&turns==2))||hp<350000||!Integer.valueOf(1).equals(mionRemaining)
+                ||mask!=b20Mask(round,start)||board==null||board.length!=cols*rows)return false;
+        for(int i=0;i<board.length;i++)if((mask&(1L<<i))==0&&(board[i]<0||board[i]>6))return false;
+        return true;
+    }
+    static boolean safeB21Charge(byte[] board,long mask,int hp,int operation,int round,int start,Integer mionRemaining,boolean fullEnemyBars) {
+        if(!fullEnemyBars||operation!=0||round!=start||hp<350000||!Integer.valueOf(1).equals(mionRemaining)
+                ||mask!=UraDualRoulettePlan.MASK||board==null||board.length!=30)return false;
+        for(int i=0;i<30;i++)if((mask&(1L<<i))==0&&(board[i]<0||board[i]>6))return false;
+        return true;
     }
 }

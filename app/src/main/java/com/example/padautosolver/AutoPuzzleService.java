@@ -369,6 +369,7 @@ public class AutoPuzzleService extends Service {
                         if(next!=null){uraLucifer=next;clearUraBattle();decision=new StagePolicy.Decision(null,"B1突破確認済み：B2の実指示から続行",false);}
                     }
                     uraDecisionCapturedAt=capturedAt;
+                    decision.capturedAt=capturedAt;
                     bitmap.recycle();
                     String uraDecisionStatus=decision.status;
                     mainHandler.post(()->{if(uraStatus!=null)uraStatus.setText(uraDecisionStatus);});
@@ -816,14 +817,16 @@ public class AutoPuzzleService extends Service {
                 PuzzleAccessibilityService service = PuzzleAccessibilityService.getInstance();
                 if (destroyed || generation != captureGeneration || !loopEnabled) return;
                 if (service == null || !service.isGameForeground()) { scheduleLoop(1000); return; }
-                if(uraMode&&android.os.SystemClock.elapsedRealtime()-uraDecisionCapturedAt>1500){pendingControl="";scheduleLoop(250);return;}
+                if(uraMode&&(decision.capturedAt<=0||android.os.SystemClock.elapsedRealtime()-decision.capturedAt>1500)){pendingControl="";scheduleLoop(250);return;}
+                try{if(decision.beforeDispatch!=null)decision.beforeDispatch.prepare();}
+                catch(Exception e){pauseLoop("操作前の状態保存に失敗したため停止："+e.getMessage());return;}
                 android.util.Log.i("PADSolver", "stageAction=" + decision.status);
                 if(decision.puzzlePath!=null) {
                     clearUraPreview(); // Do not cover enemy messages during result/next-floor capture.
                     final int puzzleEpoch=selectionEpoch;
                     service.performDrag(decision.puzzlePath,decision.puzzleRect,decision.puzzleCols,decision.puzzleRows,decision.puzzleDurationMs,decision.puzzlePreciseStart,()->{
                         if(destroyed||generation!=captureGeneration||!loopEnabled||puzzleEpoch!=selectionEpoch)return;
-                        if(decision.completed!=null)decision.completed.run();pendingControl="";
+                        if(!completeStageDecision(decision))return;pendingControl="";
                         lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(250);
                     },()->{if(loopEnabled&&puzzleEpoch==selectionEpoch)pauseLoop("DRAG_CANCELLED：パズル結果を確認するまで再実行しません");});
                     return;
@@ -849,7 +852,7 @@ public class AutoPuzzleService extends Service {
                 final int controlEpoch=selectionEpoch;
                 service.performControl(target.x, target.y, decision.endY < 0 ? target.y : decision.endY, decision.holdMs, () -> {
                     if(destroyed||generation!=captureGeneration||!loopEnabled||mediaProjection==null||controlEpoch!=selectionEpoch)return;
-                    if (decision.completed != null) decision.completed.run();
+                    if (!completeStageDecision(decision)) return;
                     pendingControl = ""; roundGate.reset();
                     lastLoopProgress = android.os.SystemClock.elapsedRealtime();
                     scheduleLoop(navigator != null && navigator.sales.active() ? 900 : 1800);
@@ -860,6 +863,11 @@ public class AutoPuzzleService extends Service {
             if (now - lastLoopProgress > 60000) pauseLoop("自動で進められない画面のため一時停止しました");
             else scheduleLoop(decision.nextFrameDelayMs);
         }
+    }
+
+    private boolean completeStageDecision(StagePolicy.Decision decision) {
+        try{if(decision.completed!=null)decision.completed.run();return true;}
+        catch(Exception e){pauseLoop("操作後の状態保存に失敗したため停止："+e.getMessage());return false;}
     }
 
     private void performHeldCapture(PuzzleAccessibilityService service, StagePolicy.Decision decision, int generation) {

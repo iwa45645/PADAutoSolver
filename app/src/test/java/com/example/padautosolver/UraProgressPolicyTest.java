@@ -20,7 +20,7 @@ public class UraProgressPolicyTest {
         assertFalse(UraProgressPolicy.b19SecondAttackAllowed(6,33,31,32,33,33,1));
         assertFalse(UraProgressPolicy.b19SecondAttackAllowed(6,33,31,33,31,33,1));
         assertFalse(UraProgressPolicy.b19SecondAttackAllowed(6,33,31,33,33,33,5));
-        assertNull(UraProgressPolicy.script(20));
+        assertNull(UraProgressPolicy.script(22));
     }
     @Test public void b19OnlyAllowsItsUnconsumedEntryTurnAndBothFullEnemyBars(){
         byte[] b=new byte[30];b[12]=-1;b[17]=-1;long mask=UraDualRoulettePlan.MASK;
