@@ -21,7 +21,7 @@ final class UraBattleController {
     private final int helperAssistTotal;
     private final boolean dryOnly;
     private volatile int phase;
-    private int step,misses,stable;
+    private int step,misses,stable,heldRecaptures;
     private volatile long enteredAt;
     private long lastSequence=-1,actionSequence=-1,actionAt;
     private byte[] boardBefore;
@@ -206,7 +206,7 @@ final class UraBattleController {
         // Even phases open a modal; odd phases re-read that modal before any gesture.
         if(phase==2||phase==4||phase==6||phase==8) {
             if(phase==6&&sequence<=actionSequence)return waitFor("スキル使用後の新しい画面を待機");
-            if(phase>=6&&now()-actionAt>30000)return stop(frame,List.of(),"POSTCONDITION_TIMEOUT:"+step,capturedAt,sequence);
+            if(phase>=6&&now()-actionAt>30000+heldRecaptures*20000L)return stop(frame,List.of(),"POSTCONDITION_TIMEOUT:"+step,capturedAt,sequence);
             double enemy=vision.enemyDistance(frame);
             if(step<5&&enemy>.055)return retry(frame,List.of(),"B1_ENEMY_CAPTURE_REQUIRED:"+enemy,capturedAt,sequence);
             byte[] board=vision.board(frame);if(board==null)return retry(frame,List.of(),"BOARD_UNKNOWN",capturedAt,sequence);
@@ -228,6 +228,13 @@ final class UraBattleController {
                 List<StagePolicy.Item> text=nav.readUraHeldSkill(held);
                 UraHeldSkillInfo info=UraHeldSkillInfo.read(text);
                 if(!current.getAsBoolean())return;
+                if(info==null) {
+                    run.put("heldSkill",JSONObject.NULL).put("heldAt",time).put("heldSequence",seq).put("heldReadSource","RGB_ZOOM_3_REJECTED");
+                    save(held,text,"held-unreadable-"+phase+"-"+step,time,seq);
+                    text=nav.readUraHeldSkillDense(held);info=UraHeldSkillInfo.read(text);
+                    if(!current.getAsBoolean())return;
+                    run.put("heldReadSource","RGB_ZOOM_4");
+                }else run.put("heldReadSource","RGB_ZOOM_3");
                 heldSkill=info;heldAt=time;heldSequence=seq;
                 heldSekkaPostHeading=step==2&&vision.sekkaPostHeading(held);
                 run.put("heldSkill",info==null?JSONObject.NULL:new JSONObject().put("actor",info.actorName).put("baseName",info.baseName).put("baseRemaining",info.baseRemaining).put("assistName",info.assistName).put("assistRemaining",info.assistRemaining))
@@ -241,7 +248,10 @@ final class UraBattleController {
         UraDialogPolicy.Read read=UraDialogPolicy.read(lines,2712);
         if(phase==3||phase==7||phase==9) {
             if(phase!=3||read==null) {
-            if(heldSkill==null)return retry(frame,lines,"HELD_SKILL_CAPTURE_REQUIRED",capturedAt,sequence);
+            if(heldSkill==null) {
+                if(phase==7||phase==9)return recaptureHeld(frame,lines,read,capturedAt,sequence);
+                return retry(frame,lines,"HELD_SKILL_CAPTURE_REQUIRED",capturedAt,sequence);
+            }
             if(phase==7||phase==9) {
                 if(heldAt<=actionAt||heldSequence<=actionSequence)return stop(frame,lines,"STALE_POSTCONDITION",capturedAt,sequence);
             }
@@ -279,7 +289,17 @@ final class UraBattleController {
         }
         return stop(frame,lines,"B1_STATE_UNKNOWN",capturedAt,sequence);
     }
-    private void advance(){step++;phase=step==6?11:4;}
+    private void advance(){step++;heldRecaptures=0;phase=step==6?11:4;}
+    private StagePolicy.Decision recaptureHeld(Bitmap frame,List<StagePolicy.Item> lines,UraDialogPolicy.Read read,long time,long seq)throws Exception {
+        if(heldRecaptures>=2)return stop(frame,lines,"HELD_SKILL_CAPTURE_REQUIRED_AFTER_RECAPTURE",time,seq);
+        String expected=phase==9?(step==1?BEFORE[3]:AFTER[1]):AFTER[step];
+        if(read!=null&&(read.layer!=1||!read.named(expected)||!vision.backControl(frame,read)))return retry(frame,lines,"HELD_SKILL_CAPTURE_REQUIRED",time,seq);
+        if(vision.enemyDistance(frame)>.055||(read==null&&vision.board(frame)==null))return retry(frame,lines,"HELD_SKILL_CAPTURE_REQUIRED",time,seq);
+        int previousPhase=phase;
+        Runnable again=()->{heldRecaptures++;heldSkill=null;heldAt=heldSequence=-1;phase=previousPhase-1;reset();};
+        if(read!=null)return close(read,"読み取りが一致しないため、発動せず閉じて残りターンを再取得",again);
+        again.run();return waitFor("長押しの残りターンを再取得（"+heldRecaptures+"/2）");
+    }
     private StagePolicy.Decision puzzle(Bitmap frame,StageNavigator nav,long time,long seq)throws Exception {
         List<StagePolicy.Item> lines;
         if(phase==11) {
@@ -415,7 +435,7 @@ final class UraBattleController {
         String prefix=name+"-"+System.currentTimeMillis();
         try(OutputStream out=new FileOutputStream(new File(dir,prefix+".png"))){frame.compress(Bitmap.CompressFormat.PNG,100,out);}
         JSONArray ocr=new JSONArray();for(var line:lines)ocr.put(new JSONObject().put("text",line.rawText).put("x",line.x).put("y",line.y));
-        JSONObject data=new JSONObject(run.toString()).put("scene",name).put("capturedAt",capturedAt).put("sequence",sequence).put("phase",phase).put("step",step).put("ocr",ocr);
+        JSONObject data=new JSONObject(run.toString()).put("scene",name).put("capturedAt",capturedAt).put("sequence",sequence).put("phase",phase).put("step",step).put("heldRecaptures",heldRecaptures).put("ocr",ocr);
         JSONArray actualRemaining=new JSONArray();for(Integer n:lastAssistRemaining)actualRemaining.put(n==null?JSONObject.NULL:n);
         data.put("lastAssistRemaining",actualRemaining).put("monitorBefore",monitorBefore==null?JSONObject.NULL:monitorBefore);
         if(vision.boardDistances!=null){JSONArray scores=new JSONArray();for(double d:vision.boardDistances)scores.put(d);data.put("normalOrbTemplateDistances",scores).put("distanceIsNotProbability",true);}

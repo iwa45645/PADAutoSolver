@@ -142,7 +142,13 @@ final class StageNavigator {
         return out;
     }
     List<StagePolicy.Item> readUraHeldSkill(Bitmap frame)throws Exception {
-        List<StagePolicy.Item> out=readCrop(frame,.02f,.20f,.97f,.40f,false,false,3);
+        return readUraHeldSkill(frame,3);
+    }
+    List<StagePolicy.Item> readUraHeldSkillDense(Bitmap frame)throws Exception {
+        return readUraHeldSkill(frame,4);
+    }
+    private List<StagePolicy.Item> readUraHeldSkill(Bitmap frame,int tooltipZoom)throws Exception {
+        List<StagePolicy.Item> out=readCrop(frame,.02f,.20f,.97f,.40f,false,false,tooltipZoom);
         for(var item:readCrop(frame,.002f,.083f,.74f,.110f,false,false,3))
             out.add(new StagePolicy.Item("USH1_"+item.rawText,item.x,item.y));
         // The same cooldowns are repeated in much larger text at the top-right during a hold.

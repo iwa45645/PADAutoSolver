@@ -3,6 +3,11 @@ import org.junit.Test;
 import java.util.List;
 import static org.junit.Assert.*;
 public class UraHeldSkillInfoTest {
+ @Test public void actualYukineFiveVersusFifteenConflictRequiresAnotherImageRead(){
+  assertNull(UraHeldSkillInfo.read(List.of(item("スキル1:雪雲の一変使用可能"),item("スキル2:10連ガチャパワーあと5ターン"),item("UCD1_使用可能"),item("UCD2_あと15ターン"))));
+  var fresh=UraHeldSkillInfo.read(List.of(item("スキル1:雪雲の一変使用可能"),item("スキル2:10連ガチャパワーあと15ターン"),item("UCD1_使用可能"),item("UCD2_あと15ターン")));
+  assertEquals(Integer.valueOf(0),fresh.baseRemaining);assertEquals(Integer.valueOf(15),fresh.assistRemaining);
+ }
  @Test public void independentlyReadBaseHeaderCanProvideExactIdentityWithoutRepairingTheTooltip(){
   var info=UraHeldSkillInfo.read(List.of(item("スキル1:ダブル防御館勢・水あと5ターン"),item("USH1_スキルダブル防御態勢・水")));
   assertTrue(info.baseNamed("ダブル防御態勢・水"));
