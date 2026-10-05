@@ -120,3 +120,7 @@ dev64は230 JVM・署名Release・lint・[CI](https://github.com/iwa45645/PADAut
 dev65は231 JVM・署名Release・lint・[CI](https://github.com/iwa45645/PADAutoSolver/actions/runs/37260129202)成功。実機12:38:26、BATTLE_RESUME_CAPTURE_REQUIREDで停止し、戦闘操作を追加送信していない。dev66で本体が拒否したフレームを保存し、12:44:11にB2_RESUME_EVIDENCE_REQUIREDで停止した。実証跡resume-scene-rejected-1791171848235.json/pngではluciferDistance=0.010585、specialBoardKnown=false。敵画像は認識できており、盤面のcell6のロック付き木、cell7/27の毒表示が既存0.07を超える。
 
 dev67は未操作のB2盤面から別フレームを追加採取し、ロック付き木と毒の参照を追加する。使わない8フレーム×3セルと本体拒否画像3セルは検証用に分離し、通常色・お邪魔を含む全参照とのmarginを検証する。閾値は変更しない。MENUの鮮度修正、B2指示、HP差、全階通し・連続周回はまだ実機で確認が必要。
+
+dev67は232 JVM・署名Release・lint・[CI](https://github.com/iwa45645/PADAutoSolver/actions/runs/37260983144)成功。12:50:53に同じ完了済みB1結果からMENU操作が成功し、B1パズルを再送せず2/22を確認。B2 runIdは3a89d98b-ceb5-4aeb-8d46-83b4677fcec7。12:51:40に毒消し、12:52:14に0コンボ、12:53:04に最後の水/光全消しを本体が各1回実行。3/22を実確認したが、次の読み取りでUFLOOR_e 3/22となりfloor=-1、12:53:42にB2_FLOOR_CAPTURE_REQUIREDで停止した。証跡lucifer-floor-1791172410018.json/pngとlucifer-stop-1791172419763.json/png。
+
+dev68は校正済み数値領域の先頭に残るBattle末尾の文字を許容し、実数字3/22を読めるようにする。数字・範囲・矛盾の拒否は維持。実完成済みphase6/trial2/ALL/observedFloor3の同じMENUだけを閉じる再開を追加し、B2の試練を再送しない。MENU越しのB3画像と左右の木/光盤面から、今回はファクト分岐と推定した。[攻略データ](https://appmedia.jp/pazudora/5088673)のB3ファクト/レオニス分岐と先制を照合した。既存B3はレオニスだけで、この別分岐は未実装。階層確認を修正しても、この潜入は安定周回の成功とはならない。

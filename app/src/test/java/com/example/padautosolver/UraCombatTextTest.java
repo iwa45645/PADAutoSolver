@@ -17,6 +17,10 @@ public class UraCombatTextTest {
  }
  @Test public void literalFloorAndBoundedControlOnly(){
   assertEquals(2,UraCombatText.floor(List.of(i("Battle 2/22"))));
+  assertEquals(3,UraCombatText.floor(List.of(i("UFLOOR_e 3/22"))));
+  assertEquals(-1,UraCombatText.floor(List.of(i("UFLOOR_e 3/22"),i("Battle 2/22"))));
+  assertEquals(-1,UraCombatText.floor(List.of(i("UFLOOR_e2 3/22"))));
+  assertEquals(-1,UraCombatText.floor(List.of(i("3/22"))));
   assertEquals(-1,UraCombatText.floor(List.of(i("Battle Z/22"))));
   assertEquals(-1,UraCombatText.floor(List.of(i("Battle 2/22"),i("UFLOOR_1/22"))));
   assertEquals(-1,UraCombatText.floor(List.of(i("Battle 23/22"))));

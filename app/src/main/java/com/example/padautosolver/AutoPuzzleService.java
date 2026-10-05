@@ -320,6 +320,8 @@ public class AutoPuzzleService extends Service {
                         uraB4=uraProgress==null&&uraB5==null?UraB4Controller.resume(this,bitmap):null;
                         uraB3=uraProgress==null&&uraB5==null&&uraB4==null?UraB3Controller.resume(this,bitmap):null;
                         uraLucifer=uraProgress==null&&uraB5==null&&uraB4==null&&uraB3==null?UraLuciferController.resume(this,bitmap):null;
+                        if(uraLucifer==null&&uraProgress==null&&uraB5==null&&uraB4==null&&uraB3==null)
+                            uraLucifer=UraLuciferController.resumeCompletedMenu(this,bitmap,navigator);
                         if(uraProgress!=null||uraB5!=null||uraB3!=null||uraB4!=null){clearUraBattle();uraPreflight=null;}
                         UraBattleController resumedResult=null;
                         if(uraLucifer!=null) {

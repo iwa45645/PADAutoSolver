@@ -6,7 +6,8 @@ final class UraCombatText {
     static String joined(List<StagePolicy.Item> items){StringBuilder b=new StringBuilder();for(var i:items)b.append(i.text);return UraDialogPolicy.clean(b.toString());}
     static int floor(List<StagePolicy.Item> items){
         int found=-1;
-        for(var item:items){Matcher m=Pattern.compile("(?:BATTLE|UFLOOR_)([0-9]{1,2})/22").matcher(item.text);if(m.find()){
+        // Calibrated numeric crop can include Battle's trailing letter. Never substitute literal digits.
+        for(var item:items){Matcher m=Pattern.compile("(?:BATTLE|UFLOOR_[A-Z]*)([0-9]{1,2})/22").matcher(item.text);if(m.find()){
             int n=Integer.parseInt(m.group(1));if(n<1||n>22||found>0&&found!=n)return -1;found=n;
         }}return found;
     }

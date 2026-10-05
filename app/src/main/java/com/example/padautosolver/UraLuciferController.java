@@ -39,6 +39,24 @@ final class UraLuciferController {
         this.context=context;vision=new UraBattleVision(context);
         record.put("runId",UUID.randomUUID().toString()).put("mode","B2_LUCIFER");
     }
+    static UraLuciferController resumeCompletedMenu(Context context,Bitmap live,StageNavigator nav)throws Exception {
+        if(live.getWidth()!=1220||live.getHeight()!=2712)return null;
+        File stateFile=new File(context.getFilesDir(),"ura-lucifer-state.json"),picture=new File(context.getFilesDir(),"ura-lucifer-state.png");
+        if(!stateFile.isFile()||!picture.isFile()||System.currentTimeMillis()-stateFile.lastModified()>3600000)return null;
+        JSONObject state=new JSONObject(new String(Files.readAllBytes(stateFile.toPath()),StandardCharsets.UTF_8));
+        if(state.optInt("phase")!=6||state.optInt("trial",-1)!=2||state.optInt("observedFloor")!=3
+                ||!state.optBoolean("awaitingResult")||!"ALL".equals(state.optString("instruction")))return null;
+        List<StagePolicy.Item> text=nav.readUraCombat(live);
+        if(UraCombatText.floor(text)!=3||!UraCombatText.joined(text).contains("裏魔門の守護者")||UraCombatText.control(text,"戻る",2080,2220)==null)return null;
+        Bitmap previous=BitmapFactory.decodeFile(picture.getPath());if(previous==null)return null;
+        // Only close the same completed menu; B3 requires its own enemy and board proof.
+        try{if(!UraBattleVision.sameRunPortraits(previous,live))return null;}finally{previous.recycle();}
+        UraLuciferController c=new UraLuciferController(context);
+        for(Iterator<String> it=state.keys();it.hasNext();){String key=it.next();c.record.put(key,state.get(key));}
+        c.record.remove("failureReason");c.record.put("resumeEvidence","Same native completed ALL result and literal B3 menu; BACK only, no trial replay");
+        c.phase=6;c.trial=2;c.instruction=LuciferInstruction.ALL;c.observationOnly=true;c.floorEvidenceSaved=true;c.menuOpenedAt=now()-3000;
+        return c;
+    }
     static boolean isScene(Context context,Bitmap frame)throws Exception {return new UraBattleVision(context).lucifer(frame);}
     static UraLuciferController resume(Context context,Bitmap live)throws Exception {
         UraLuciferController c=new UraLuciferController(context);
