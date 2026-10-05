@@ -72,7 +72,9 @@ final class UraBattleController {
         UraBattleVision vision=new UraBattleVision(context);
         if(read==null||read.layer!=layer||!read.named(expected)||!vision.backControl(live,read)||vision.enemyDistance(live)>.055)return null;
         Bitmap previous=BitmapFactory.decodeFile(picture.getPath());if(previous==null)return null;
-        try {if(previous.getWidth()!=live.getWidth()||previous.getHeight()!=live.getHeight()||!UraBattleVision.sameRunPortraits(previous,live))return null;}
+        // Actual stopped frame has Sekka's blinking 35 in the 1380px band.
+        // This authorizes only BACK; combat restoration still recaptures its full proof.
+        try {if(previous.getWidth()!=live.getWidth()||previous.getHeight()!=live.getHeight()||!UraBattleVision.sameStablePortraits(previous,live))return null;}
         finally{previous.recycle();}
         StagePolicy.Decision back=new StagePolicy.Decision(read.back,"保存済みB1の同じスキル画面を閉じ、盤面と使用後状態を再確認",false);
         back.holdMs=160;return back;
