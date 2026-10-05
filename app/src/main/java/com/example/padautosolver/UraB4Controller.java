@@ -146,9 +146,9 @@ final class UraB4Controller {
             long mask=vision.rouletteMask(frame);byte[] board=vision.rouletteBoard(frame,mask);
             if(Long.bitCount(mask)!=1||board==null)return retry(frame,List.of(),"B4_ROULETTE_MASK_OR_BOARD_UNKNOWN",time,seq);
             if(!vision.gears(frame)||vision.b3HpLowerBound(frame)<230000)return retry(frame,List.of(),"B4_ENEMY_AND_HP_REQUIRED",time,seq);
-            try{plan=RoulettePlan.solve(board,mask,40,700,5000,now());}catch(IllegalArgumentException e){return stop(frame,List.of(),"B4_NO_ROBUST_ROUTE:"+e.getMessage(),time,seq);}
-            record.put("rouletteMask",mask).put("sourceBoard",array(board)).put("route",new JSONArray(plan.path)).put("worstWater",plan.water).put("worstHeal",plan.heal).put("worstFirstWaveCombos",plan.combos).put("proof","ALL_TEN_COLORS_FIRST_WAVE_NO_ROULETTE_VISIT");
-            phase=9;prepared=false;save(frame,List.of(),"b4-plan",time,seq);return waitFor("B4：全ルーレット色で水2セット＋回復を確認");
+            try{plan=RoulettePlan.solveEsper(board,mask,44,1200,5000,now());}catch(IllegalArgumentException e){return stop(frame,List.of(),"B4_NO_ROBUST_ROUTE:"+e.getMessage(),time,seq);}
+            record.put("rouletteMask",mask).put("sourceBoard",array(board)).put("route",new JSONArray(plan.path)).put("worstWater",plan.water).put("worstHeal",plan.heal).put("worstWaterT",plan.waterT).put("worstFirstWaveCombos",plan.combos).put("proof","ALL_TEN_COLORS_T_WATER2_HEAL_FIRST_WAVE_NO_ROULETTE_VISIT");
+            phase=9;prepared=false;save(frame,List.of(),"b4-plan",time,seq);return waitFor("B4：全ルーレット色で水T字・水2セット＋回復を確認");
         }
         if(phase==9) {
             long mask=vision.rouletteMask(frame);byte[] board=vision.rouletteBoard(frame,mask);

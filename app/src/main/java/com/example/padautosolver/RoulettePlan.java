@@ -6,13 +6,16 @@ final class RoulettePlan {
     final byte[] source;
     final long mask,plannedAt;
     final List<Integer> path;
-    final int water,heal,combos;
+    final int water,heal,combos,waterT;
     RoulettePlan(byte[] source,long mask,List<Integer> path,long now) {
+        this(source,mask,path,now,false);
+    }
+    RoulettePlan(byte[] source,long mask,List<Integer> path,long now,boolean requiresT) {
         validate(source,mask);this.source=source.clone();this.mask=mask;plannedAt=now;
         this.path=Collections.unmodifiableList(new ArrayList<>(path));
         byte[] replay=replay(source,mask,path);
-        int[] worst=worst(replay,mask);water=worst[0];heal=worst[1];combos=worst[2];
-        if(path.size()<2||water<2||heal<1)throw new IllegalArgumentException("No phase-independent water2/heal1");
+        int[] worst=worst(replay,mask);water=worst[0];heal=worst[1];combos=worst[2];waterT=worst[3];
+        if(path.size()<2||water<2||heal<1||requiresT&&waterT<1)throw new IllegalArgumentException("No phase-independent water2/heal1/T requirement");
     }
     static void validate(byte[] b,long mask) {
         if(b==null||b.length!=30||Long.bitCount(mask)!=1||(mask>>>30)!=0||mask<0)throw new IllegalArgumentException("One verified roulette required");
@@ -53,14 +56,14 @@ final class RoulettePlan {
         }return false;
     }
     static int[] worst(byte[] b,long mask) {
-        int p=Long.numberOfTrailingZeros(mask),water=30,heal=30,combos=30;
+        int p=Long.numberOfTrailingZeros(mask),water=30,heal=30,combos=30,waterT=30;
         // All ten recognized orb types, a superset of Yukine's four-color cycle.
         // Includes water that can join two matched components into one.
         byte[] copy=b.clone();
         for(byte color=0;color<10;color++) {
             copy[p]=color;PuzzleSolver.MatchStats s=PuzzleSolver.firstWave(copy,6,5);
-            water=Math.min(water,s.colorCombos[3]);heal=Math.min(heal,s.colorCombos[5]);combos=Math.min(combos,s.combos);
-        }return new int[]{water,heal,combos};
+            water=Math.min(water,s.colorCombos[3]);heal=Math.min(heal,s.colorCombos[5]);combos=Math.min(combos,s.combos);waterT=Math.min(waterT,s.firstTShapes[3]);
+        }return new int[]{water,heal,combos,waterT};
     }
     boolean current(byte[] live,long liveMask,long now) {
         if(live==null||live.length!=30||mask!=liveMask||now<plannedAt||now-plannedAt>15000)return false;
@@ -72,8 +75,14 @@ final class RoulettePlan {
         Node(byte[] b,int p,int prev,int depth,int score,Node parent){this.b=b;this.p=p;this.prev=prev;this.depth=depth;this.score=score;this.parent=parent;}
     }
     static RoulettePlan solve(byte[] source,long mask,int steps,int width,long budget,long now) {
+        return solve(source,mask,steps,width,budget,now,false);
+    }
+    static RoulettePlan solveEsper(byte[] source,long mask,int steps,int width,long budget,long now) {
+        return solve(source,mask,steps,width,budget,now,true);
+    }
+    private static RoulettePlan solve(byte[] source,long mask,int steps,int width,long budget,long now,boolean requiresT) {
         validate(source,mask);long deadline=System.nanoTime()+budget*1000000L;List<Node> beam=new ArrayList<>();Node best=null;
-        int score=score(source,mask);for(int i=0;i<30;i++)if((mask&(1L<<i))==0){Node n=new Node(source.clone(),i,-1,0,score,null);beam.add(n);best=n;}
+        int score=score(source,mask,requiresT);for(int i=0;i<30;i++)if((mask&(1L<<i))==0){Node n=new Node(source.clone(),i,-1,0,score,null);beam.add(n);best=n;}
         outer:for(int depth=1;depth<=steps;depth++) {
             PriorityQueue<Node> top=new PriorityQueue<>(Comparator.comparingInt(n->n.score));Set<Long> seen=new HashSet<>();
             for(Node n:beam) {
@@ -83,7 +92,7 @@ final class RoulettePlan {
                     if(p<0||p>=30||p==n.prev||Math.abs(p%6-n.p%6)+Math.abs(p/6-n.p/6)!=1||(mask&(1L<<p))!=0)continue;
                     byte[] b=n.b.clone();byte v=b[p];b[p]=b[n.p];b[n.p]=v;
                     long hash=Arrays.hashCode(b)*961L+p*31L+n.p;if(!seen.add(hash))continue;
-                    Node c=new Node(b,p,n.p,depth,score(b,mask),n);
+                    Node c=new Node(b,p,n.p,depth,score(b,mask,requiresT),n);
                     if(c.score>best.score||best.depth==0&&c.score==best.score)best=c;
                     if(top.size()<width)top.add(c);else if(c.score>top.peek().score){top.poll();top.add(c);}
                 }
@@ -92,10 +101,10 @@ final class RoulettePlan {
             if(best.score>=1000000)break;
         }
         List<Integer> path=new ArrayList<>();for(Node n=best;n!=null;n=n.parent)path.add(n.p);Collections.reverse(path);
-        return new RoulettePlan(source,mask,path,now);
+        return new RoulettePlan(source,mask,path,now,requiresT);
     }
-    private static int score(byte[] b,long mask) {
-        int[] w=worst(b,mask);int score=(w[0]>=2&&w[1]>=1?1000000:0)+Math.min(2,w[0])*10000+Math.min(1,w[1])*5000+w[2]*100;
+    private static int score(byte[] b,long mask,boolean requiresT) {
+        int[] w=worst(b,mask);int score=(w[0]>=2&&w[1]>=1&&(!requiresT||w[3]>=1)?1000000:0)+Math.min(2,w[0])*10000+Math.min(1,w[1])*5000+w[2]*100+(requiresT?Math.min(1,w[3])*10000:0);
         for(int i=0;i<30;i++)if((mask&(1L<<i))==0)for(int d:new int[]{1,6}) {
             int j=i+d,k=i+2*d;if(k>=30||d==1&&i/6!=k/6||(mask&((1L<<j)|(1L<<k)))!=0)continue;
             if(b[i]==3||b[i]==5){if(b[i]==b[j])score+=30;if(b[i]==b[k])score+=30;}

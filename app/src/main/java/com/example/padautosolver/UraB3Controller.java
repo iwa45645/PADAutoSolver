@@ -159,12 +159,12 @@ final class UraB3Controller {
         if(phase==8) {
             if(!vision.leonis(frame))return stop(frame,List.of(),"B3_PUZZLE_ENEMY_CHANGED",time,seq);
             byte[] board=vision.luciferBoard(frame);if(board==null)return retry(frame,List.of(),"B3_BOARD_UNKNOWN",time,seq);
-            PuzzleGoal goal=round==0?new PuzzleGoal(PuzzleGoal.Type.FULL_CLEAR,4,0):PuzzleGoal.waterAndHeal();
+            PuzzleGoal goal=round==0?new PuzzleGoal(PuzzleGoal.Type.FULL_CLEAR,4,0):PuzzleGoal.esperMionAndHeal();
             if(round==0&&!UraB3Policy.allDark(board))return stop(frame,List.of(),"B3_REFRESH_BOARD_CHANGED",time,seq);
             PuzzleSolver.Result result=round==0?new PuzzleSolver.Result(List.of(0,1,0),1,30,2,0,0,true):PuzzleSolver.solve(board,6,5,44,2500,1800,goal);
             try{plan=new UraPuzzlePlan(board,result,goal,now());}catch(IllegalArgumentException e){return stop(frame,List.of(),"B3_NO_VALID_ROUTE:"+e.getMessage(),time,seq);}
             record.put("sourceBoard",array(board)).put("route",new JSONArray(plan.path)).put("goal",goal.type.name()).put("predictedCombos",plan.stats.combos)
-                .put("waterCombos",plan.stats.colorCombos[3]).put("healCombos",plan.stats.colorCombos[5]).put("puzzleConsumed",false);
+                .put("waterCombos",plan.stats.colorCombos[3]).put("healCombos",plan.stats.colorCombos[5]).put("firstWaterT",plan.stats.firstTShapes[3]).put("puzzleConsumed",false);
             phase=9;prepared=false;save(frame,List.of(),"b3-plan",time,seq);
             // The panel's expanded route preview covers Leonis' face on this device.
             // Keep the immutable dry-run evidence in the native log and leave that ROI visible.

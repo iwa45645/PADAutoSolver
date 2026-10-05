@@ -294,9 +294,9 @@ final class UraBattleController {
         }
         if(phase==15) {
             byte[] board=vision.board(frame);if(board==null)return retry(frame,List.of(),"BOARD_UNKNOWN",time,seq);
-            PuzzleGoal goal=PuzzleGoal.waterAndHeal();PuzzleSolver.Result result=PuzzleSolver.solve(board,6,5,44,2000,900,goal);
+            PuzzleGoal goal=PuzzleGoal.esperMionAndHeal();PuzzleSolver.Result result=PuzzleSolver.solve(board,6,5,44,2500,1800,goal);
             try{puzzlePlan=new UraPuzzlePlan(board,result,goal,now());}catch(IllegalArgumentException e){return stop(frame,List.of(),"NO_VALID_ROUTE:"+e.getMessage(),time,seq);}
-            run.put("puzzleRoute",new JSONArray(puzzlePlan.path)).put("goal","WATER_TWO_COMBOS_AND_HEAL")
+            run.put("puzzleRoute",new JSONArray(puzzlePlan.path)).put("goal",goal.type.name()).put("firstWaterT",puzzlePlan.stats.firstTShapes[3])
                 .put("predictedCombos",puzzlePlan.stats.combos).put("predictedWaterCombos",puzzlePlan.stats.colorCombos[3]).put("predictedHealCombos",puzzlePlan.stats.colorCombos[5]);
             boardBefore=board;save(frame,List.of(),"b1-puzzle-dry-run",time,seq);phase=16;reset();
             StagePolicy.Decision preview=waitFor("B1：水"+puzzlePlan.stats.colorCombos[3]+"セット＋回復"+puzzlePlan.stats.colorCombos[5]+"を予定／再照合後に実行");
@@ -308,7 +308,7 @@ final class UraBattleController {
                 return waitFor("B1：発光が収まった新しい盤面で経路を再確認");
             if(puzzlePlan==null||!puzzlePlan.current(live,now())||now()-buffsVerifiedAt>25000)return stop(frame,List.of(),"STALE_PUZZLE_OR_BUFF_EVIDENCE",time,seq);
             if(vision.enemyDistance(frame)>.055)return stop(frame,List.of(),"PUZZLE_SCENE_CHANGED",time,seq);
-            StagePolicy.Decision d=action(new StagePolicy.Item("URA_B1_PUZZLE",610,1700),"B1：水2セット＋回復を連続ドラッグ",()->{enteredAt=now();phase=17;reset();});
+            StagePolicy.Decision d=action(new StagePolicy.Item("URA_B1_PUZZLE",610,1700),"B1：水T字・水2セット＋回復を連続ドラッグ",()->{enteredAt=now();phase=17;reset();});
             d.puzzlePath=puzzlePlan.path;d.puzzleCols=6;d.puzzleRows=5;d.puzzleRect=BoardGeometry.calculate(1220,2712,6,5,0,84);d.puzzleDurationMs=3000;return d;
         }
         if(phase==17) {

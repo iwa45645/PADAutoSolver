@@ -55,4 +55,14 @@ public class RoulettePlanTest {
         PuzzleSolver.MatchStats first=PuzzleSolver.firstWave(b,3,3);
         assertEquals(2,first.combos);assertEquals(1,first.colorCombos[3]);
     }
+    @Test public void b4ActualBoardRequiresWaterTForEveryColorInsteadOfTheOldTwoCellRoute(){
+        byte[] b={5,5,3,3,5,3,5,3,5,2,-1,5,3,3,3,2,5,5,2,5,3,3,3,3,3,3,2,3,2,5};long mask=1L<<10;
+        try{new RoulettePlan(b,mask,List.of(1,7),0,true);fail("Old route lacks guaranteed T");}catch(IllegalArgumentException expected){}
+        RoulettePlan p=RoulettePlan.solveEsper(b,mask,44,1200,5000,0);assertTrue(p.waterT>=1);
+        byte[] replay=RoulettePlan.replay(b,mask,p.path);
+        for(byte color=0;color<10;color++){
+            replay[10]=color;var s=PuzzleSolver.firstWave(replay,6,5);
+            assertTrue(s.firstTShapes[3]>=1);assertTrue(s.colorCombos[3]>=2);assertTrue(s.colorCombos[5]>=1);
+        }
+    }
 }

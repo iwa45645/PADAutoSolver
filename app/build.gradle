@@ -18,8 +18,8 @@ android {
         applicationId 'com.example.padautosolver'
         minSdk 26
         targetSdk 35
-        versionCode = (project.findProperty('appVersionCode') ?: '55').toInteger()
-        versionName = project.findProperty('appVersionName') ?: '0.4.0-dev52'
+        versionCode = (project.findProperty('appVersionCode') ?: '56').toInteger()
+        versionName = project.findProperty('appVersionName') ?: '0.4.0-dev53'
         buildConfigField 'String', 'GITHUB_REPOSITORY', '"' + githubRepo + '"'
     }
 

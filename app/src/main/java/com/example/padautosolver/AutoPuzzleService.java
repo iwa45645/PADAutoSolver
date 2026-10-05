@@ -310,7 +310,7 @@ public class AutoPuzzleService extends Service {
                 if(navigator==null)navigator=new StageNavigator();
                 if(loopEnabled&&uraResumeRequested) {
                     uraResumeRequested=false;
-                    if(prefs.getString("operationMode","").equals("URA_SHURA_AUTO")) {
+                    if(prefs.getString("operationMode","").equals("URA_SHURA_AUTO")&& !UraScenePolicy.preentry(navigator.readUraPreentry(bitmap),2712)) {
                         uraProgress=UraProgressController.resume(this,bitmap);
                         uraB5=uraProgress==null?UraB5Controller.resume(this,bitmap):null;
                         uraB4=uraProgress==null&&uraB5==null?UraB4Controller.resume(this,bitmap):null;

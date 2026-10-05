@@ -141,7 +141,7 @@ final class UraB5Controller {
                 if(record.optBoolean("rukaVerified")||!UraB5Policy.rukaCanRecover(board))return stop(frame,List.of(),"B5_NOT_ENOUGH_RECOVERY",time,seq);
                 step=1;phase=13;return waitFor("B5：ルカで回復を補充できることを確認");
             }
-            PuzzleGoal goal=PuzzleGoal.waterAndHeal();PuzzleSolver.Result result=PuzzleSolver.solve(board,6,5,44,2500,1800,goal);
+            PuzzleGoal goal=PuzzleGoal.esperMionAndHeal();PuzzleSolver.Result result=PuzzleSolver.solve(board,6,5,44,2500,1800,goal);
             try{plan=new UraPuzzlePlan(board,result,goal,now());}catch(IllegalArgumentException e){return stop(frame,List.of(),"B5_NO_VALID_ROUTE:"+e.getMessage(),time,seq);}
             record.put("sourceBoard",array(board)).put("route",new JSONArray(plan.path)).put("predictedCombos",plan.stats.combos).put("waterCombos",plan.stats.colorCombos[3]).put("healCombos",plan.stats.colorCombos[5]);
             phase=9;prepared=false;save(frame,List.of(),"b5-plan",time,seq);return waitFor("B5：水2セット＋回復の経路を再照合");
