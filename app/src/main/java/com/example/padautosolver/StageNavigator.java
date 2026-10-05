@@ -119,6 +119,9 @@ final class StageNavigator {
         }
         return lines;
     }
+    List<StagePolicy.Item> readUraResult(Bitmap frame)throws Exception {
+        return readCrop(frame,.01f,.18f,.99f,.97f,false,false,2);
+    }
     List<StagePolicy.Item> readUraHp(Bitmap frame)throws Exception {
         // HP has a heavy colored outline; isolate its yellow/white digits and slash.
         return readCrop(frame,.60f,.574f,.978f,.593f,true,false,4,true);

@@ -1,7 +1,7 @@
 package com.example.padautosolver;
 /** Reviewed native floor scripts; unsupported floors have no actions. */
 final class UraProgressPolicy {
-    static final int SEKKA=0,MION=1,ESPER=2,ODIN=3,RUKA=4,YUKINE_ASSIST=5,CHARGE=100,ATTACK=101;
+    static final int SEKKA=0,MION=1,ESPER=2,ODIN=3,RUKA=4,YUKINE_ASSIST=5,RUKA_RECOVERY=6,CHARGE=100,ATTACK=101;
     static int[] script(int floor) {
         if(floor==6)return new int[]{SEKKA,CHARGE,MION,ATTACK,ESPER,CHARGE,MION,ODIN,ATTACK};
         if(floor==7)return new int[]{SEKKA,CHARGE,MION,ATTACK};
@@ -19,6 +19,7 @@ final class UraProgressPolicy {
         if(floor==19)return new int[]{CHARGE,MION,ATTACK,YUKINE_ASSIST,SEKKA,MION,ATTACK};
         if(floor==20)return new int[]{ODIN,CHARGE,MION,ATTACK,ESPER,CHARGE,MION,ATTACK};
         if(floor==21)return new int[]{CHARGE,SEKKA,MION,ATTACK};
+        if(floor==22)return new int[]{CHARGE,RUKA_RECOVERY,ODIN,MION,ATTACK}; // Only the reviewed dark-Menoa sprite is actionable.
         return null;
     }
     static boolean safeCharge(byte[] board,int hp,int round,int sekkaRound,int skillRound,Integer mionRemaining) {
@@ -97,6 +98,18 @@ final class UraProgressPolicy {
                 ||mask!=b20Mask(round,start)||board==null||board.length!=cols*rows)return false;
         for(int i=0;i<board.length;i++)if((mask&(1L<<i))==0&&(board[i]<0||board[i]>6))return false;
         return true;
+    }
+    static int rukaRecoveryLayer(UraHeldSkillInfo info,boolean baseHeading) {
+        if(info==null||!(info.baseNamed("ダブル防御態勢水")||baseHeading))return 0;
+        if(Integer.valueOf(0).equals(info.baseRemaining))return 1;
+        return Integer.valueOf(-1).equals(info.baseRemaining)&&Integer.valueOf(0).equals(info.assistRemaining)?2:0;
+    }
+    static boolean b22AttackAllowed(int operation,int round,int start,int recoveryRound,int odinRound,int skillRound,int lastSkill,int[] hp,boolean awokenNull) {
+        return operation==4&&round==start+1&&recoveryRound==round&&odinRound==round&&skillRound==round&&lastSkill==MION
+            &&hp!=null&&hp[1]==611045&&hp[0]>0&&!awokenNull;
+    }
+    static boolean safeB22Charge(byte[] board,int hp,int operation,int round,int start,Integer mionRemaining,boolean fullEnemyBars) {
+        return fullEnemyBars&&safeFirstCharge(board,hp,operation,round,start,mionRemaining);
     }
     static boolean safeB21Charge(byte[] board,long mask,int hp,int operation,int round,int start,Integer mionRemaining,boolean fullEnemyBars) {
         if(!fullEnemyBars||operation!=0||round!=start||hp<350000||!Integer.valueOf(1).equals(mionRemaining)

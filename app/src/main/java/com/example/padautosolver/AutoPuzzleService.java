@@ -75,7 +75,6 @@ public class AutoPuzzleService extends Service {
     private volatile UraB5Controller uraB5;
     private volatile UraProgressController uraProgress;
     private boolean uraResumeRequested;
-    private volatile long uraDecisionCapturedAt;
     private volatile boolean recordDetail;
     private BoxScanController boxScanner;
     private BoxDetailController detailScanner;
@@ -368,7 +367,6 @@ public class AutoPuzzleService extends Service {
                         UraLuciferController next=UraLuciferController.resume(this,bitmap);
                         if(next!=null){uraLucifer=next;clearUraBattle();decision=new StagePolicy.Decision(null,"B1突破確認済み：B2の実指示から続行",false);}
                     }
-                    uraDecisionCapturedAt=capturedAt;
                     decision.capturedAt=capturedAt;
                     bitmap.recycle();
                     String uraDecisionStatus=decision.status;

@@ -50,6 +50,6 @@ public class UraB20Test {
             if(op<100){assertEquals(0,cd[op]);cd[op]=new int[]{4,2,5,5,5}[op];}
             else{round++;for(int i=0;i<cd.length;i++)cd[i]=Math.max(0,cd[i]-1);}
         }
-        assertEquals(38,round);assertEquals(1,cd[1]);assertNull(UraProgressPolicy.script(22));
+        assertEquals(38,round);assertEquals(1,cd[1]);assertNull(UraProgressPolicy.script(23));
     }
 }

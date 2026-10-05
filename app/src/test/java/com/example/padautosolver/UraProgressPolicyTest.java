@@ -20,7 +20,7 @@ public class UraProgressPolicyTest {
         assertFalse(UraProgressPolicy.b19SecondAttackAllowed(6,33,31,32,33,33,1));
         assertFalse(UraProgressPolicy.b19SecondAttackAllowed(6,33,31,33,31,33,1));
         assertFalse(UraProgressPolicy.b19SecondAttackAllowed(6,33,31,33,33,33,5));
-        assertNull(UraProgressPolicy.script(22));
+        assertNull(UraProgressPolicy.script(23));
     }
     @Test public void b19OnlyAllowsItsUnconsumedEntryTurnAndBothFullEnemyBars(){
         byte[] b=new byte[30];b[12]=-1;b[17]=-1;long mask=UraDualRoulettePlan.MASK;
@@ -76,7 +76,7 @@ public class UraProgressPolicyTest {
         assertFalse(UraProgressPolicy.safeCharge(board,230000,2,0,2,null));
         board[0]=8;assertFalse(UraProgressPolicy.safeCharge(board,230000,2,0,2,1));
     }
-    @Test public void unsupportedFloorCannotCreateActions(){assertNull(UraProgressPolicy.script(22));}
+    @Test public void unsupportedFloorCannotCreateActions(){assertNull(UraProgressPolicy.script(23));}
     @Test public void b15CannotChargeWithoutAllFourActualCountersOrRepeatAfterOneTurn(){
         byte[] b=new byte[30];assertTrue(UraProgressPolicy.safeB15Charge(b,350000,15,0,21,21,1,true));
         assertFalse(UraProgressPolicy.safeB15Charge(b,350000,15,0,21,21,1,false));assertFalse(UraProgressPolicy.safeB15Charge(b,350000,15,0,22,21,1,true));
