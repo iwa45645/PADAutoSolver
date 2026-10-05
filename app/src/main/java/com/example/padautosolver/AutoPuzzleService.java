@@ -321,14 +321,18 @@ public class AutoPuzzleService extends Service {
                         uraB3=uraProgress==null&&uraB5==null&&uraB4==null?UraB3Controller.resume(this,bitmap):null;
                         uraLucifer=uraProgress==null&&uraB5==null&&uraB4==null&&uraB3==null?UraLuciferController.resume(this,bitmap):null;
                         if(uraProgress!=null||uraB5!=null||uraB3!=null||uraB4!=null){clearUraBattle();uraPreflight=null;}
+                        UraBattleController resumedResult=null;
                         if(uraLucifer!=null) {
                             clearUraBattle();uraPreflight=null;
                         } else if(UraLuciferController.isScene(this,bitmap)) {
+                            resumedResult=UraBattleController.resumePostPuzzleB2(this,bitmap);
+                            if(resumedResult==null) {
                                 bitmap.recycle();
                                 if(++uraResumeAttempts<4){uraResumeRequested=true;scheduleLoop(500);return;}
                                 pauseLoop("B2_RESUME_EVIDENCE_REQUIRED：実指示と現在盤面を再確認できないため停止");return;
+                            }
                         }
-                        UraBattleController resumed=uraProgress==null&&uraB5==null&&uraB4==null&&uraB3==null&&uraLucifer==null?UraBattleController.resumePausedB1(this,bitmap):null;
+                        UraBattleController resumed=resumedResult!=null?resumedResult:uraProgress==null&&uraB5==null&&uraB4==null&&uraB3==null&&uraLucifer==null?UraBattleController.resumePausedB1(this,bitmap):null;
                         if(resumed==null&&uraProgress==null&&uraB5==null&&uraB4==null&&uraB3==null&&uraLucifer==null)resumed=UraBattleController.currentB1(this,bitmap);
                         if(resumed!=null){uraBattle=resumed;uraPreflight=null;}
                         else if(UraBattleController.isB1(this,bitmap)) {
@@ -819,7 +823,10 @@ public class AutoPuzzleService extends Service {
                 PuzzleAccessibilityService service = PuzzleAccessibilityService.getInstance();
                 if (destroyed || generation != captureGeneration || !loopEnabled) return;
                 if (service == null || !service.isGameForeground()) { scheduleLoop(1000); return; }
-                if(uraMode&&(decision.capturedAt<=0||android.os.SystemClock.elapsedRealtime()-decision.capturedAt>1500)){pendingControl="";scheduleLoop(250);return;}
+                if(uraMode&&(decision.capturedAt<=0||android.os.SystemClock.elapsedRealtime()-decision.capturedAt>1500)){
+                    android.util.Log.i("PADSolver","staleDecisionRejected="+decision.status+" ageMs="+(android.os.SystemClock.elapsedRealtime()-decision.capturedAt));
+                    pendingControl="";scheduleLoop(250);return;
+                }
                 try{if(decision.beforeDispatch!=null)decision.beforeDispatch.prepare();}
                 catch(Exception e){pauseLoop("操作前の状態保存に失敗したため停止："+e.getMessage());return;}
                 android.util.Log.i("PADSolver", "stageAction=" + decision.status);

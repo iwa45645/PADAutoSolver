@@ -58,6 +58,31 @@ final class UraBattleController {
         if(frame.getWidth()!=1220||frame.getHeight()!=2712)return false;
         UraBattleVision v=new UraBattleVision(context);return v.enemyDistance(frame)<.055;
     }
+    static UraBattleController resumePostPuzzleB2(Context context,Bitmap live)throws Exception {
+        UraBattleVision vision=new UraBattleVision(context);
+        if(live.getWidth()!=1220||live.getHeight()!=2712||!vision.lucifer(live))return null;
+        byte[] board=vision.luciferBoard(live);if(board==null)return null;
+        File dir=new File(context.getExternalFilesDir("Download"),"ura-runtime");
+        File[] logs=dir.listFiles((d,n)->n.startsWith("puzzle-result-observation-")&&n.endsWith(".json"));
+        if(logs==null)return null;Arrays.sort(logs,Comparator.comparingLong(File::lastModified).reversed());
+        for(File file:logs) {
+            if(System.currentTimeMillis()-file.lastModified()>3600000)continue;
+            JSONObject state=new JSONObject(new String(Files.readAllBytes(file.toPath()),StandardCharsets.UTF_8));
+            boolean entry=state.optBoolean("preflightPassedThisRun")||"USER_REQUESTED_MION_ONLY_CURRENT_B1".equals(state.optString("entryValidationPolicy"));
+            if(!UraPostPuzzleResume.observationOnly(state.optBoolean("dryOnly",true),state.optInt("phase"),state.optInt("step"),entry,true,true,true))continue;
+            Bitmap previous=BitmapFactory.decodeFile(new File(dir,file.getName().replace(".json",".png")).getPath());
+            if(previous==null)continue;boolean same;
+            try{same=vision.lucifer(previous)&&Arrays.equals(board,vision.luciferBoard(previous))&&UraBattleVision.sameRunPortraits(previous,live);}
+            finally{previous.recycle();}
+            if(!same)continue;
+            UraBattleController c=new UraBattleController(context,state.optInt("helperAssistTotal"),false);
+            for(Iterator<String> it=state.keys();it.hasNext();){String key=it.next();c.run.put(key,state.get(key));}
+            c.phase=17;c.step=6;c.enteredAt=now()-30000;c.run.remove("failureReason");
+            c.run.put("resumePermission","Same native completed B1 gesture result, Lucifer, board and portraits; floor observation only; never replay gesture");
+            return c;
+        }
+        return null;
+    }
     /** Only dismiss a matching paused B1 skill modal; restore and recheck the board afterwards. */
     static StagePolicy.Decision pausedModalBack(Context context,Bitmap live,StageNavigator nav)throws Exception {
         File stateFile=new File(context.getFilesDir(),"ura-b1-paused.json"),picture=new File(context.getFilesDir(),"ura-b1-paused.png");
@@ -365,10 +390,12 @@ final class UraBattleController {
         if(phase==17) {
             instructionCapture.read(context,nav,run.getString("runId"),-1,"b1-lucifer-command");
             lines=nav.readUraCombat(frame);
-            save(frame,lines,"puzzle-result-observation",time,seq);
             String observed=UraCombatText.joined(lines);
             if(UraCombatText.blocked(lines))return stop(frame,lines,"PURCHASE_RECOVERY_OR_GAME_OVER",time,seq);
-            if(now()-enteredAt<30000){StagePolicy.Decision watch=waitFor("B1：コンボ・敵行動・次階層の実画面を記録中");watch.nextFrameDelayMs=250;return watch;}
+            if(now()-enteredAt<30000){
+                save(frame,lines,"puzzle-result-observation",time,seq);
+                StagePolicy.Decision watch=waitFor("B1：コンボ・敵行動・次階層の実画面を記録中");watch.nextFrameDelayMs=250;return watch;
+            }
             StagePolicy.Item menu=UraCombatText.control(lines,"MENU",500,620);
             if(menu==null){if(now()-enteredAt>45000)return stop(frame,lines,"POST_PUZZLE_CAPTURE_REQUIRED",time,seq);return waitFor("敵行動が終わるまで待機");}
             return action(menu,"パズル後の実階層を確認",()->{phase=18;reset();});
