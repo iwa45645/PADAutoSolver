@@ -9,10 +9,16 @@ import static org.junit.Assert.*;
 
 public class UraLockedWaterAnimationTest {
     @Test public void independentAnimationFramesAndPreviousStopMatchWaterWithUnchangedLimits()throws Exception {
-        try(var in=new DataInputStream(new GZIPInputStream(getClass().getResourceAsStream("/stability-b1-locked-water-animation.argb.gz")))) {
-            int references=in.readInt();assertEquals(8,references);
+        verifyAnimation("locked-water",8);
+    }
+    @Test public void enhancedLockedWaterAfterYukineMatchesIndependentFramesWithUnchangedLimits()throws Exception {
+        verifyAnimation("enhanced-locked-water",20);
+    }
+    private void verifyAnimation(String variant,int expectedReferences)throws Exception {
+        try(var in=new DataInputStream(new GZIPInputStream(getClass().getResourceAsStream("/stability-b1-"+variant+"-animation.argb.gz")))) {
+            int references=in.readInt();assertEquals(expectedReferences,references);
             for(int r=0;r<references;r++) {
-                File image=new File("src/main/assets/ura-shura/stability-b1-locked-water-pose-"+r+".png");
+                File image=new File("src/main/assets/ura-shura/stability-b1-"+variant+"-pose-"+r+".png");
                 StringBuilder hash=new StringBuilder();
                 for(byte b:MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(image.toPath())))hash.append(String.format("%02x",b&255));
                 assertEquals(hash.toString(),in.readUTF());
