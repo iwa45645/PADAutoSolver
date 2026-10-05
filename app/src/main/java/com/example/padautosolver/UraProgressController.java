@@ -16,7 +16,7 @@ final class UraProgressController {
     private int floor=6,operation,phase,step,round,floorStartRound,misses;
     private int[] script=UraProgressPolicy.script(6);
     private long lastSequence=-1,actionAt,actionSequence,menuAt;
-    private boolean charged,saved,prepared,postSaved;
+    private boolean charged,saved,prepared,postSaved,terminalOnly;
     private volatile UraHeldSkillInfo held;
     private volatile boolean heading,assistHeading;
     private volatile long heldAt,heldSequence;
@@ -39,6 +39,7 @@ final class UraProgressController {
                 try{
                     same=old!=null&&UraBattleVision.sameStablePortraits(old,live);
                     // Before an unconsumed attack, a changed board cannot inherit a skill-use claim.
+                    if(data.optInt("floor")==22&&data.optBoolean("completed")&&data.optInt("phase")>=23&&data.optInt("phase")<=25&&data.optString("dispatchState").equals("VERIFIED"))same=true; // Result-only states cannot send combat inputs.
                     if(same&&(data.optInt("phase")==7||data.optInt("phase")==9)) {
                         byte[] before=c.vision.luciferBoard(old),current=c.vision.luciferBoard(live);
                         if(data.optInt("floor")>=17&&data.optInt("floor")<=19){
@@ -48,6 +49,9 @@ final class UraProgressController {
                         same=same&&before!=null&&current!=null&&Arrays.equals(before,current);
                     }
                 }finally{if(old!=null)old.recycle();}
+                if(UraClearProof.terminalResume(data.optInt("floor"),data.optInt("operation"),data.optBoolean("awaitingTurn"),data.optString("pendingAction"),data.optString("dispatchState"),c.vision.finalClearLogo(live))){
+                    same=true;c.terminalOnly=true; // CLEAR allows result observation only, never resending combat.
+                }
                 if(!same)return null;
                 int target=data.optInt("phase")==12?data.optInt("observedFloor"):data.optInt("floor",6);
                 if(UraProgressPolicy.script(target)==null)return null;
@@ -74,6 +78,7 @@ final class UraProgressController {
                 // The initial B19 build only read delayed Sekka; no action was consumed.
                 if(c.floor==19&&c.operation==0&&c.round==c.floorStartRound&&c.step==UraProgressPolicy.SEKKA&&(c.phase==13||c.phase==14))c.phase=2;
                 if(c.phase==12){c.phase=0;c.operation=0;c.floorStartRound=c.round;}
+                c.terminalOnly|=c.record.optBoolean("terminalOnly");c.record.put("terminalOnly",c.terminalOnly);
                 c.record.remove("failureReason");
                 if(c.record.optBoolean("awaitingTurn"))c.record.put("dispatchSequence",-1); // New capture session has its own sequence counter.
                 c.actionAt=now()-18000;return c;
@@ -88,6 +93,33 @@ final class UraProgressController {
     StagePolicy.Decision inspect(Bitmap frame,StageNavigator nav,long time,long seq)throws Exception {
         if(seq<=lastSequence)return waitFor("B"+floor+"：新しい画面を待機");lastSequence=seq;
         if(frame.getWidth()!=1220||frame.getHeight()!=2712)return stop(frame,List.of(),"PROGRESS_CALIBRATION_MISMATCH",time,seq);
+        if(UraClearProof.finalOutcomePhase(phase)&&floor==22&&record.optBoolean("awaitingTurn")&&record.optString("pendingAction").equals("ATTACK")){
+            List<StagePolicy.Item> outcome=nav.readUraResult(frame);
+            if(UraCombatText.blocked(outcome))return stop(frame,outcome,"PROGRESS_GAME_OVER_OR_PURCHASE",time,seq);
+            boolean evidence=UraClearProof.evidence(floor,true,"ATTACK",outcome)||vision.finalClearLogo(frame);
+            if(evidence)save(frame,outcome,"progress-clear-candidate",time,seq);
+            if(clearResult.observe(evidence,seq)){
+                phase=23;record.put("completed",true).put("completedAt",System.currentTimeMillis());verifyTurn("final-clear-two-fresh-frames");
+                save(frame,outcome,"progress-clear-verified",time,seq);return waitFor("裏魔門CLEAR確認済み：クリア結果を取得");
+            }
+        }
+        if(phase==23||phase==24){
+            List<StagePolicy.Item> outcome=nav.readUraResult(frame);
+            if(UraCombatText.blocked(outcome))return stop(frame,outcome,"PROGRESS_GAME_OVER_OR_PURCHASE",time,seq);
+            if(UraClearProof.reward(outcome)){
+                phase=25;record.put("resultVerified",true).put("rewardCoins",UraClearProof.amount(outcome,"獲得コイン"))
+                    .put("rewardExperienceStock",UraClearProof.amount(outcome,"経験値ストック"));
+                long exp=UraClearProof.amount(outcome,"獲得EXP");if(exp<0)exp=UraClearProof.amount(outcome,"獲得経験値");if(exp<0)exp=UraClearProof.amount(outcome,"獲得EHP");
+                record.put("rewardExp",exp);return stop(frame,outcome,"URA_SHURA_CLEAR_AND_RESULT_VERIFIED",time,seq);
+            }
+            boolean tips=false;StagePolicy.Item ok=null;
+            for(var item:outcome){tips|=item.text.equals("TIPS");if(item.text.equals("OK")&&item.y>1500&&item.y<2500)ok=item;}
+            if(phase==23&&tips&&ok!=null)return action(ok,"CLEAR確認済み：TIPSを閉じて報酬を確認",()->{phase=24;misses=0;actionAt=now();});
+            if(UraCombatText.joined(outcome).contains("通信中")&&now()-actionAt<60000)return waitFor("CLEAR確認済み：報酬の通信を待機");
+            return retry(frame,outcome,"URA_CLEAR_CONFIRMED_RESULT_CAPTURE_REQUIRED",time,seq);
+        }
+        if(phase==25)return stop(frame,List.of(),"URA_SHURA_CLEAR_AND_RESULT_VERIFIED",time,seq);
+        if(terminalOnly)return retry(frame,List.of(),"URA_TERMINAL_CLEAR_EVIDENCE_REQUIRED",time,seq);
         if(phase==0||phase==1) {
             List<StagePolicy.Item> text=nav.readUraCombat(frame);
             if(UraCombatText.blocked(text))return stop(frame,text,"PROGRESS_GAME_OVER_OR_PURCHASE",time,seq);
@@ -268,17 +300,6 @@ final class UraProgressController {
             if(!enemy(frame))return waitFor("B"+floor+"：敵の発光が収まった画面を待機");
             if(!prepared){prepareReceipt("ATTACK",2);save(frame,List.of(),"progress-puzzle-prepared",time,seq);prepared=true;return waitFor("B"+floor+"：送信直前の盤面を再照合");}
             StagePolicy.Decision d=consumingAction(new StagePolicy.Item("PROGRESS_PUZZLE",610,1700),"B"+floor+"：水T字・水2セット＋回復で攻撃",10,true,seq);puzzle(d,plan.path);return d;
-        }
-        if(phase==23)return stop(frame,List.of(),"URA_SHURA_CLEAR_VERIFIED",time,seq);
-        if(phase==10&&floor==22&&record.optString("pendingAction").equals("ATTACK")){
-            List<StagePolicy.Item> outcome=nav.readUraResult(frame);
-            if(UraCombatText.blocked(outcome))return stop(frame,outcome,"PROGRESS_GAME_OVER_OR_PURCHASE",time,seq);
-            boolean evidence=UraClearProof.evidence(floor,record.optBoolean("awaitingTurn"),record.optString("pendingAction"),outcome);
-            if(evidence)save(frame,outcome,"progress-clear-candidate",time,seq);
-            if(clearResult.observe(evidence,seq)){
-                verifyTurn("final-clear-two-fresh-frames");phase=23;record.put("completed",true).put("completedAt",System.currentTimeMillis());
-                return stop(frame,outcome,"URA_SHURA_CLEAR_VERIFIED",time,seq);
-            }
         }
         if(phase==10) {
             List<StagePolicy.Item> text=nav.readUraCombat(frame);if(UraCombatText.blocked(text))return stop(frame,text,"PROGRESS_GAME_OVER_OR_PURCHASE",time,seq);

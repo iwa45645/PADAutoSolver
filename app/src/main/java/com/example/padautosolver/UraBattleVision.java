@@ -112,6 +112,10 @@ final class UraBattleVision {
     boolean recoveredB3Hp(Bitmap frame)throws Exception {
         return distance(frame,"b3-recovered-hp.png",770,1554,425,54)<.02;
     }
+    boolean finalClearLogo(Bitmap frame)throws Exception {
+        Bitmap ref=template("progress-b22-clear-logo.png"),crop=Bitmap.createBitmap(frame,200,910,840,200);
+        try{return UraClearGlyph.matches(pixels(ref),pixels(crop));}finally{crop.recycle();}
+    }
     boolean b22RestoredMaximum(Bitmap frame)throws Exception {
         Bitmap ref=template("progress-b22-restored-max-hp.png"),crop=Bitmap.createBitmap(frame,975,1554,220,54);
         try{return UraHpGlyph.matches(pixels(ref),pixels(crop),220,54);}finally{crop.recycle();}
