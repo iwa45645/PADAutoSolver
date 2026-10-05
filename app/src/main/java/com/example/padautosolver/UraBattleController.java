@@ -58,6 +58,25 @@ final class UraBattleController {
         if(frame.getWidth()!=1220||frame.getHeight()!=2712)return false;
         UraBattleVision v=new UraBattleVision(context);return v.enemyDistance(frame)<.055;
     }
+    /** Only dismiss a matching paused B1 skill modal; restore and recheck the board afterwards. */
+    static StagePolicy.Decision pausedModalBack(Context context,Bitmap live,StageNavigator nav)throws Exception {
+        File stateFile=new File(context.getFilesDir(),"ura-b1-paused.json"),picture=new File(context.getFilesDir(),"ura-b1-paused.png");
+        if(!stateFile.isFile()||!picture.isFile()||System.currentTimeMillis()-stateFile.lastModified()>3600000)return null;
+        JSONObject state=new JSONObject(new String(Files.readAllBytes(stateFile.toPath()),StandardCharsets.UTF_8));
+        int phase=state.optInt("phase"),step=state.optInt("step",-1);
+        if(state.optBoolean("dryOnly",true)||!state.optBoolean("preflightPassedThisRun")||step<0||step>5
+                ||!(phase==3||phase==5||phase==7||phase==9))return null;
+        UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(live),2712);
+        String expected=phase==9?(step==1?BEFORE[3]:AFTER[1]):phase==7?AFTER[step]:BEFORE[step];
+        int layer=step==0&&(phase==3||phase==5)?2:1;
+        UraBattleVision vision=new UraBattleVision(context);
+        if(read==null||read.layer!=layer||!read.named(expected)||!vision.backControl(live,read)||vision.enemyDistance(live)>.055)return null;
+        Bitmap previous=BitmapFactory.decodeFile(picture.getPath());if(previous==null)return null;
+        try {if(previous.getWidth()!=live.getWidth()||previous.getHeight()!=live.getHeight()||!UraBattleVision.sameRunPortraits(previous,live))return null;}
+        finally{previous.recycle();}
+        StagePolicy.Decision back=new StagePolicy.Decision(read.back,"保存済みB1の同じスキル画面を閉じ、盤面と使用後状態を再確認",false);
+        back.holdMs=160;return back;
+    }
     static UraBattleController resumePausedB1(Context context,Bitmap live)throws Exception {
         UraBattleController postRecovery=recoverNativePost(context,live);
         if(postRecovery!=null)return postRecovery;
@@ -346,8 +365,12 @@ final class UraBattleController {
     }
     private StagePolicy.Decision hastePost(Bitmap frame,List<StagePolicy.Item> lines,UraDialogPolicy.Read read,long time,long seq)throws Exception {
         int amount=step==1?4:2;
-        if((!heldSkill.baseNamed(step==1?BEFORE[3]:AFTER[1])&&!heldSkill.actorNamed(step==1?BEFORE_ACTOR[3]:AFTER_ACTOR[1]))||monitorBefore==null||heldSkill.assistRemaining==null||heldSkill.assistRemaining!=monitorBefore-amount)
+        String expected=step==1?BEFORE[3]:AFTER[1];
+        boolean heldIdentity=heldSkill.baseNamed(expected)||heldSkill.actorNamed(step==1?BEFORE_ACTOR[3]:AFTER_ACTOR[1]);
+        boolean backVerified=read!=null&&vision.backControl(frame,read);
+        if(!UraHasteProof.matches(monitorBefore,heldSkill.assistRemaining,amount,heldIdentity,read,expected,backVerified))
             return stop(frame,lines,"HASTE_NOT_VERIFIED:"+monitorBefore+"->"+heldSkill.assistRemaining,time,seq);
+        if(!heldIdentity)run.put("hasteIdentityEvidence","CURRENT_BASE_MODAL_TITLE");
         Runnable verified=()->{lastAssistRemaining[step==1?3:0]=heldSkill.assistRemaining;advance();reset();};
         if(read!=null) {
             if(!vision.backControl(frame,read)||!read.named(step==1?BEFORE[3]:AFTER[1]))return retry(frame,lines,"HASTE_WITNESS_MODAL_REQUIRED",time,seq);
