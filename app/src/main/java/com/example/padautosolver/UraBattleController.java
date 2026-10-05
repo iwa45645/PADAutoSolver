@@ -139,6 +139,14 @@ final class UraBattleController {
                 Bitmap sa=Bitmap.createScaledBitmap(a,96,112,true),sb=Bitmap.createScaledBitmap(b,96,112,true);
                 double distance=TeamIconMatch.distance(UraBattleVision.pixels(sa),UraBattleVision.pixels(sb));same=distance<.025&&UraBattleVision.sameRunPortraits(previous,live);
                 android.util.Log.i("PADSolver","resume: battle distance="+distance+" "+file.getName());
+                if(distance<.025&&!same) {
+                    String prefix="resume-rejected-"+System.currentTimeMillis();
+                    try(OutputStream out=new FileOutputStream(new File(dir,prefix+".png"))){live.compress(Bitmap.CompressFormat.PNG,100,out);}
+                    JSONObject diagnostic=new JSONObject().put("scene","resume-rejected").put("runId",state.optString("runId"))
+                            .put("reference",file.getName()).put("battleDistance",distance).put("failureReason","PORTRAIT_ALIGNMENT_REJECTED")
+                            .put("phase",phase).put("step",step).put("noCombatInputSent",true);
+                    Files.write(new File(dir,prefix+".json").toPath(),diagnostic.toString(2).getBytes(StandardCharsets.UTF_8));
+                }
                 sa.recycle();sb.recycle();a.recycle();b.recycle();
             }finally{previous.recycle();}
             if(!same)continue;

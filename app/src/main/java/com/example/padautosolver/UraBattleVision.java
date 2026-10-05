@@ -73,7 +73,18 @@ final class UraBattleVision {
                 Bitmap crop=Bitmap.createBitmap(live,x+dx,y+dy,100,30),small=Bitmap.createScaledBitmap(crop,48,16,true);
                 best=Math.min(best,TeamIconMatch.distance(ref,pixels(small)));small.recycle();crop.recycle();
             }
-            if(best>.04){android.util.Log.i("PADSolver","resume: portrait mismatch slot="+slot+" band="+y+" distance="+best);return false;}
+            if(best>.04) {
+                double coarse=best;
+                // A narrow artwork strip can miss its true alignment between 4px samples.
+                // Refine within the same movement bounds; retain both strips and .04 limit.
+                for(int dx=-8;dx<=8;dx++)for(int dy=-24;dy<=24;dy++) {
+                    if(dx%4==0&&dy%4==0)continue;
+                    Bitmap crop=Bitmap.createBitmap(live,x+dx,y+dy,100,30),small=Bitmap.createScaledBitmap(crop,48,16,true);
+                    best=Math.min(best,TeamIconMatch.distance(ref,pixels(small)));small.recycle();crop.recycle();
+                }
+                android.util.Log.i("PADSolver","resume: portrait alignment slot="+slot+" band="+y+" coarse="+coarse+" fine="+best);
+                if(best>.04)return false;
+            }
         }return true;
     }
     private boolean portrait(Bitmap frame,int i)throws Exception {
