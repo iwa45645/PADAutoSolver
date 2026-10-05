@@ -6990,5 +6990,9 @@
   {
     "file": "stability-b1-locked-light.png",
     "color": 1
+  },
+  {
+    "file": "stability-b1-locked-water.png",
+    "color": 3
   }
 ]
