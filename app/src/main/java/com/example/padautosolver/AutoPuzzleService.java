@@ -327,8 +327,9 @@ public class AutoPuzzleService extends Service {
                         } else if(UraLuciferController.isScene(this,bitmap)) {
                             resumedResult=UraBattleController.resumePostPuzzleB2(this,bitmap);
                             if(resumedResult==null) {
+                                if(++uraResumeAttempts<4){bitmap.recycle();uraResumeRequested=true;scheduleLoop(500);return;}
+                                saveUraSceneRejection(bitmap,"B2_RESUME_EVIDENCE_REQUIRED");
                                 bitmap.recycle();
-                                if(++uraResumeAttempts<4){uraResumeRequested=true;scheduleLoop(500);return;}
                                 pauseLoop("B2_RESUME_EVIDENCE_REQUIRED：実指示と現在盤面を再確認できないため停止");return;
                             }
                         }
@@ -341,8 +342,9 @@ public class AutoPuzzleService extends Service {
                             pauseLoop("B1_RESUME_CAPTURE_REQUIRED：発動済みの状態を読み直せないため停止");return;
                         }
                         else if(uraProgress==null&&uraB5==null&&uraB4==null&&uraB3==null&&uraLucifer==null&&!UraScenePolicy.preentry(navigator.readUraPreentry(bitmap),2712)) {
+                            if(++uraResumeAttempts<4){bitmap.recycle();uraResumeRequested=true;scheduleLoop(500+uraResumeAttempts*97);return;}
+                            saveUraSceneRejection(bitmap,"BATTLE_RESUME_CAPTURE_REQUIRED");
                             bitmap.recycle();
-                            if(++uraResumeAttempts<4){uraResumeRequested=true;scheduleLoop(500+uraResumeAttempts*97);return;}
                             pauseLoop("BATTLE_RESUME_CAPTURE_REQUIRED：実戦画面を読み直せないため停止");return;
                         }
                     }
@@ -872,6 +874,21 @@ public class AutoPuzzleService extends Service {
             if (now - lastLoopProgress > 60000) pauseLoop("自動で進められない画面のため一時停止しました");
             else scheduleLoop(decision.nextFrameDelayMs);
         }
+    }
+
+    private void saveUraSceneRejection(Bitmap frame,String reason) {
+        // Diagnostic only, before recycling the exact native frame. No input is authorized.
+        try {
+            if(frame.isRecycled())return;
+            java.io.File dir=new java.io.File(getExternalFilesDir("Download"),"ura-runtime");
+            if(!dir.exists()&&!dir.mkdirs())return;
+            String prefix="resume-scene-rejected-"+System.currentTimeMillis();
+            try(java.io.OutputStream out=new java.io.FileOutputStream(new java.io.File(dir,prefix+".png"))){frame.compress(Bitmap.CompressFormat.PNG,100,out);}
+            UraBattleVision v=new UraBattleVision(this);
+            org.json.JSONObject data=new org.json.JSONObject().put("scene","resume-scene-rejected").put("failureReason",reason)
+                    .put("luciferDistance",v.luciferDistance(frame)).put("specialBoardKnown",v.luciferBoard(frame)!=null).put("noCombatInputSent",true);
+            java.nio.file.Files.write(new java.io.File(dir,prefix+".json").toPath(),data.toString(2).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        } catch(Exception error){android.util.Log.i("PADSolver","resumeSceneDiagnostic="+error.getClass().getSimpleName());}
     }
 
     private boolean completeStageDecision(StagePolicy.Decision decision) {

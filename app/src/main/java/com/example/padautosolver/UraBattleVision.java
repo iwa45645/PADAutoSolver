@@ -142,10 +142,13 @@ final class UraBattleVision {
     }
     boolean lucifer(Bitmap frame)throws Exception {
         if(frame.getWidth()!=1220||frame.getHeight()!=2712)return false;
+        return luciferDistance(frame)<.055;
+    }
+    double luciferDistance(Bitmap frame)throws Exception {
         double best=1;
         for(int dx=-12;dx<=12;dx+=4)for(int dy=-12;dy<=12;dy+=4)
             best=Math.min(best,distance(frame,"b2-lucifer-face.png",370+dx,610+dy,390,380));
-        return best<.055;
+        return best;
     }
     boolean poisonInstruction(Bitmap frame)throws Exception {
         return distance(frame,"b2-poison-instruction.png",210,635,800,80)<.025;
