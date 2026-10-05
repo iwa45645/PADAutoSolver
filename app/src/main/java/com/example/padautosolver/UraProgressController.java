@@ -39,7 +39,9 @@ final class UraProgressController {
                 try{
                     same=old!=null&&UraBattleVision.sameStablePortraits(old,live);
                     // Before an unconsumed attack, a changed board cannot inherit a skill-use claim.
-                    if(data.optInt("floor")==22&&data.optBoolean("completed")&&data.optInt("phase")>=23&&data.optInt("phase")<=25&&data.optString("dispatchState").equals("VERIFIED"))same=true; // Result-only states cannot send combat inputs.
+                    if(data.optInt("floor")==22&&data.optBoolean("completed")){
+                        same=UraClearProof.completedResume(data.optInt("phase"),data.optString("dispatchState"),c.vision.finalClearLogo(live)||c.vision.finalRewardTitle(live));
+                    }
                     if(same&&(data.optInt("phase")==7||data.optInt("phase")==9)) {
                         byte[] before=c.vision.luciferBoard(old),current=c.vision.luciferBoard(live);
                         if(data.optInt("floor")>=17&&data.optInt("floor")<=19){

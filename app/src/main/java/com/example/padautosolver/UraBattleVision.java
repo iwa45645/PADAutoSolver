@@ -116,6 +116,9 @@ final class UraBattleVision {
         Bitmap ref=template("progress-b22-clear-logo.png"),crop=Bitmap.createBitmap(frame,200,910,840,200);
         try{return UraClearGlyph.matches(pixels(ref),pixels(crop));}finally{crop.recycle();}
     }
+    boolean finalRewardTitle(Bitmap frame)throws Exception {
+        return distance(frame,"progress-clear-reward-title.png",10,540,420,100)<.03;
+    }
     boolean b22RestoredMaximum(Bitmap frame)throws Exception {
         Bitmap ref=template("progress-b22-restored-max-hp.png"),crop=Bitmap.createBitmap(frame,975,1554,220,54);
         try{return UraHpGlyph.matches(pixels(ref),pixels(crop),220,54);}finally{crop.recycle();}

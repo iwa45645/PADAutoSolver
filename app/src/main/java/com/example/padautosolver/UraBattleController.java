@@ -160,12 +160,14 @@ final class UraBattleController {
         }
         if(phase==1) {
             if(now()-enteredAt>25000)return stop(frame,List.of(),"B1_CAPTURE_REQUIRED: entry timeout",capturedAt,sequence);
-            if(!vision.initialTeam(frame)||vision.enemyDistance(frame)>.055){
+            boolean helperMatched=vision.initialTeam(frame);double enemyDistance=vision.enemyDistance(frame);
+            run.put("entryHelperMatched",helperMatched).put("entryEnemyDistance",enemyDistance);
+            if(!helperMatched||enemyDistance>.055){
                 List<StagePolicy.Item> blocked=nav.readUraCombat(frame);
                 if(UraCombatText.blocked(blocked))return stop(frame,blocked,"PURCHASE_RECOVERY_OR_GAME_OVER",capturedAt,sequence);
                 return waitFor("B1：敵とミオンの表示を確認中");
             }
-            byte[] board=vision.board(frame);if(board==null)return waitFor("B1：盤面を読み直しています");
+            byte[] board=vision.board(frame);run.put("entryBoardKnown",board!=null);if(board==null)return waitFor("B1：未認識のドロップを再確認しています");
             if(++stable<2)return waitFor("B1：新しい2枚の画面で照合中");
             save(frame,List.of(),"b1-ready",capturedAt,sequence);phase=2;step=dryOnly?0:3;reset();
             return waitFor(dryOnly?"B1 Dry Run：予定スキル6件を確認（発動・パズルなし）":"B1：ユキネの残りターンを取得して実戦へ");

@@ -12,6 +12,9 @@ final class UraClearProof {
     static boolean terminalResume(int floor,int operation,boolean awaiting,String action,String dispatch,boolean clearLogo){
         return floor==22&&operation==5&&awaiting&&"ATTACK".equals(action)&&("ACKNOWLEDGED".equals(dispatch)||"DISPATCH_INTENT".equals(dispatch))&&clearLogo;
     }
+    static boolean completedResume(int phase,String dispatch,boolean actualResultScene){
+        return phase>=23&&phase<=25&&"VERIFIED".equals(dispatch)&&actualResultScene;
+    }
     static boolean reward(List<StagePolicy.Item> items){
         if(UraCombatText.blocked(items))return false;
         String text=UraCombatText.joined(items);

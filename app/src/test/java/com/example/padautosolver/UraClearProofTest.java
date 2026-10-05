@@ -57,4 +57,9 @@ public class UraClearProofTest {
         var rows=actualReward();rows.set(7,new StagePolicy.Item("1,390,782",903,1060));assertFalse(UraClearProof.reward(rows));
         rows=actualReward();rows.set(7,new StagePolicy.Item("1,390,782",500,1023));assertFalse(UraClearProof.reward(rows));
     }
+    @Test public void oldCompletedCheckpointCannotHijackANewBattle(){
+        assertTrue(UraClearProof.completedResume(23,"VERIFIED",true));assertTrue(UraClearProof.completedResume(25,"VERIFIED",true));
+        assertFalse(UraClearProof.completedResume(25,"VERIFIED",false));
+        assertFalse(UraClearProof.completedResume(10,"VERIFIED",true));assertFalse(UraClearProof.completedResume(25,"ACKNOWLEDGED",true));
+    }
 }
