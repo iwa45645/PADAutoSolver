@@ -73,7 +73,7 @@ final class UraBattleVision {
                 Bitmap crop=Bitmap.createBitmap(live,x+dx,y+dy,100,30),small=Bitmap.createScaledBitmap(crop,48,16,true);
                 best=Math.min(best,TeamIconMatch.distance(ref,pixels(small)));small.recycle();crop.recycle();
             }
-            if(best>.04)return false;
+            if(best>.04){android.util.Log.i("PADSolver","resume: portrait mismatch slot="+slot+" band="+y+" distance="+best);return false;}
         }return true;
     }
     private boolean portrait(Bitmap frame,int i)throws Exception {
