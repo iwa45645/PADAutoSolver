@@ -63,9 +63,8 @@ final class UraBattleVision {
     private static boolean white(int pixel){return ((pixel>>16)&255)>220&&((pixel>>8)&255)>220&&(pixel&255)>220;}
     /** Resume-state check only: a changed transformation in one slot cannot be diluted by the whole screen. */
     static boolean sameRunPortraits(Bitmap previous,Bitmap live) {
-        // The middle of a portrait temporarily displays the remaining turns (e.g. Sekka's 35).
-        // Both independent artwork bands must match; never compare the blinking digit overlay.
-        for(int slot=0;slot<6;slot++)for(int y:new int[]{1380,1500}) {
+        // Actual Sekka 35 overlaps y1380; keep two independent artwork strips.
+        for(int slot=0;slot<6;slot++)for(int y:UraRunPortraitBands.Y) {
             int x=60+slot*203;Bitmap before=Bitmap.createBitmap(previous,x,y,100,30);
             Bitmap scaled=Bitmap.createScaledBitmap(before,48,16,true);int[] ref=pixels(scaled);scaled.recycle();before.recycle();double best=1;
             // The six portraits bob independently by up to 20 px on this device.
