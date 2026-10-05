@@ -1,5 +1,5 @@
 package com.example.padautosolver;
-/** Two artwork strips avoid the actual blinking cooldown numeral at y1380. */
+/** Two lower artwork strips avoid blinking cooldowns and the moving card header. */
 final class UraRunPortraitBands {
-    static final int[] Y={1350,1500};
+    static final int[] Y={1460,1500};
 }

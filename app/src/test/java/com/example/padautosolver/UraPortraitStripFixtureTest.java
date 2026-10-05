@@ -7,8 +7,15 @@ public class UraPortraitStripFixtureTest {
     @Test public void actualBlinkingCooldownDoesNotHideAChangedTransformation()throws Exception {
         try(var in=new DataInputStream(new GZIPInputStream(getClass().getResourceAsStream("/stability-b1-portrait-strips.argb.gz")))) {
             assertArrayEquals(UraRunPortraitBands.Y,new int[]{in.readInt(),in.readInt()});
-            int[][] reference=read(in,12),actual=read(in,12),beforeEsper=read(in,12);
-            for(int band=0;band<12;band++)assertTrue("Actual same run band "+band,TeamIconMatch.distance(reference[band],actual[band])<=.04);
+            int frames=in.readInt();assertEquals(4,frames);
+            int[][] reference=read(in,12);
+            for(int frame=0;frame<frames;frame++) {
+                int[][] actual=read(in,12);
+                for(int band=0;band<12;band++)assertTrue("Native rejected frame "+frame+" same run band "+band,TeamIconMatch.distance(reference[band],actual[band])<=.04);
+            }
+            for(int a=0;a<6;a++)for(int b=a+1;b<6;b++)assertTrue("Different slots must stay distinct",
+                    TeamIconMatch.distance(reference[a*2],reference[b*2])>.04||TeamIconMatch.distance(reference[a*2+1],reference[b*2+1])>.04);
+            int[][] beforeEsper=read(in,12);
             assertTrue("Untransformed Esper must not restore its post-transform state",
                     TeamIconMatch.distance(reference[0],beforeEsper[0])>.04||TeamIconMatch.distance(reference[1],beforeEsper[1])>.04);
             int[][] blinking=read(in,2);
