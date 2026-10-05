@@ -4,8 +4,9 @@
 
 先に[現在の実装・検証状況](implementation-status.md)、[再評価と反映状況](development-review-2026-10-05.md)、[本日の実機記録](runtime-testing-2026-10-05.md)を読んでください。
 
-- feature/ura-shura-full-auto、0.4.0-dev53 / versionCode56、コード70b6670a661dc239dea971ee65fa5a5019d60874。新規潜入優先・初期階T字条件・219 JVM成功、実機更新/共有済み。
-- 実機は助っ人選択画面。ミオンを選んだ潜入確認を依頼済み。本体AUTOは未開始、新規通し試行0回。安定周回検証記録stability-validation-2026-10-05.mdを読む。
+- feature/ura-shura-full-auto、0.4.0-dev54 / versionCode57、ロック付き光参照・旧完了checkpointの実結果照合・停止診断・221 JVM成功、実機更新済み。
+- dev53-01は本体で新規潜入し、B1の未認識ロック付き光で停止。無中断クリア0/1。現在はB1未操作盤面、端末のロック解除を依頼済み。解除後は共有とAUTO開始をPCから行う。
+- dev54の実修正確認は未実施。更新後にこの潜入をクリアしても、無中断成功へ数え直さない。stability-validation-2026-10-05.mdとwork/stability-validation/trial-ledger.jsonを参照。
 - B20ヨウユウ→B21メノア→B22闇メノアを本体で突破。CLEAR、TIPS通過、クリア報酬を実機確認。報酬画面で停止し、再挑戦しない。
 - 複数APK更新と再開を含む検証であり、同じ最終APKによる新規潜入全階通しや安定周回ではない。
 - 固定編成を維持し、潜入前は助っ人ミオンだけ確認。自分の5枠照合やBOX再走査を先行条件に戻さない。
