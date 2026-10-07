@@ -127,6 +127,18 @@ final class UraProgressPolicy {
         if(Integer.valueOf(0).equals(info.baseRemaining))return 1;
         return Integer.valueOf(-1).equals(info.baseRemaining)&&Integer.valueOf(0).equals(info.assistRemaining)?2:0;
     }
+    /** Seven water cannot make a five-orb T and a separate three-orb match. */
+    static int waterCount(byte[] board) {
+        if(board==null||board.length!=30)return -1;
+        int count=0;for(byte orb:board){if(orb<0||orb>6)return -1;if(orb==3)count++;}return count;
+    }
+    static boolean b18WaterRecovery(byte[] board,int floor,int operation,int round,int start,int lastSkill,int skillRound,
+            int odinRound,int usedRound,String dispatch,String pending,boolean awaitingTurn,long mask) {
+        int water=waterCount(board);
+        return floor==18&&operation==3&&round==start+1&&mask==0&&water>=0&&water<8&&usedRound!=round
+            &&lastSkill==MION&&skillRound==round&&odinAbsorbActive(round,odinRound)&&!awaitingTurn
+            &&"VERIFIED".equals(dispatch)&&"SKILL".equals(pending);
+    }
     /** Migrate only an unconsumed B8 readiness check; consumed skills retain their receipt. */
     static int rukaReadinessStep(int floor,int operation,int phase,int step) {
         return floor==8&&operation==0&&(phase==13||phase==14)&&step==RUKA?RUKA_RECOVERY:step;

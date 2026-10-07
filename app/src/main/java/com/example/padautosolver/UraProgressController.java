@@ -214,6 +214,10 @@ final class UraProgressController {
             }
             if(step==UraProgressPolicy.RUKA_RECOVERY){
                 int layer=UraProgressPolicy.rukaRecoveryLayer(held,heading);
+                // The base only makes heals. B18's water shortage requires the assist;
+                // its exact name is independently checked again in the activation modal.
+                if(record.optBoolean("waterRecoveryPending")&&layer!=2)
+                    return retry(frame,List.of(),"PROGRESS_B18_WATER_ASSIST_NOT_READY",time,seq);
                 if(layer==0)return retry(frame,List.of(),"PROGRESS_RUKA_RECOVERY_READINESS_REQUIRED",time,seq);
                 if(layer==1)step=UraProgressPolicy.RUKA;
             }
@@ -323,6 +327,17 @@ final class UraProgressController {
             if(floor==11&&record.optInt("esperRound",-1)!=round)return stop(frame,List.of(),"PROGRESS_THIS_TURN_DAMAGE_VOID_REQUIRED",time,seq);
             if(floor==12&&!UraProgressPolicy.odinAbsorbActive(round,record.optInt("odinRound",-1)))return stop(frame,List.of(),"PROGRESS_DAMAGE_ABSORB_EXPIRED",time,seq);
             if(floor==18&&!UraProgressPolicy.odinAbsorbActive(round,record.optInt("odinRound",-1)))return stop(frame,List.of(),"PROGRESS_B18_DAMAGE_ABSORB_EXPIRED",time,seq);
+            record.put("attackBoard",array(board)).put("attackWaterCount",UraProgressPolicy.waterCount(board));
+            if(floor==18&&mask(frame)==0&&UraProgressPolicy.waterCount(board)<8){
+                if(!UraProgressPolicy.b18WaterRecovery(board,floor,operation,round,floorStartRound,
+                    record.optInt("lastSkill",-1),record.optInt("lastSkillRound",-1),record.optInt("odinRound",-1),
+                    record.optInt("waterRecoveryUsedRound",-1),record.optString("dispatchState"),record.optString("pendingAction"),
+                    record.optBoolean("awaitingTurn"),0))return stop(frame,List.of(),"PROGRESS_B18_WATER_SHORTAGE",time,seq);
+                step=UraProgressPolicy.RUKA_RECOVERY;phase=13;
+                record.put("recoveryPending",true).put("waterRecoveryPending",true);
+                save(frame,List.of(),"progress-water-recovery-required",time,seq);
+                return waitFor("B18：水不足のためルカの水15・回復15陣の実CDを確認");
+            }
             if(floor==19&&operation==6&&!UraProgressPolicy.b19SecondAttackAllowed(operation,round,floorStartRound,record.optInt("yukineAssistRound",-1),record.optInt("sekkaRound",-1),record.optInt("lastSkillRound",-1),record.optInt("lastSkill",-1)))return stop(frame,List.of(),"PROGRESS_B19_HASTE_SHIELD_MION_REQUIRED",time,seq);
             if(floor==22){
                 if(!verifyB22Recovery(frame,nav,time,seq)||!UraProgressPolicy.b22AttackAllowed(operation,round,floorStartRound,record.optInt("b22RecoverySkillRound",-1),record.optInt("odinRound",-1),record.optInt("lastSkillRound",-1),record.optInt("lastSkill",-1),b22Hp(frame,nav),record.optInt("b22ExpectedRestoredMaxHp"),b22AwokenNull(frame)))
@@ -460,6 +475,10 @@ final class UraProgressController {
         catch(Exception e){if(out!=null)file.failWrite(out);throw e;}
     }
     private void finishSkill(){
+        if(record.optBoolean("waterRecoveryPending")){
+            record.remove("waterRecoveryPending");
+            try{record.put("waterRecoveryUsedRound",round);}catch(JSONException e){throw new IllegalStateException(e);}
+        }
         if(record.optBoolean("recoveryPending")){record.remove("recoveryPending");try{record.put("recoveryUsedRound",round);}catch(JSONException e){throw new IllegalStateException(e);}phase=7;}
         else {operation++;phase=2;}
         misses=0;

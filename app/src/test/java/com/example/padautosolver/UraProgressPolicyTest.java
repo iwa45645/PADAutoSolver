@@ -3,6 +3,31 @@ import java.util.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 public class UraProgressPolicyTest {
+    private static byte[] b18SevenWater(){return new byte[]{2,4,5,2,4,5,5,4,5,3,2,3,4,4,3,4,5,3,2,3,2,3,2,4,2,5,3,2,5,2};}
+    @Test public void b18ActualSevenWaterBoardNeedsSupplyRatherThanMoreSearch(){
+        byte[] board=b18SevenWater();assertEquals(7,UraProgressPolicy.waterCount(board));
+        assertTrue(UraProgressPolicy.b18WaterRecovery(board,18,3,28,27,1,28,27,-1,"VERIFIED","SKILL",false,0));
+        board[0]=3;assertEquals(8,UraProgressPolicy.waterCount(board));
+        assertFalse(UraProgressPolicy.b18WaterRecovery(board,18,3,28,27,1,28,27,-1,"VERIFIED","SKILL",false,0));
+        board[0]=-1;assertEquals(-1,UraProgressPolicy.waterCount(board));
+        assertEquals(-1,UraProgressPolicy.waterCount(null));assertEquals(-1,UraProgressPolicy.waterCount(new byte[42]));
+    }
+    @Test public void b18SupplyCannotReplayMionOrSpentTurnsOrExpiredAbsorption(){
+        byte[] board=b18SevenWater();
+        assertFalse(UraProgressPolicy.b18WaterRecovery(board,17,3,28,27,1,28,27,-1,"VERIFIED","SKILL",false,0));
+        assertFalse(UraProgressPolicy.b18WaterRecovery(board,18,4,28,27,1,28,27,-1,"VERIFIED","SKILL",false,0));
+        assertFalse(UraProgressPolicy.b18WaterRecovery(board,18,3,29,27,1,29,27,-1,"VERIFIED","SKILL",false,0));
+        assertFalse(UraProgressPolicy.b18WaterRecovery(board,18,3,28,27,1,27,27,-1,"VERIFIED","SKILL",false,0));
+        assertFalse(UraProgressPolicy.b18WaterRecovery(board,18,3,28,27,6,28,27,28,"VERIFIED","SKILL",false,0));
+        assertFalse(UraProgressPolicy.b18WaterRecovery(board,18,3,28,27,1,28,26,-1,"VERIFIED","SKILL",false,0));
+        assertFalse(UraProgressPolicy.b18WaterRecovery(board,18,3,28,27,1,28,27,-1,"ACKNOWLEDGED","SKILL",false,0));
+        assertFalse(UraProgressPolicy.b18WaterRecovery(board,18,3,28,27,1,28,27,-1,"VERIFIED","ATTACK",false,0));
+        assertFalse(UraProgressPolicy.b18WaterRecovery(board,18,3,28,27,1,28,27,-1,"VERIFIED","SKILL",true,0));
+        assertFalse(UraProgressPolicy.b18WaterRecovery(board,18,3,28,27,1,28,27,-1,"VERIFIED","SKILL",false,1));
+        board[0]=7;assertFalse(UraProgressPolicy.b18WaterRecovery(board,18,3,28,27,1,28,27,-1,"VERIFIED","SKILL",false,0));
+        assertEquals(1,UraProgressPolicy.rukaRecoveryLayer(new UraHeldSkillInfo("ダブル防御態勢水","かつての水柱",0,1),false));
+        assertEquals(2,UraProgressPolicy.rukaRecoveryLayer(new UraHeldSkillInfo("ダブル防御態勢水","かつての水柱",-1,0),false));
+    }
     @Test public void b10FirstChargeNeedsActualHpAndCurrentOdinProofWithoutExpiredShield(){
         assertTrue(UraProgressPolicy.safeB10Charge(new byte[42],350000,10,1,8,8,8,8,3,1));
         assertFalse(UraProgressPolicy.safeB10Charge(new byte[42],349999,10,1,8,8,8,8,3,1));
