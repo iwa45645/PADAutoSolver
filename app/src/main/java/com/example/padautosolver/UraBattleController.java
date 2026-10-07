@@ -250,16 +250,17 @@ final class UraBattleController {
             if(phase==4)return open;
             open.holdMs=4000;
             open.heldStampedFrame=(held,current,time,seq)->{
-                List<StagePolicy.Item> text=nav.readUraHeldSkill(held);
+                boolean denseFirst=heldRecaptures>0;
+                List<StagePolicy.Item> text=denseFirst?nav.readUraHeldSkillDense(held):nav.readUraHeldSkill(held);
                 UraHeldSkillInfo info=UraHeldSkillInfo.read(text);
                 if(!current.getAsBoolean())return;
-                if(info==null) {
+                if(info==null&&!denseFirst) {
                     run.put("heldSkill",JSONObject.NULL).put("heldAt",time).put("heldSequence",seq).put("heldReadSource","RGB_ZOOM_3_REJECTED");
                     save(held,text,"held-unreadable-"+phase+"-"+step,time,seq);
                     text=nav.readUraHeldSkillDense(held);info=UraHeldSkillInfo.read(text);
                     if(!current.getAsBoolean())return;
                     run.put("heldReadSource","RGB_ZOOM_4");
-                }else run.put("heldReadSource","RGB_ZOOM_3");
+                }else run.put("heldReadSource",denseFirst?"RGB_ZOOM_4_RECAPTURE":"RGB_ZOOM_3");
                 heldSkill=info;heldAt=time;heldSequence=seq;
                 heldSekkaPostHeading=step==2&&vision.sekkaPostHeading(held);
                 run.put("heldSkill",info==null?JSONObject.NULL:new JSONObject().put("actor",info.actorName).put("baseName",info.baseName).put("baseRemaining",info.baseRemaining).put("assistName",info.assistName).put("assistRemaining",info.assistRemaining))
@@ -280,7 +281,7 @@ final class UraBattleController {
             if(phase==7||phase==9) {
                 if(heldAt<=actionAt||heldSequence<=actionSequence)return stop(frame,lines,"STALE_POSTCONDITION",capturedAt,sequence);
             }
-            if(phase==7)return ownPost(frame,lines,capturedAt,sequence);
+            if(phase==7)return ownPost(frame,lines,read,capturedAt,sequence);
             if(phase==9)return hastePost(frame,lines,read,capturedAt,sequence);
             if(!heldSkill.actorNamed(BEFORE_ACTOR[step])&&!heldSkill.baseNamed(step==0?AFTER[0]:BEFORE[step]))
                 return stop(frame,lines,"DRY_SKILL_IDENTITY_MISMATCH:"+step,capturedAt,sequence);
@@ -407,12 +408,14 @@ final class UraBattleController {
         if(!dryOnly){step=0;phase=4;reset();return;}
         step++;reset();if(step==6){step=0;phase=10;}else phase=2;
     }
-    private StagePolicy.Decision ownPost(Bitmap frame,List<StagePolicy.Item> lines,long time,long seq)throws Exception {
+    private StagePolicy.Decision ownPost(Bitmap frame,List<StagePolicy.Item> lines,UraDialogPolicy.Read read,long time,long seq)throws Exception {
         boolean identity=heldSkill.baseNamed(AFTER[step])||heldSkill.actorNamed(AFTER_ACTOR[step]);
         if(!identity&&step==2&&heldSekkaPostHeading) {
             identity=true;run.put("postIdentityEvidence","REVIEWED_SEKKA_SKILL_HEADER_PIXELS");
         }
-        if(!identity||!UraCooldownPostcondition.matches(step,heldSkill.baseRemaining,heldSkill.assistRemaining,helperAssistTotal))
+        UraB1PostReadPolicy.Outcome outcome=UraB1PostReadPolicy.assess(step,identity,heldSkill.baseRemaining,heldSkill.assistRemaining,helperAssistTotal,heldRecaptures);
+        if(outcome==UraB1PostReadPolicy.Outcome.RECAPTURE_ONLY)return recaptureHeld(frame,lines,read,time,seq);
+        if(outcome!=UraB1PostReadPolicy.Outcome.VERIFIED)
             return stop(frame,lines,"POSTCONDITION_FAILED:"+step,time,seq);
         if(vision.board(frame)==null||(step<5&&vision.enemyDistance(frame)>.055))return retry(frame,lines,"POST_BATTLE_SCENE_REQUIRED",time,seq);
         if(heldSkill.assistRemaining!=null)lastAssistRemaining[SLOTS[step]]=heldSkill.assistRemaining;
