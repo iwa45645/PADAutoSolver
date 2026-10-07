@@ -1,0 +1,165 @@
+{
+  "training": [
+    {
+      "source": "b16-locked-cycle-0.png",
+      "sha256": "6776d5e96f6c8b056ae938cb94e8c01785611245540efbe75068ac2d3bd7044e"
+    },
+    {
+      "source": "b16-locked-cycle-2.png",
+      "sha256": "56c16f8704b126fb44b5d96c8c77db45fbfc3741ca7d86660a048473d508e9d0"
+    },
+    {
+      "source": "b16-locked-cycle-4.png",
+      "sha256": "d416f8efd0807d02b2cd8e326682c04070503712c9fcd258150afa29fc74d914"
+    },
+    {
+      "source": "b16-locked-cycle-6.png",
+      "sha256": "bdbbbeca72bdc33e30b4417f2edb868afcfb4185b7e9bc80bee20d6f4635aec3"
+    },
+    {
+      "source": "b16-locked-cycle-8.png",
+      "sha256": "0d9693e5acb6bf55f9cbef0892d3241ecc6f46dfe6db1327e034c11018bc8e44"
+    },
+    {
+      "source": "b16-locked-extra-0.png",
+      "sha256": "13ccb9fd841f5e09e6b2d5507745548a4f97f98b8ac388620bae1dc3f43611cc"
+    },
+    {
+      "source": "b16-locked-extra-1.png",
+      "sha256": "7dd9f96ede381944db4f2354db8b8da287132849b69cbf53abf61a6f568deb4c"
+    },
+    {
+      "source": "b16-locked-extra-2.png",
+      "sha256": "47b52bda252a6d7bc8956751c10e14c61888fd273651970f7e2b7b69e4d46374"
+    },
+    {
+      "source": "b16-locked-extra-3.png",
+      "sha256": "4fe16de5ca4e81c7ae2a9444800c35a7dfb4ac8c2485478a256db03652f43548"
+    },
+    {
+      "source": "b16-locked-extra-4.png",
+      "sha256": "b2da8f89c7fe1f9c4998eca46ec6501d47f0ce8de76bcce44572d7c8b928b08d"
+    },
+    {
+      "source": "b16-locked-extra-5.png",
+      "sha256": "865065273ff3baf8ad465757db2d4e32c8002af73be137a943406684899bbb07"
+    },
+    {
+      "source": "b16-locked-extra-6.png",
+      "sha256": "08371dc8f38e7ad9fc23a6cdb88e14f07a7031fdf21f64d9d7dfcdc2d92816c9"
+    },
+    {
+      "source": "b16-locked-extra-7.png",
+      "sha256": "0ffcdf076638776c3c43d1be7c2bd83cd7f25242574b69364d355f60a156b227"
+    },
+    {
+      "source": "b16-locked-extra-8.png",
+      "sha256": "acebb96ffa7512c5d5bdee2e31e0efdf61f4d668aa78a837f58add299e1997a1"
+    },
+    {
+      "source": "b16-locked-extra-9.png",
+      "sha256": "1203381ccc888169db0b207dd5266058608ead389bc274b98f06b97184624bd4"
+    },
+    {
+      "source": "b16-locked-extra-10.png",
+      "sha256": "182801bf5476f3fa6181440ab01a6be61b0eb7d981eaeca8be23a7e355193d0d"
+    },
+    {
+      "source": "b16-locked-extra-11.png",
+      "sha256": "057cfe5e1c5b54b90a366bdc47e8efe71135b452464a0f86bb4dc9f53630d514"
+    },
+    {
+      "source": "b16-locked-extra-12.png",
+      "sha256": "51ef1c9ae844bcef2c0d61a2e40f8b9c45f77f80064834f2231db5aee47e43fe"
+    },
+    {
+      "source": "b16-locked-extra-13.png",
+      "sha256": "e65bcd7a547ef4bd34cdef857df8b7b6eb8aec6e6a88ca6ef27aadccfd01af3d"
+    },
+    {
+      "source": "b16-locked-extra-14.png",
+      "sha256": "7c99c46e10ae0b6bd23dd641fb3d93700eba5dbe9d2879d4fc7470abc35cfb13"
+    },
+    {
+      "source": "b16-locked-extra-15.png",
+      "sha256": "a627c3703f4b50599bf9584a699dfb6854014ffec7357ab56b82196c6789d3fa"
+    },
+    {
+      "source": "b16-locked-extra-16.png",
+      "sha256": "61802488d50a874a88d0968013f527e1463cd3c8df3cf7c44bd3f876dbd61d44"
+    },
+    {
+      "source": "b16-locked-extra-17.png",
+      "sha256": "ee45387e641acf94fa7055466ca1915fe1dd9ebc79c3c25049a1558b209d2711"
+    },
+    {
+      "source": "b16-locked-extra-18.png",
+      "sha256": "841f521d02d0adffa9ca24e7f7ce98e3239c529962f63ff3f7f886643e46d6e6"
+    },
+    {
+      "source": "b16-locked-extra-19.png",
+      "sha256": "dd28d7b32ab90131e7e240fb16c48d91055d3b30f550939ab0f852a7562ce1b1"
+    },
+    {
+      "source": "b16-locked-extra-20.png",
+      "sha256": "bdc6ce84003fc547a576addcfc15507e41bd9d89b991cc5e9c2b3a33b2194a19"
+    },
+    {
+      "source": "b16-locked-extra-21.png",
+      "sha256": "fa806383a9a951605a3a5934d0e26c81c8662a2cd06b92c8248b5bc31264a29d"
+    },
+    {
+      "source": "b16-locked-extra-22.png",
+      "sha256": "3d471138391de31c301eaa1c599a10c071228082a5f701ab29376c8b36826242"
+    },
+    {
+      "source": "b16-locked-extra-23.png",
+      "sha256": "fb336e321782d681255af39a1c72eed0363e0cc2bf76c3aa07366c04c150b51d"
+    }
+  ],
+  "heldout": {
+    "b16-locked-cycle-1.png": "4befe0b367094d4dbcd7701f92753910a52e3cd664c110922524f0310ac79435",
+    "b16-locked-cycle-3.png": "bf95f164de28b27ccfc573a7911870fc43f525d115ca5a6a0cc3f229797a7d4f",
+    "b16-locked-cycle-5.png": "8dcf6e1331933f848b0f6c476c409268b74b490b6b850ba080035083aaf1c71e",
+    "b16-locked-cycle-7.png": "ec16941ab254913e92fcb3ecdbe1c03b9c20fcbd43bcced79726e17fbae2b3da",
+    "b16-locked-cycle-9.png": "3467fe2e63269564a89d95b41b6970a970508409213a7efbe1b82663be4423e3",
+    "b16-pause.png": "3475706caa67397df51aef231270c2cf6c3c20a4aef97def7551b562d4234b48"
+  },
+  "board": [
+    5,
+    5,
+    2,
+    0,
+    3,
+    4,
+    2,
+    1,
+    5,
+    5,
+    3,
+    4,
+    5,
+    3,
+    0,
+    4,
+    0,
+    5,
+    4,
+    0,
+    5,
+    3,
+    0,
+    2,
+    3,
+    0,
+    5,
+    4,
+    3,
+    3
+  ],
+  "thresholds": [
+    0.07,
+    0.035
+  ],
+  "description": "Even real frames and separately captured extra frames train only locked dark27; independent odd frames and earlier stopped frame replay all30. Existing held-out payloads retained."
+}
