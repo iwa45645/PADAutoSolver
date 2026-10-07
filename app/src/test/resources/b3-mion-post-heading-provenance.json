@@ -1,0 +1,14 @@
+{
+  "source": "b3-held-1791340661235.png",
+  "sourceSha256": "c135cf4edad298d9f4529df44ec0a028896b0c05776931b6bc4f7d2d735dfbe7",
+  "crop": [
+    130,
+    230,
+    770,
+    50
+  ],
+  "derived": true,
+  "independentFromExistingReviewedMionReference": true,
+  "notAnIndependentLiveClear": true,
+  "review": "literal Mion skill heading; literal cooldown 2 remains separately required"
+}

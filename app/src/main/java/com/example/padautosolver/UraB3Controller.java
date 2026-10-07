@@ -22,6 +22,7 @@ final class UraB3Controller {
     private boolean postSaved;
     private volatile UraHeldSkillInfo held;
     private volatile boolean heldSekkaHeading;
+    private volatile boolean heldPostHeading;
     private volatile long heldAt,heldSequence;
     private Integer sekkaCooldown,esperCooldown;
     private UraPuzzlePlan plan;
@@ -132,21 +133,29 @@ final class UraB3Controller {
             if(now()-actionAt<1500)return waitFor("B3：スキル演出を待機");
             StagePolicy.Decision d=action(new StagePolicy.Item("B3_POST_"+step,100+203*SLOTS[step],1425),"B3：使用後のスキル残りターンを取得",()->{phase=6;misses=0;postSaved=false;});
             d.holdMs=4000;d.heldStampedFrame=(image,current,t,s)->{
-                List<StagePolicy.Item> text=nav.readUraHeldSkill(image);UraHeldSkillInfo info=UraHeldSkillInfo.read(text);
-                if(info==null){text=nav.readUraHeldSkillDense(image);info=UraHeldSkillInfo.read(text);}
+                List<StagePolicy.Item> text=heldRecaptures>0?nav.readUraHeldSkillDense(image):nav.readUraHeldSkill(image);UraHeldSkillInfo info=UraHeldSkillInfo.readBase(text);
+                if(info==null){text=nav.readUraHeldSkillDense(image);info=UraHeldSkillInfo.readBase(text);}
                 if(!current.getAsBoolean())return;
                 held=info;heldAt=t;heldSequence=s;
                 heldSekkaHeading=step==0&&vision.sekkaPostHeading(image);
+                heldPostHeading=heldSekkaHeading
+                    ||step==2&&vision.distance(image,"post-ruka-skill-header.png",130,230,490,50)<.025
+                    ||step==3&&vision.distance(image,"post-mion-skill-header.png",130,230,770,50)<.025;
                 record.put("postSkill",info==null?JSONObject.NULL:new JSONObject().put("name",info.baseName).put("remaining",info.baseRemaining));
                 record.put("sekkaHeadingPixelsVerified",heldSekkaHeading);
+                record.put("postHeadingPixelsVerified",heldPostHeading).put("postRecaptures",heldRecaptures);
                 save(image,text,"b3-held",t,s);
             };return d;
         }
         if(phase==6) {
             if(held==null&&heldRecaptures++<2){phase=5;return waitFor("B3：使用後の表示を再取得（再発動なし）");}
             if(held==null)return retry(frame,List.of(),"B3_HELD_POST_REQUIRED",time,seq);
-            if(heldAt<=actionAt||heldSequence<=actionSequence||!(held.baseNamed(SKILLS[step])||step==0&&heldSekkaHeading)||!Integer.valueOf(COOLDOWNS[step]).equals(held.baseRemaining))
+            if(heldAt<=actionAt||heldSequence<=actionSequence)
                 return stop(frame,List.of(),"B3_SKILL_POSTCONDITION:"+step,time,seq);
+            UraSkillPostReadPolicy.Outcome post=UraSkillPostReadPolicy.assess(COOLDOWNS[step],held.baseRemaining,
+                held.baseNamed(SKILLS[step])||heldPostHeading,heldRecaptures);
+            if(post==UraSkillPostReadPolicy.Outcome.STOP)return stop(frame,List.of(),"B3_SKILL_POSTCONDITION:"+step,time,seq);
+            if(post==UraSkillPostReadPolicy.Outcome.RECAPTURE_ONLY){heldRecaptures++;phase=5;return waitFor("B3：使用後名称を別拡大率で再取得（再発動なし）");}
             if(step==0)sekkaCooldown=held.baseRemaining;if(step==1)esperCooldown=held.baseRemaining;
             if(!postSaved){save(frame,List.of(),"b3-skill-verified",time,seq);postSaved=true;return waitFor("B3：使用後証拠保存後の新しい画面を待機");}
             UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);

@@ -4,7 +4,7 @@
 
 先に[現在の実装・検証状況](implementation-status.md)、[再評価と反映状況](development-review-2026-10-05.md)、[本日の実機記録](runtime-testing-2026-10-05.md)を読んでください。
 
-- feature/ura-shura-full-auto、0.4.0-dev77 / versionCode80。JVM256件・署名Release・両lint成功。CIと配布hashはbuild-infoを参照。
+- feature/ura-shura-full-auto、0.4.0-dev78 / versionCode81。JVM260件・署名Release・両lint成功。CIと配布hashはbuild-infoを参照。
 - まず[10/7検証記録](stability-validation-2026-10-07.md)を読み、USBで現在画面を確認する。10/5のB3は10/7には残っていなかった。別時点のスクリーンショットを現在戦闘と扱わない。
 - dev69-01はB1認識停止→開発再開後に最初の交換欠落でB1攻略失敗し終了。新規dev74-01はルカ使用後名称で停止。dev75で使用後観察だけを再取得しB1突破、dev76でB2の3指示を本体で実行して実Battle3。B3runId 0fee620e-a454-4d9c-9e25-325a1845b1e5、sourceB2RunId 2e0805ad-9155-4ff3-90a0-5ae2d5920d41。11:28に全闇更新後CD3まで確認したが、存在しない戻る待ちでphase14停止。dev77は同じCD減少証拠と戦闘画面を確認して続行する修正。保存データを手書きで変更しない。以後の実機結果は10/7記録を優先する。
 - B3のファクトを別敵/盤面として追加。セッカ・エスペルの使用後CD、二つの実最大HP読取、HPバー下限を確認し、闇消し後はセッカ実CD4→3を要求。攻撃は初回水T字・水2セット・回復を検算し、実4/22まで到達しなければ突破扱いにしない。ファクトの新規実機突破はまだ未確認。
