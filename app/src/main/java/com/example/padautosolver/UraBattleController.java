@@ -385,7 +385,7 @@ final class UraBattleController {
             if(puzzlePlan==null||!puzzlePlan.current(live,now())||now()-buffsVerifiedAt>25000)return stop(frame,List.of(),"STALE_PUZZLE_OR_BUFF_EVIDENCE",time,seq);
             if(vision.enemyDistance(frame)>.055)return stop(frame,List.of(),"PUZZLE_SCENE_CHANGED",time,seq);
             StagePolicy.Decision d=action(new StagePolicy.Item("URA_B1_PUZZLE",610,1700),"B1：水T字・水2セット＋回復を連続ドラッグ",()->{enteredAt=now();phase=17;reset();});
-            d.puzzlePath=puzzlePlan.path;d.puzzleCols=6;d.puzzleRows=5;d.puzzleRect=BoardGeometry.calculate(1220,2712,6,5,0,84);d.puzzleDurationMs=3000;return d;
+            d.puzzlePath=puzzlePlan.path;d.puzzleCols=6;d.puzzleRows=5;d.puzzleRect=BoardGeometry.calculate(1220,2712,6,5,0,84);d.puzzleDurationMs=3000;d.puzzlePreciseStart=true;return d;
         }
         if(phase==17) {
             instructionCapture.read(context,nav,run.getString("runId"),-1,"b1-lucifer-command");
