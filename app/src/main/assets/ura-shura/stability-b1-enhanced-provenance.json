@@ -1,0 +1,285 @@
+{
+  "description": "Twenty real read-only device frames after native Yukine transformation. No synthetic poses. Independent preceding stop frame is used only by the test. Runtime thresholds unchanged.",
+  "references": [
+    {
+      "file": "stability-b1-enhanced-heal-0.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-0.png",
+      "sourceSha256": "9a83c6a2ca0808e17f51479ecf53867a5ca7b7d38e850a681f9c4b979a41af3e"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-0.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-0.png",
+      "sourceSha256": "9a83c6a2ca0808e17f51479ecf53867a5ca7b7d38e850a681f9c4b979a41af3e"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-1.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-1.png",
+      "sourceSha256": "5dcf101bb5bad532bbb6d9fd7239c23c4509fed6611559e5f576510df93aaa57"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-1.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-1.png",
+      "sourceSha256": "5dcf101bb5bad532bbb6d9fd7239c23c4509fed6611559e5f576510df93aaa57"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-2.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-2.png",
+      "sourceSha256": "33c7c823ba5ad0eb0936d798bbe3dfc670014b706bf972d360ee987b7522779f"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-2.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-2.png",
+      "sourceSha256": "33c7c823ba5ad0eb0936d798bbe3dfc670014b706bf972d360ee987b7522779f"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-3.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-3.png",
+      "sourceSha256": "d406cde1310daacd85a55aecbbddcf8b81a155890ccea50b70d147812ac9fb83"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-3.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-3.png",
+      "sourceSha256": "d406cde1310daacd85a55aecbbddcf8b81a155890ccea50b70d147812ac9fb83"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-4.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-4.png",
+      "sourceSha256": "859eb1b52627ceb26d60bf1f362b955addf2f0a24c4e777b56a85f71a15875a5"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-4.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-4.png",
+      "sourceSha256": "859eb1b52627ceb26d60bf1f362b955addf2f0a24c4e777b56a85f71a15875a5"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-5.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-5.png",
+      "sourceSha256": "8b1b8d209d05ea61ca995be4e0ace27ce27d35cc11336a17b90272593c3535c4"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-5.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-5.png",
+      "sourceSha256": "8b1b8d209d05ea61ca995be4e0ace27ce27d35cc11336a17b90272593c3535c4"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-6.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-6.png",
+      "sourceSha256": "28b27348e517c5d7ac4272e7947623e6853adc3be98684bb11ccfd0f522d6991"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-6.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-6.png",
+      "sourceSha256": "28b27348e517c5d7ac4272e7947623e6853adc3be98684bb11ccfd0f522d6991"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-7.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-7.png",
+      "sourceSha256": "b8cff4b951373263b55f1cfd40a08caa2c6b401c1bf56918010af4b3cc29c11d"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-7.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-7.png",
+      "sourceSha256": "b8cff4b951373263b55f1cfd40a08caa2c6b401c1bf56918010af4b3cc29c11d"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-8.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-8.png",
+      "sourceSha256": "c5fbd5b196ccf6baabc9c7ca31e6902c7d3b87992c6b336e065f076011f18020"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-8.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-8.png",
+      "sourceSha256": "c5fbd5b196ccf6baabc9c7ca31e6902c7d3b87992c6b336e065f076011f18020"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-9.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-9.png",
+      "sourceSha256": "9394151ff8ab9f5883c33b28289668de46b9f1c0425805fa6616f4eaa5cd8c66"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-9.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-9.png",
+      "sourceSha256": "9394151ff8ab9f5883c33b28289668de46b9f1c0425805fa6616f4eaa5cd8c66"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-10.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-10.png",
+      "sourceSha256": "bc894675ba987d8700031700e8ea221cef7ff33aaf156f0f992bcbf90899f43b"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-10.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-10.png",
+      "sourceSha256": "bc894675ba987d8700031700e8ea221cef7ff33aaf156f0f992bcbf90899f43b"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-11.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-11.png",
+      "sourceSha256": "321f4c3dc952584471150b29958c5e1da19e74948864f352712935d47034d3af"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-11.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-11.png",
+      "sourceSha256": "321f4c3dc952584471150b29958c5e1da19e74948864f352712935d47034d3af"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-12.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-12.png",
+      "sourceSha256": "7c79b1b017c6b084da0a392a695057a80d32d727b187a87ac86ba52e1d98a782"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-12.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-12.png",
+      "sourceSha256": "7c79b1b017c6b084da0a392a695057a80d32d727b187a87ac86ba52e1d98a782"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-13.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-13.png",
+      "sourceSha256": "679600696f1bc19ed8501a0b60dad622cd438ff0529911aa948c47e0f876d69d"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-13.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-13.png",
+      "sourceSha256": "679600696f1bc19ed8501a0b60dad622cd438ff0529911aa948c47e0f876d69d"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-14.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-14.png",
+      "sourceSha256": "5a89463dcc15ebb8eabbc301a68dad556b6c9621ed1690bc375397b9c90709e2"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-14.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-14.png",
+      "sourceSha256": "5a89463dcc15ebb8eabbc301a68dad556b6c9621ed1690bc375397b9c90709e2"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-15.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-15.png",
+      "sourceSha256": "5f3772b0c575845ba6c61b551071e1934f022efbe9e1c9cd53da921a81ef9e3c"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-15.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-15.png",
+      "sourceSha256": "5f3772b0c575845ba6c61b551071e1934f022efbe9e1c9cd53da921a81ef9e3c"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-16.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-16.png",
+      "sourceSha256": "662312b06eb7fa25bcb8152ef6d10aaa80a6d17229a42feb4256c95d75d0796c"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-16.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-16.png",
+      "sourceSha256": "662312b06eb7fa25bcb8152ef6d10aaa80a6d17229a42feb4256c95d75d0796c"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-17.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-17.png",
+      "sourceSha256": "99334692d0ebd0bc1d6de5e9c8cf518887e4292d37ab368279d9a4ee53a9b11d"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-17.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-17.png",
+      "sourceSha256": "99334692d0ebd0bc1d6de5e9c8cf518887e4292d37ab368279d9a4ee53a9b11d"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-18.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-18.png",
+      "sourceSha256": "281537551e3cf0b2ba40f875ef082514bbfdab570a6da54dd80955389154e77f"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-18.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-18.png",
+      "sourceSha256": "281537551e3cf0b2ba40f875ef082514bbfdab570a6da54dd80955389154e77f"
+    },
+    {
+      "file": "stability-b1-enhanced-heal-19.png",
+      "color": 5,
+      "cell": 16,
+      "source": "enhanced-cycle-19.png",
+      "sourceSha256": "603205d2292a223d8d618e8ee136d42f3067ee423911aae2dd082118b4d026b5"
+    },
+    {
+      "file": "stability-b1-enhanced-combo-water-19.png",
+      "color": 3,
+      "cell": 18,
+      "source": "enhanced-cycle-19.png",
+      "sourceSha256": "603205d2292a223d8d618e8ee136d42f3067ee423911aae2dd082118b4d026b5"
+    }
+  ]
+}
