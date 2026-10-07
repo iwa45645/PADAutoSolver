@@ -240,8 +240,21 @@ final class UraBattleVision {
         }return true;
     }
     boolean b4ChargeCounters(Bitmap frame)throws Exception {
-        for(int i=0;i<3;i++)if(distance(frame,"b4-count-"+i+".png",112+i*380,730,45,55)>=.09)return false;
+        for(int i=0;i<3;i++) {
+            Bitmap crop=Bitmap.createBitmap(frame,112+i*380,730,45,55);
+            try {
+                boolean[] current=b4CounterInk(pixels(crop));
+                boolean original=UraCounterGlyph.matches(b4CounterInk(pixels(template("b4-count-"+i+".png"))),current,45,55);
+                boolean reviewed=UraCounterGlyph.matches(b4CounterInk(pixels(template("b4-charge-oct7-"+i+".png"))),current,45,55);
+                if(!original&&!reviewed)return false;
+            } finally{crop.recycle();}
+        }
         return true;
+    }
+    static boolean[] b4CounterInk(int[] pixels){
+        boolean[] ink=new boolean[pixels.length];
+        for(int i=0;i<ink.length;i++){int p=pixels[i],r=(p>>16)&255,g=(p>>8)&255,b=p&255;ink[i]=r>210&&g>210&&b>210||r>235&&g<100&&b<100;}
+        return ink;
     }
     static boolean sameStablePortraits(Bitmap old,Bitmap live) {
         for(int slot=0;slot<6;slot++) {

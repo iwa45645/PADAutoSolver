@@ -95,7 +95,7 @@ final class UraB4Controller {
             long mask=vision.rouletteMask(frame);byte[] board=vision.rouletteBoard(frame,mask);
             if(board==null)return retry(frame,List.of(),"B4_STABLE_BOARD_UNKNOWN",time,seq);
             if(!charged) {
-                if(Long.bitCount(mask)!=5||!vision.b4ChargeCounters(frame)||hpLowerBound<230000)return retry(frame,List.of(),"B4_CHARGE_COUNTERS_2_5_2_AND_HP_REQUIRED",time,seq);
+                if(Long.bitCount(mask)!=5||!vision.b4ChargeCounters(frame)||hpLowerBound<230000)return retry(frame,List.of(),"B4_CHARGE_COUNTERS_2_5_OR_7_2_AND_HP_REQUIRED",time,seq);
                 // One turn is safe because ALL actual counters are >=2. No claim of zero combos.
                 List<Integer> route=RoulettePlan.chargeRoute(board,mask);
                 if(!prepared){charged=true;phase=10;round=0;record.put("chargeRoute",new JSONArray(route));save(frame,List.of(),"b4-charge-consumed",time,seq);charged=false;phase=2;prepared=true;return waitFor("B4：攻撃まで2ターン以上を再照合");}

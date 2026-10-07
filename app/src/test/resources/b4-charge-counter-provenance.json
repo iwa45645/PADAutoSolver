@@ -1,0 +1,19 @@
+{
+  "reference": "b4-stop-1791341464248.png",
+  "referenceSha256": "08c8e21c2570929bea9e22154d68a30660d515df474a4230d6e2ac82f64b0626",
+  "heldOut": "live.png",
+  "heldOutSha256": "53a1048488daed1f17ee1ddf53133cf428e9d0671e5a5d596b16e8c23184a6b3",
+  "reviewedCounters": [
+    2,
+    7,
+    2
+  ],
+  "legacyCounters": [
+    2,
+    5,
+    2
+  ],
+  "pixelInk": "white/pink channels all >210 or literal red r>235,g/b<100",
+  "glyphPolicy": "core>=100, errors<10; unchanged UraCounterGlyph",
+  "notAnewLiveClear": true
+}

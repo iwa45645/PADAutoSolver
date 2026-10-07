@@ -124,7 +124,9 @@ final class StageNavigator {
     }
     List<StagePolicy.Item> readUraHp(Bitmap frame)throws Exception {
         // Read the literal digits; full/reduced HP also uses green/red, not only yellow.
-        List<StagePolicy.Item> text=readCrop(frame,.60f,.574f,.978f,.593f,true,false,4,true);
+        List<StagePolicy.Item> text=readCrop(frame,.60f,.574f,.978f,.593f,true,false,4,false,true);
+        if(UraB3Policy.hp(text)!=null)return text;
+        text=readCrop(frame,.60f,.574f,.978f,.593f,true,false,4,true);
         if(UraB3Policy.hp(text)!=null)return text;
         text=readCrop(frame,.60f,.574f,.978f,.593f,false,false,4);
         if(UraB3Policy.hp(text)!=null)return text;
@@ -183,6 +185,9 @@ final class StageNavigator {
         return readCrop(frame,l,t,r,b,threshold,whiteOnly,zoom,false);
     }
     private List<StagePolicy.Item> readCrop(Bitmap frame,float l,float t,float r,float b,boolean threshold,boolean whiteOnly,int zoom,boolean whiteYellow) throws Exception {
+        return readCrop(frame,l,t,r,b,threshold,whiteOnly,zoom,whiteYellow,false);
+    }
+    private List<StagePolicy.Item> readCrop(Bitmap frame,float l,float t,float r,float b,boolean threshold,boolean whiteOnly,int zoom,boolean whiteYellow,boolean hpOnly) throws Exception {
         int left = Math.round(frame.getWidth() * l), top = Math.round(frame.getHeight() * t);
         Bitmap crop = Bitmap.createBitmap(frame, left, top, Math.round(frame.getWidth() * (r-l)), Math.round(frame.getHeight() * (b-t)));
         Bitmap enlarged = Bitmap.createScaledBitmap(crop, crop.getWidth() * zoom, crop.getHeight() * zoom, true);
@@ -194,7 +199,7 @@ final class StageNavigator {
         for (int i = 0; i < pixels.length; i++) {
             int red = (pixels[i] >> 16) & 255, green = (pixels[i] >> 8) & 255, blue = pixels[i] & 255;
             int max = Math.max(red, Math.max(green, blue)), min = Math.min(red, Math.min(green, blue));
-            boolean ink=whiteYellow ? min>180||(red>200&&green>180&&blue<130)
+            boolean ink=hpOnly?UraHpTextInk.isInk(pixels[i]):whiteYellow ? min>180||(red>200&&green>180&&blue<130)
                 :whiteOnly ? min > 190 : max > 155 && (min > 105 || max - min > 85);
             pixels[i] = ink ? 0xff000000 : 0xffffffff;
         }
@@ -209,6 +214,7 @@ final class StageNavigator {
             if (box != null) out.add(new StagePolicy.Item(line.getText(), left + box.exactCenterX()/zoom, top + box.exactCenterY()/zoom));
         }
         if(whiteOnly)android.util.Log.i("PADSolver","detailHeader="+result.getText());
+        if(hpOnly)android.util.Log.i("PADSolver","hpDigits="+result.getText());
         return out;
     }
     void close() { recognizer.close(); }
