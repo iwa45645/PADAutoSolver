@@ -15,3 +15,9 @@
 保存画像fixture・JVM試験と、新しい実機操作の成功は別に記録する。ファクト参照は1実フレーム。1pxずらしたfixtureは同じ画像の派生で、独立実機検証ではない。攻略資料は[AppMedia B1〜B11](https://appmedia.jp/pazudora/5088673)（10/7参照）。現行スキル効果・盤面は実機を優先する。
 
 ローカルJVM240件、固定署名Release、debug/release lint成功。新規潜入・GitHub Actions・実機結果は取得後に追記する。現在、無中断クリア0回、同一APK20試行の安定基準は未達。
+
+## 新規潜入 dev69-01 と dev70
+
+dev69の[Actions 37556959536](https://github.com/iwa45645/PADAutoSolver/actions/runs/37556959536)はbuild/signed-previewとも成功。10:28:35ミオン詳細、10:28:41確認して戻る、10:28:48本体から新規潜入。runId `0dca3929-6b59-44ac-9db8-a2d9a6a27972`。10:29:15、B1入口のcell18のコンボドロップ付き光が未認識（native距離0.1284864）のため、スキル・パズル未送信で停止。`stop-1791336554088.json/png`を端末から取得した。実入口HP102041/102041。クリアとして数えない。
+
+dev70/versionCode73で、停止画像と後の独立した実機画像の同セルの2表示を追加。色の距離.07・別色との差.035を維持し、別の5色と未知画像の否定fixtureを追加。JVM241件、署名Release、両lint成功。以後のB1再開はAPK更新を挟んだ開発再開であり、dev69-01の無停止クリアには数えない。
