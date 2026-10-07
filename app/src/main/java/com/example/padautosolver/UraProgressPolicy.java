@@ -5,7 +5,7 @@ final class UraProgressPolicy {
     static int[] script(int floor) {
         if(floor==6)return new int[]{SEKKA,CHARGE,MION,ATTACK,ESPER,CHARGE,MION,ODIN,ATTACK};
         if(floor==7)return new int[]{SEKKA,CHARGE,MION,ATTACK};
-        if(floor==8)return new int[]{RUKA,CHARGE,MION,ATTACK};
+        if(floor==8)return new int[]{RUKA_RECOVERY,CHARGE,MION,ATTACK};
         if(floor==9)return new int[]{SEKKA,CHARGE,MION,ATTACK};
         if(floor==10)return new int[]{ODIN,CHARGE,MION,ATTACK};
         if(floor==11)return new int[]{SEKKA,CHARGE,MION,ESPER,ATTACK};
@@ -103,6 +103,10 @@ final class UraProgressPolicy {
         if(info==null||!(info.baseNamed("ダブル防御態勢水")||baseHeading))return 0;
         if(Integer.valueOf(0).equals(info.baseRemaining))return 1;
         return Integer.valueOf(-1).equals(info.baseRemaining)&&Integer.valueOf(0).equals(info.assistRemaining)?2:0;
+    }
+    /** Migrate only an unconsumed B8 readiness check; consumed skills retain their receipt. */
+    static int rukaReadinessStep(int floor,int operation,int phase,int step) {
+        return floor==8&&operation==0&&(phase==13||phase==14)&&step==RUKA?RUKA_RECOVERY:step;
     }
     static boolean b22AttackAllowed(int operation,int round,int start,int recoveryRound,int odinRound,int skillRound,int lastSkill,int[] hp,int verifiedMaximum,boolean awokenNull) {
         return operation==4&&round==start+1&&recoveryRound==round&&odinRound==round&&skillRound==round&&lastSkill==MION

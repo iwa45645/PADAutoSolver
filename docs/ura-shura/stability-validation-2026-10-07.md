@@ -125,3 +125,9 @@ dev84 [Actions 37567472627](https://github.com/iwa45645/PADAutoSolver/actions/ru
 dev84ではB7の実階層を確認後、12:38:27セッカ1回発動、使用後CD4・同round4のshield記録をVERIFIEDにした。しかしコンボドロップ付きの木cell2が距離.08459で未知のため、12:38:47 `PROGRESS_POST_DIALOG_OR_BOARD_REQUIRED` で停止 (`progress-stop-1791344325590.json/png`)。operation0/phase6/round4、セッカ使用済み。次の充填・ミオン・攻撃は未送信。
 
 dev85/versionCode88はコンボ木cell2の実表示を追加。最初の偶数5参照は発光中に偏り、独立fixtureの静止時を未知として検出した。失敗fixtureを参照へ流用せず、別の時点で追加6フレームを撮影し、静止時・発光時の計11参照にした。最初の奇数5枚とそれ以前の停止画像180マスを再検査。最新参照一式で強化火180マスと毒270マスも検査し、距離.07/分離margin.035を維持。274 JVM、固定署名Release、両lintローカル成功。セッカを再発動せずphase5の使用後観察から本体で再開。CIと実機結果は取得後に追記。
+
+dev85 [Actions 37568320878](https://github.com/iwa45645/PADAutoSolver/actions/runs/37568320878)はbuild/signed-preview両job成功。12:47:35にセッカ使用後の観察から再開し、セッカを再発動せずCD4を確認。12:48:04充填1回、実ミオンCD1→0を確認し、12:49:07ミオン1回発動/CD2、12:49:29攻撃1回。12:49:56〜12:50:03の実メニューでBattle8/22を2枚確認し、B7を突破した (`progress-floor-1791344999589.json/png`)。
+
+同じdev85でB8クラウソラスに引き継ぎ、水消せない3ターンを認識。ルカの実tooltipは本体「使用後5ターン」、アシスト「使用可能」で、本体スキルを使えないため12:50:30に発動前停止 (`progress-stop-1791345028555.json/png`)。operation0/phase14/step4/round6、HP612892/612892。`progress-readiness-1791345025154.json/png`の実アシスト「かつての水柱」は、ロック解除・水と回復15個ずつ生成・消せないと覚醒無効の全回復。効果を推測で置き換えない。
+
+dev86/versionCode89はB8の回復をB22と同じ本体/アシスト選択へ変更。本体の見出しと実残りターンを確認し、本体0なら本体、使用後表示(-1)かつアシスト0ならアシストを選ぶ。選択後も実発動modalの層・正確なスキル名・有効なボタンを照合し、発動後は新しい本体CD5の証拠を要求する。旧B8のoperation0/phase13・14の未使用readinessだけを移行し、消費済みphase5・6等をreadinessに戻さない。276件のJVMテストは成功。署名Release・両lint、CI、実機結果は確定後に追記する。

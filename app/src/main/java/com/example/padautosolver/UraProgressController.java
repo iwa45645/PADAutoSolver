@@ -61,6 +61,7 @@ final class UraProgressController {
                 c.floor=target;c.script=UraProgressPolicy.script(target);
                 for(Iterator<String> it=data.keys();it.hasNext();){String k=it.next();c.record.put(k,data.get(k));}
                 c.phase=data.getInt("phase");c.operation=data.optInt("operation");c.round=data.optInt("round");c.floorStartRound=data.optInt("floorStartRound");c.step=data.optInt("step");c.charged=data.optBoolean("charged");
+                c.step=UraProgressPolicy.rukaReadinessStep(c.floor,c.operation,c.phase,c.step);
                 if(c.phase==5||c.phase==6)c.phase=5;
                 else if(c.phase==4)c.phase=3;
                 else if(c.phase==9)c.phase=7;

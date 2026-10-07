@@ -122,6 +122,7 @@ public class UraProgressPolicyTest {
     @Test public void shieldAndCooldownsContinueAcrossReviewedFloorsWithoutResettingTurns(){
         int[] cooldown={0,1,0,0,0};int round=0,sekkaRound=-1,skillRound=-1;
         for(int floor=6;floor<=11;floor++)for(int op:UraProgressPolicy.script(floor)){
+            if(op==UraProgressPolicy.RUKA_RECOVERY)op=UraProgressPolicy.RUKA; // This scenario has the base ready.
             if(op<100){assertEquals("B"+floor+" skill "+op,0,cooldown[op]);cooldown[op]=new int[]{4,2,5,5,5}[op];skillRound=round;if(op==0)sekkaRound=round;}
             else{
                 if(op==100)assertTrue(UraProgressPolicy.safeCharge(new byte[30],230000,round,sekkaRound,skillRound,cooldown[1]));
@@ -139,8 +140,9 @@ public class UraProgressPolicyTest {
     }
     @Test public void b8ClearsUnmatchBeforeChargingAndDoesNotAssumeFreshSekka(){
         int[] cooldown={2,1,1,2,0};int round=6,sekkaRound=4,skillRound=5;
-        assertEquals(UraProgressPolicy.RUKA,UraProgressPolicy.script(8)[0]);
+        assertEquals(UraProgressPolicy.RUKA_RECOVERY,UraProgressPolicy.script(8)[0]);
         for(int op:UraProgressPolicy.script(8)){
+            if(op==UraProgressPolicy.RUKA_RECOVERY)op=UraProgressPolicy.RUKA;
             if(op<100){assertEquals(0,cooldown[op]);cooldown[op]=new int[]{4,2,5,5,5}[op];skillRound=round;}
             else{
                 if(op==100)assertTrue(UraProgressPolicy.safeCharge(new byte[30],230000,round,sekkaRound,skillRound,cooldown[1]));
@@ -149,6 +151,20 @@ public class UraProgressPolicyTest {
             }
         }
         assertEquals(8,round);assertEquals(0,cooldown[0]);assertEquals(1,cooldown[1]);assertEquals(0,cooldown[3]);
+    }
+    @Test public void b8RecoveryRereadsOnlyUnconsumedLegacyReadiness(){
+        for(int phase:new int[]{13,14})assertEquals(6,UraProgressPolicy.rukaReadinessStep(8,0,phase,4));
+        for(int phase:new int[]{3,4,5,6,7,9,10,12,18,19})assertEquals(4,UraProgressPolicy.rukaReadinessStep(8,0,phase,4));
+        assertEquals(4,UraProgressPolicy.rukaReadinessStep(8,1,14,4));
+        assertEquals(4,UraProgressPolicy.rukaReadinessStep(22,0,14,4));
+        assertEquals(1,UraProgressPolicy.rukaReadinessStep(8,0,14,1));
+    }
+    @Test public void b8OverchargedRecoveryNeedsBothLiteralCooldownsAndBaseIdentity(){
+        assertEquals(2,UraProgressPolicy.rukaRecoveryLayer(new UraHeldSkillInfo("ダブル防御態勢水","かつ丁の水柱",-1,0),false));
+        assertEquals(2,UraProgressPolicy.rukaRecoveryLayer(new UraHeldSkillInfo("ダブル防御簡勢水","かつ丁の水柱",-1,0),true));
+        assertEquals(0,UraProgressPolicy.rukaRecoveryLayer(new UraHeldSkillInfo("別スキル","かつての水柱",-1,0),false));
+        assertEquals(0,UraProgressPolicy.rukaRecoveryLayer(new UraHeldSkillInfo("ダブル防御態勢水","かつての水柱",-1,null),false));
+        assertEquals(0,UraProgressPolicy.rukaRecoveryLayer(new UraHeldSkillInfo("ダブル防御態勢水","かつての水柱",1,0),false));
     }
     @Test public void b7KeepsShieldUntilAttackAndChargesMionWithoutUsingUnreadySkills(){
         int[] cooldown={0,1,3,4,0};int round=4,sekkaRound=-1,skillRound=-1;
