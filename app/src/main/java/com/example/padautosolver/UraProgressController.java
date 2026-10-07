@@ -347,7 +347,9 @@ final class UraProgressController {
                 if(dualPlan==null)return stop(frame,List.of(),"PROGRESS_DUAL_PLAN_REQUIRED",time,seq);
                 if(now()-dualPlan.plannedAt>=15000){phase=7;return waitFor("B17：経路の期限切れを再探索");}
                 byte[] current=board(frame);if(current==null)return waitFor("B17：固定マスの発光を待機");
-                if(!dualPlan.current(current,mask(frame),now()))return stop(frame,List.of(),"PROGRESS_STALE_DUAL_PLAN",time,seq);
+                long currentMask=mask(frame),checkedAt=now();
+                if(checkedAt-dualPlan.plannedAt>=15000){phase=7;prepared=false;return waitFor("B"+floor+"：認識中の期限切れを再探索");}
+                if(!dualPlan.current(current,currentMask,checkedAt))return stop(frame,List.of(),"PROGRESS_STALE_DUAL_PLAN",time,seq);
                 if(!enemy(frame))return waitFor("B17：敵の発光を待機");
                 if(!prepared){prepareReceipt("ATTACK",2);save(frame,List.of(),"progress-dual-prepared",time,seq);prepared=true;return waitFor("B"+floor+"：送信前に固定マスと2か所を再照合");}
                 StagePolicy.Decision d=consumingAction(new StagePolicy.Item("PROGRESS_DUAL_PUZZLE",610,1700),"B"+floor+"：2か所を避けて水T字・水2セット・回復",10,true,seq);puzzle(d,dualPlan.path);return d;
@@ -355,7 +357,10 @@ final class UraProgressController {
             if(plan==null)return stop(frame,List.of(),"PROGRESS_PLAN_REQUIRED",time,seq);
             if(now()-plan.plannedAt>=15000){phase=7;return waitFor("B"+floor+"：現在の盤面から作り直す");}
             byte[] board=board(frame);if(board==null)return waitFor("B"+floor+"：ドロップの発光が収まるまで待機");
-            if(!plan.current(board,now())||mask(frame)!=0)return stop(frame,List.of(),"PROGRESS_STALE_PLAN",time,seq);
+            long currentMask=mask(frame),checkedAt=now();
+            record.put("planCheckedAgeMs",checkedAt-plan.plannedAt).put("planObservedMask",currentMask).put("planCurrentBoard",array(board));
+            if(checkedAt-plan.plannedAt>=15000){phase=7;prepared=false;return waitFor("B"+floor+"：認識中の期限切れを再探索");}
+            if(!plan.current(board,checkedAt)||currentMask!=0)return stop(frame,List.of(),"PROGRESS_STALE_PLAN",time,seq);
             if(!enemy(frame))return waitFor("B"+floor+"：敵の発光が収まった画面を待機");
             if(!prepared){prepareReceipt("ATTACK",2);save(frame,List.of(),"progress-puzzle-prepared",time,seq);prepared=true;return waitFor("B"+floor+"：送信直前の盤面を再照合");}
             StagePolicy.Decision d=consumingAction(new StagePolicy.Item("PROGRESS_PUZZLE",610,1700),"B"+floor+"：水T字・水2セット＋回復で攻撃",10,true,seq);puzzle(d,plan.path);return d;

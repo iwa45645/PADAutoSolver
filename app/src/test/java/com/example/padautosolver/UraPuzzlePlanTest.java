@@ -14,6 +14,11 @@ public class UraPuzzlePlanTest {
  @Test(expected=IllegalArgumentException.class) public void claimedGoalCannotOverrideReplay(){
   new UraPuzzlePlan(new byte[30],result(List.of(0)),PuzzleGoal.water(),0);
  }
+ @Test public void recognitionCrossingExpiryDoesNotMakeAnUnchangedBoardCurrent(){
+  byte[] same=board();var plan=new UraPuzzlePlan(same,result(List.of(0)),PuzzleGoal.waterAndHeal(),1000);
+  assertTrue(plan.current(same,15999));assertFalse(plan.current(same,16001));
+  byte[] changed=same.clone();changed[0]=0;assertFalse(plan.current(changed,15999));
+ }
  @Test(expected=IllegalArgumentException.class) public void wrappingBetweenRowsIsNotAdjacent(){
   new UraPuzzlePlan(board(),result(List.of(5,6)),PuzzleGoal.water(),0);
  }
