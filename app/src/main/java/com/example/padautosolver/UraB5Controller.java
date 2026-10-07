@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import org.json.*;
 
-/** Native Napoleon charge/attack with literal skill evidence and actual Battle 6 proof. */
+/** Native Napoleon/Luka charge/attack with literal skill evidence and actual Battle 6 proof. */
 final class UraB5Controller {
     private static final String[] SKILLS={"ブリリアントコンチェルト","ダブル防御態勢水"};
     private static final int[] SLOTS={5,4},CDS={2,5};
@@ -49,14 +49,19 @@ final class UraB5Controller {
                 else if(c.phase==9)c.phase=7;
                 else if(c.phase==1)c.phase=0;
                 else if(c.phase==14)c.phase=13;
+                else if(c.phase==15)c.phase=13;
                 c.record.remove("failureReason");c.actionAt=now()-18000;return c;
             }
         }
-        if(!c.vision.napoleon(live)||c.vision.rouletteMask(live)!=0||c.vision.luciferBoard(live)==null)return null;
+        boolean luka=c.vision.luka(live),napoleon=c.vision.napoleon(live);
+        if(luka==napoleon)return null;
+        boolean inherited=b4.optInt("skillVerified_0")==3;
+        long mask=c.vision.rouletteMask(live);
+        if(!UraB5Policy.acceptedMask(mask,luka,inherited,false)||c.vision.rouletteBoard(live,mask)==null)return null;
         Bitmap old=BitmapFactory.decodeFile(picture.getPath());boolean same;
-        try{same=old!=null&&UraBattleVision.sameStablePortraits(old,live)&&Arrays.equals(c.vision.luciferBoard(old),c.vision.luciferBoard(live));}finally{if(old!=null)old.recycle();}
+        try{same=old!=null&&UraBattleVision.sameStablePortraits(old,live)&&c.vision.rouletteMask(old)==mask&&Arrays.equals(c.vision.rouletteBoard(old,mask),c.vision.rouletteBoard(live,mask));}finally{if(old!=null)old.recycle();}
         if(!same)return null;
-        c.record.put("runId",UUID.randomUUID().toString()).put("sourceB4RunId",b4.getString("runId")).put("mode","B5_NAPOLEON");return c;
+        c.record.put("runId",UUID.randomUUID().toString()).put("sourceB4RunId",b4.getString("runId")).put("mode",luka?"B5_LUKA":"B5_NAPOLEON").put("inheritedYukineVerified",inherited).put("entryRouletteMask",mask);return c;
     }
     StagePolicy.Decision inspect(Bitmap frame,StageNavigator nav,long time,long seq)throws Exception {
         if(seq<=lastSequence)return waitFor("B5：新しい画面を待機");lastSequence=seq;
@@ -90,7 +95,8 @@ final class UraB5Controller {
         }
         if(phase==12)return stop(frame,List.of(),"B5_CLEAR_VERIFIED_B6_CAPTURE_REQUIRED",time,seq);
         if(phase==2) {
-            if(!vision.napoleon(frame)||vision.rouletteMask(frame)!=0||vision.luciferBoard(frame)==null)return retry(frame,List.of(),"B5_NAPOLEON_BOARD_REQUIRED",time,seq);
+            long mask=vision.rouletteMask(frame);
+            if(!enemy(frame)||!UraB5Policy.acceptedMask(mask,luka(),record.optBoolean("inheritedYukineVerified"),charged)||vision.rouletteBoard(frame,mask)==null)return retry(frame,List.of(),"B5_ENEMY_AND_VERIFIED_BOARD_REQUIRED",time,seq);
             if(record.optBoolean("attackConsumed"))return stop(frame,List.of(),"B5_ATTACK_NOT_CLEARED",time,seq);
             if(record.optBoolean("mionVerified")){phase=7;return waitFor("B5：発動済みミオンの記録から再開");}
             step=0;phase=13;return waitFor("B5：ミオンの実際の残りターンを確認");
@@ -108,14 +114,15 @@ final class UraB5Controller {
             else return stop(frame,List.of(),"B5_SKILL_COOLDOWN_UNEXPECTED:"+held.baseRemaining,time,seq);
             UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
             if(read!=null&&vision.backControl(frame,read))return action(read.back,"B5：確認を閉じる",()->{phase=next;prepared=false;misses=0;});
-            if(vision.luciferBoard(frame)==null)return retry(frame,List.of(),"B5_READINESS_DIALOG_OR_BOARD_REQUIRED",time,seq);
+            if(currentBoard(frame)==null)return retry(frame,List.of(),"B5_READINESS_DIALOG_OR_BOARD_REQUIRED",time,seq);
             phase=next;prepared=false;misses=0;return waitFor(next==15?"B5：1コンボ消してあと1ターン溜める":"B5：本体スキル使用可能を確認");
         }
         if(phase==15) {
-            byte[] board=vision.luciferBoard(frame);
-            if(!vision.napoleon(frame)||vision.rouletteMask(frame)!=0||!UraB5Policy.safeCharge(board,hpLowerBound,held==null?null:held.baseRemaining,charged))return retry(frame,List.of(),"B5_CHARGE_HP_AND_COOLDOWN_REQUIRED",time,seq);
-            List<Integer> route=RoulettePlan.chargeRoute(board,0);misses=0;
-            if(!prepared){charged=true;phase=10;record.put("chargeRoute",new JSONArray(route)).put("minimumChargeHp",UraB5Policy.MIN_CHARGE_HP).put("chargeHpLowerBound",hpLowerBound);save(frame,List.of(),"b5-charge-consumed",time,seq);charged=false;phase=15;prepared=true;return waitFor("B5：HP下限23万以上を再照合");}
+            long mask=vision.rouletteMask(frame);byte[] board=vision.rouletteBoard(frame,mask);
+            if(!enemy(frame)||!UraB5Policy.safeCharge(board,mask,luka(),record.optBoolean("inheritedYukineVerified"),hpLowerBound,held==null?null:held.baseRemaining,charged))return retry(frame,List.of(),"B5_CHARGE_HP_AND_COOLDOWN_REQUIRED",time,seq);
+            List<Integer> route=RoulettePlan.chargeRoute(board,mask);misses=0;
+            if(!prepared){charged=true;phase=10;record.put("chargeRoute",new JSONArray(route)).put("chargeMask",mask).put("chargeBoard",array(board)).put("minimumChargeHp",UraB5Policy.MIN_CHARGE_HP).put("chargeHpLowerBound",hpLowerBound);save(frame,List.of(),"b5-charge-consumed",time,seq);charged=false;phase=15;prepared=true;return waitFor("B5：HP下限23万以上を再照合");}
+            if(record.optLong("chargeMask",-1)!=mask||!Arrays.equals(board,jsonBoard(record.optJSONArray("chargeBoard"))))return stop(frame,List.of(),"B5_CHARGE_BOARD_CHANGED",time,seq);
             StagePolicy.Decision d=action(new StagePolicy.Item("B5_CHARGE",610,1700),"B5：必ず1コンボ消してミオンを溜める",()->{charged=true;phase=10;actionAt=now();misses=0;});puzzle(d,route);return d;
         }
         if(phase==3) {
@@ -142,7 +149,7 @@ final class UraB5Controller {
         }
         if(phase==7) {
             byte[] board=vision.luciferBoard(frame);
-            if(!vision.napoleon(frame)||vision.rouletteMask(frame)!=0||board==null)return retry(frame,List.of(),"B5_ATTACK_BOARD_REQUIRED",time,seq);
+            if(!enemy(frame)||vision.rouletteMask(frame)!=0||board==null)return retry(frame,List.of(),"B5_ATTACK_BOARD_REQUIRED",time,seq);
             if(!record.optBoolean("mionVerified"))return stop(frame,List.of(),"B5_THIS_TURN_SKILL_REQUIRED",time,seq);
             if(!UraB5Policy.enoughRecovery(board)) {
                 if(record.optBoolean("rukaVerified")||!UraB5Policy.rukaCanRecover(board))return stop(frame,List.of(),"B5_NOT_ENOUGH_RECOVERY",time,seq);
@@ -158,7 +165,7 @@ final class UraB5Controller {
             if(now()-plan.plannedAt>=15000){phase=7;return waitFor("B5：現在の盤面から作り直す");}
             byte[] board=vision.luciferBoard(frame);if(board==null)return waitFor("B5：ドロップの発光が収まるまで待機");
             if(!plan.current(board,now())||vision.rouletteMask(frame)!=0)return stop(frame,List.of(),"B5_STALE_PLAN",time,seq);
-            if(!vision.napoleon(frame))return waitFor("B5：敵の発光が収まった画面を待機");
+            if(!enemy(frame))return waitFor("B5：敵の発光が収まった画面を待機");
             if(!prepared){phase=10;record.put("attackConsumed",true);save(frame,List.of(),"b5-puzzle-consumed",time,seq);phase=9;prepared=true;return waitFor("B5：送信直前の盤面を再照合");}
             StagePolicy.Decision d=action(new StagePolicy.Item("B5_PUZZLE",610,1700),"B5：水2セット＋回復で攻撃",()->{phase=10;actionAt=now();misses=0;});puzzle(d,plan.path);return d;
         }
@@ -168,6 +175,15 @@ final class UraB5Controller {
             round++;phase=0;misses=0;saved=false;save(frame,text,"b5-result",time,seq);return waitFor("B5：パズル後の実階層を確認");
         }
         return stop(frame,List.of(),"B5_UNKNOWN_STATE",time,seq);
+    }
+    private boolean luka(){return record.optString("mode").equals("B5_LUKA");}
+    private boolean enemy(Bitmap frame)throws Exception{return luka()?vision.luka(frame):vision.napoleon(frame);}
+    private byte[] currentBoard(Bitmap frame)throws Exception {
+        long mask=vision.rouletteMask(frame);
+        return UraB5Policy.acceptedMask(mask,luka(),record.optBoolean("inheritedYukineVerified"),charged)?vision.rouletteBoard(frame,mask):null;
+    }
+    private static byte[] jsonBoard(JSONArray a){
+        if(a==null||a.length()!=30)return null;byte[] b=new byte[30];for(int i=0;i<30;i++)b[i]=(byte)a.optInt(i,-1);return b;
     }
     private void captureHeld(StagePolicy.Decision d,StageNavigator nav,String name) {
         d.holdMs=4000;d.heldStampedFrame=(image,current,t,s)->{

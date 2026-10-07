@@ -1,0 +1,16 @@
+{
+  "entryFrameSha256": "f04b117449ec382104afff5c2c0bff4ed4d0041f5ac2357a92f133749c4dff0c",
+  "independentRecheckSha256": "25b4131640998c6832f74f49ba230c7e65e9868c8f60105a9870e49d25d29831",
+  "sourceRunId": "784e7b51-8aaa-4fbc-a9f8-946b8d121fda",
+  "actualFloor": 5,
+  "roi": [
+    260,
+    650,
+    550,
+    500
+  ],
+  "limit": 0.055,
+  "maskedSpinnerCell": 17,
+  "heldOutRecognitionOnly": true,
+  "liveClearVerified": false
+}

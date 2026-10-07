@@ -33,4 +33,34 @@ public class UraB5PolicyTest {
         assertTrue(UraB5Policy.rukaCanRecover(new byte[30]));
         byte[] allWater=new byte[30];Arrays.fill(allWater,(byte)3);assertFalse(UraB5Policy.rukaCanRecover(allWater));
     }
+    private byte[] lukaEntry(){return new byte[]{5,5,2,4,1,1,6,5,3,5,0,5,5,5,1,1,6,-1,5,5,2,5,6,5,4,2,5,4,5,3};}
+    @Test public void lukaChargeExcludesInheritedSpinnerAndSurvivesAllItsPhases(){
+        byte[] board=lukaEntry();long mask=1L<<17;
+        assertTrue(UraB5Policy.safeCharge(board,mask,true,true,381230,1,false));
+        List<Integer> route=RoulettePlan.chargeRoute(board,mask);
+        assertFalse(route.contains(17));
+        byte[] replay=RoulettePlan.replay(board,mask,route);
+        assertTrue(RoulettePlan.stableTriple(replay,mask));
+        for(byte color=0;color<10;color++){
+            replay[17]=color;assertTrue(PuzzleSolver.firstWave(replay,6,5).combos>=1);
+        }
+    }
+    @Test public void spinnerNeedsLukaAndActualYukineReceiptAndCannotSurviveCharge(){
+        byte[] board=lukaEntry();long mask=1L<<17;
+        assertFalse(UraB5Policy.safeCharge(board,mask,false,true,381230,1,false));
+        assertFalse(UraB5Policy.safeCharge(board,mask,true,false,381230,1,false));
+        assertFalse(UraB5Policy.safeCharge(board,mask,true,true,381230,1,true));
+        assertFalse(UraB5Policy.safeCharge(board,-1,true,true,381230,1,false));
+        assertFalse(UraB5Policy.safeCharge(board,mask|(1L<<23),true,true,381230,1,false));
+        assertFalse(UraB5Policy.acceptedMask(mask,true,true,true));
+        assertTrue(UraB5Policy.acceptedMask(0,true,true,true));
+        board[16]=-1;assertFalse(UraB5Policy.safeCharge(board,mask,true,true,381230,1,false));
+    }
+    @Test public void lukaChargeRequiresLiteralReadyInOneTurnAndIndependentHp(){
+        byte[] board=lukaEntry();long mask=1L<<17;
+        assertFalse(UraB5Policy.safeCharge(board,mask,true,true,229999,1,false));
+        assertFalse(UraB5Policy.safeCharge(board,mask,true,true,381230,null,false));
+        assertFalse(UraB5Policy.safeCharge(board,mask,true,true,381230,2,false));
+        board[6]=8;assertFalse(UraB5Policy.safeCharge(board,mask,true,true,381230,1,false));
+    }
 }
