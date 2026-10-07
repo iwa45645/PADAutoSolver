@@ -128,7 +128,7 @@ final class StageNavigator {
         return readCrop(frame,.01f,.18f,.99f,.97f,false,false,2);
     }
     List<StagePolicy.Item> readUraHp(Bitmap frame)throws Exception {
-        // Read the literal digits; full/reduced HP also uses green/red, not only yellow.
+        // Read literal green/yellow/white/cyan HP digits, excluding the pink bar behind them.
         List<StagePolicy.Item> text=readCrop(frame,.60f,.574f,.978f,.593f,true,false,4,false,true);
         if(UraB3Policy.hp(text)!=null)return text;
         text=readCrop(frame,.60f,.574f,.978f,.593f,true,false,4,true);
