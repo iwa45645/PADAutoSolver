@@ -367,8 +367,9 @@ final class UraProgressController {
     }
     private StagePolicy.Decision finishB9Readiness(Bitmap frame,StageNavigator nav,String proof,String status,Runnable done,long time,long seq)throws Exception {
         UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
-        UraReadinessExit.Outcome exit=UraReadinessExit.evaluate(read!=null,read!=null&&vision.backControl(frame,read),
-            vision.b9RedRedKappa(frame),mask(frame)==0&&board(frame)!=null);
+        UraReadinessExit.Outcome exit=read!=null
+            ?UraReadinessExit.evaluate(true,vision.backControl(frame,read),false,false)
+            :UraReadinessExit.evaluate(false,false,vision.b9RedRedKappa(frame),mask(frame)==0&&board(frame)!=null);
         if(exit==UraReadinessExit.Outcome.WAIT)return retry(frame,List.of(),"PROGRESS_B9_READINESS_EXIT_REQUIRED",time,seq);
         save(frame,List.of(),proof,time,seq);
         if(exit==UraReadinessExit.Outcome.CLOSE_MODAL)return action(read.back,status,done);

@@ -145,3 +145,7 @@ dev88/versionCode91はこの限定経路で実セッカCD4も受け付け、ミ�
 dev88 [Actions 37570034835](https://github.com/iwa45645/PADAutoSolver/actions/runs/37570034835)は両job成功。281 JVM・固定署名Release・両lintローカル成功。13:09:27に再開しセッカCD4を読み直したが、使用できないスキルの長押しを解除すると発動modalを開かず直接戦闘画面へ戻った。B9追加処理がmodalの戻るだけを要求したため13:09:44に `PROGRESS_B9_READINESS_BACK_REQUIRED` で操作前停止 (`progress-stop-1791346181672.json/png`)。スキル発動・充填はなし。
 
 dev89/versionCode92はB9のreadiness終了を共通判定にする。modalがあれば実戻るの照合、modalがなければ今回の敵3体と既知の全盤面・ルーレット0を要求し、追加入力なしで先へ進む。部分modal・誤敵・未知盤面は拒否。既存B3で確認した「未使用スキルでは発動modalを開かない」挙動をB9でも扱う。282 JVM・固定署名Release・両lint成功。CIと実機続行は取得後に追記する。
+
+dev89 [Actions 37570336222](https://github.com/iwa45645/PADAutoSolver/actions/runs/37570336222)は両job成功。13:13:10セッカ実CD4を確認し、未使用のまま次の読取へ進めた。13:13:23ミオンを長押しし、実CD0を取得した。ミオンには今回の先制遅延が残っていない。遅延3回の充填は今回の実戦では不要で、通し実機検証済みとは扱わない。しかし確認画面を閉じる判断でも敵/盤面の解析を実行し、ageMs約2,600〜2,700で1,500msの鮮度ゲートに拒否され続けた (`dev89-device.log` の staleDecisionRejected)。充填・ミオン発動・攻撃は送信なし。保存量と待機の増加を避け、13:16に本体停止UIで共有を終了した。
+
+dev90/versionCode93はmodalを実認識できた場合、その実戻るだけを照合して閉じる。敵/全盤面の解析はmodalがない場合にだけ行う。readonlyの閉じる操作について必要のない重い解析を省く修正であり、1,500msの入力鮮度ゲートは緩めていない。スキルを発動する前には従来どおり層・名前・有効ボタンを新しい画面で照合する。282 JVM・固定署名Release・両lint、CIと実機結果を確認後に追記する。
