@@ -194,10 +194,8 @@ final class UraProgressController {
                 &&UraProgressPolicy.b9RetainShield(floor,operation,round,floorStartRound,record.optInt("sekkaRound",-1),
                     record.optInt("lastSkill",-1),record.optInt("lastSkillRound",-1),record.optString("dispatchState"),
                     record.optString("pendingAction"),record.optString("gameTurnProof"),held.baseRemaining)) {
-                UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
-                if(read==null||!vision.backControl(frame,read))return retry(frame,List.of(),"PROGRESS_B9_READINESS_BACK_REQUIRED",time,seq);
-                record.put("b9RetainedShieldRound",round);save(frame,List.of(),"progress-b9-shield-retained",time,seq);
-                return action(read.back,"B9：残存軽減を維持し未使用セッカを閉じる",()->{operation++;phase=2;misses=0;});
+                record.put("b9RetainedShieldRound",round);
+                return finishB9Readiness(frame,nav,"progress-b9-shield-retained","B9：未使用セッカを確認し次の読取へ",()->{operation++;phase=2;misses=0;},time,seq);
             }
             if(step==UraProgressPolicy.RUKA_RECOVERY){
                 int layer=UraProgressPolicy.rukaRecoveryLayer(held,heading);
@@ -226,19 +224,13 @@ final class UraProgressController {
                 if(!UraProgressPolicy.b9CooldownCourse(round,floorStartRound,record.optInt("b9InitialMionCooldown",-1),held.baseRemaining))
                     return stop(frame,List.of(),"PROGRESS_B9_DELAYED_CD_COURSE_REQUIRED",time,seq);
                 if(held.baseRemaining>0) {
-                    UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
-                    if(read==null||!vision.backControl(frame,read))return retry(frame,List.of(),"PROGRESS_B9_CHARGE_BACK_REQUIRED",time,seq);
                     record.put("chargeMionRemaining",held.baseRemaining).put("b9DelayedChargeActive",true);
-                    save(frame,List.of(),"progress-b9-delay-readiness",time,seq);
-                    return action(read.back,"B9：実CDとHPを確認して回復で充填",()->{phase=15;prepared=false;misses=0;});
+                    return finishB9Readiness(frame,nav,"progress-b9-delay-readiness","B9：実CDとHPを確認して回復で充填",()->{phase=15;prepared=false;misses=0;},time,seq);
                 }
             }
             if(held!=null&&(held.baseNamed(SKILLS[step])||heading)
                 &&UraProgressPolicy.b9SkipCharge(floor,operation,round,floorStartRound,record.optInt("b9RetainedShieldRound",-1),held.baseRemaining)) {
-                UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
-                if(read==null||!vision.backControl(frame,read))return retry(frame,List.of(),"PROGRESS_B9_CHARGE_BACK_REQUIRED",time,seq);
-                save(frame,List.of(),"progress-b9-charge-skipped",time,seq);
-                return action(read.back,"B9：ミオンの実CD0を確認し充填を省略",()->{operation++;phase=2;misses=0;});
+                return finishB9Readiness(frame,nav,"progress-b9-charge-skipped","B9：ミオンの実CD0を確認し充填を省略",()->{operation++;phase=2;misses=0;},time,seq);
             }
             int expected=UraProgressPolicy.chargeCooldown(floor,operation);
             if(held==null||!(held.baseNamed(SKILLS[step])||heading)||!Integer.valueOf(expected).equals(held.baseRemaining))return retry(frame,List.of(),"PROGRESS_CHARGE_MION_COOLDOWN_REQUIRED:"+expected,time,seq);
@@ -372,6 +364,15 @@ final class UraProgressController {
             finish.run();return waitFor("実CDの減少を確認して次の手順へ");
         }
         return stop(frame,List.of(),"PROGRESS_UNKNOWN_STATE",time,seq);
+    }
+    private StagePolicy.Decision finishB9Readiness(Bitmap frame,StageNavigator nav,String proof,String status,Runnable done,long time,long seq)throws Exception {
+        UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
+        UraReadinessExit.Outcome exit=UraReadinessExit.evaluate(read!=null,read!=null&&vision.backControl(frame,read),
+            vision.b9RedRedKappa(frame),mask(frame)==0&&board(frame)!=null);
+        if(exit==UraReadinessExit.Outcome.WAIT)return retry(frame,List.of(),"PROGRESS_B9_READINESS_EXIT_REQUIRED",time,seq);
+        save(frame,List.of(),proof,time,seq);
+        if(exit==UraReadinessExit.Outcome.CLOSE_MODAL)return action(read.back,status,done);
+        done.run();persistState();return waitFor(status);
     }
     private boolean b22AwokenNull(Bitmap frame)throws Exception {
         return vision.distance(frame,"progress-b22-awoken-null.png",1040,1240,120,80)<.06;
