@@ -161,3 +161,148 @@ dev91 [Actions 37571055680](https://github.com/iwa45645/PADAutoSolver/actions/ru
 dev92/versionCode95は7×6の実表示を追加。初回は強化回復/水・コンボだけの39参照で、独立fixtureの光cell4を未知として検出。独立fixtureを訓練へ移さず、別時点の偶数3フレームから全42マス・126参照を作り、奇数3枚とそれ以前の停止画像の168マスを再検査する。既存の強化火180・コンボ木180・毒270マスも最新参照で検査し、距離.07/分離margin.035を維持。B9充填用unit fixtureの光/木label順も正し、水/回復の経路条件は維持する。
 
 同版は各orb画像を直接decodeし、従来どおり48×48へ縮小して画素を取得した後、そのbitmapをfinallyで解放する。画素cacheと敵等のtemplate cacheは残す。分類式・crop・閾値は変えない。メモリ減少は実機測定後に報告する。283 JVM・固定署名Release・両lint、CI、実機結果は取得後に追記する。
+
+dev92 [Actions 37572069755](https://github.com/iwa45645/PADAutoSolver/actions/runs/37572069755)はbuild/signed-preview両成功。283 JVM・固定署名Release・両lint成功。13:35:04に本体がオーディンを1回使用し、新しい実tooltipで本体CD5を確認 (`progress-held-1791347708915.json/png`)。実効果は5億固定ダメージ・HP40%回復5ターン・ダメージ/属性吸収無効2ターンであり、ヘイストや軽減と扱わない。ミオンの実CD1は見えていたがOCRが「あと1ター」までしか読めず、13:35:30に充填前停止 (`progress-stop-1791347727997.json/png`)。
+
+同じB10でdev91のNative Heap PSS309,296KiB/TOTAL PSS413,300KiBに対し、dev92は114,780/202,088KiBを取得。観察phase・OCRの状態が異なるため統制されたbenchmarkではなく、全保存容量/R10完了とも扱わない。orb bitmap解放の限定測定として記録する。
+
+dev93/versionCode96はキャリブレーション済みCD列の文字列「あと1ター」をリテラル数字1として受け付ける。Tを1へ変換せず、矛盾する列・不正な語尾は拒否。B10の充填は実HP下限350,000・現在roundでオーディン使用後CD5を確認済み・実ミオンCD1・全42マス既知のときだけ1回許可する。以前のセッカ軽減が残るとは仮定しない。285 JVM、固定署名Release、debug/release lintローカル成功。既に使用したオーディンは再送せず、ミオンreadinessから本体再開。
+
+dev93 [Actions 37572741822](https://github.com/iwa45645/PADAutoSolver/actions/runs/37572741822)はbuild/signed-preview両成功。13:43:29充填1回、13:44:01以降の実ミオンCD1→0でround8→9を確定、13:44:28ミオン1回発動・新しいCD2、13:45:01攻撃1回を本体から送信した。実メニューの表示はBattle11/22でB10突破を観察。しかし全体・専用crop両OCRが「11」を「1」と読み落とし、13:45:31 `PROGRESS_UNEXPECTED_FLOOR:1` で停止 (`progress-stop-1791348328983.json/png`)。保存はfloor10/observed10/op4/phase1/round9/ATTACK ACKNOWLEDGED・awaitingTurn=true。まだnativeの2画面確認/VERIFIEDにはしていない。オーディンは再使用していない。
+
+dev94/versionCode97はメニューの実11/22字形を照合。停止画像から175×70の参照、別時点の画面を独立fixtureにし、Battle9・左数字欠落・空白を拒否する。正式メニューと裏魔門名、既知B10/B11の範囲で、実字形に一致する場合だけOCR欠落の-1/1を11へ解決し、矛盾する他数字は補正しない。送信済みB10攻撃を再送せず、実結果を2枚の新しい画面で確認する。ローカルの初回compileエラー2件は変数名重複とAndroid unit compileで利用できないImageIOであり、名前修正・既存同様SHA256付fixtureへ変更。失敗ログは保持し、成功結果は確定後に記載する。
+
+dev94 [Actions 37573320531](https://github.com/iwa45645/PADAutoSolver/actions/runs/37573320531)は結果を最新build-infoで確認。287 JVM・固定署名Release・両lintローカル成功。13:50:30以降に本体が実11/22字形を新しい2画面で認識し、B10攻撃の実結果をVERIFIED、round9→10へ確定。B10攻撃・オーディンは再送せずB11へ引き継いだ。B11アルレシャと全30マスを認識し、セッカの実CD1を取得したため13:51:07に発動前停止 (`progress-stop-1791348665152.json/png`)。floor11/observed11/op0/phase14/round10。B11戦闘入力なし。
+
+dev95/versionCode98はこの未消費の入口readinessに限り、セッカの実CD1を確認して「回復充填→セッカ→ミオン→エスペル→攻撃」の順へ変更する。実HP下限350,000・正しい入口round・実ミオンCD1・既知盤面・アルレシャ一致・ルーレット0で1回の回復消しを検算。実CD減少からturnを確定し、以後は再充填せず新たな実CD0で各スキルを確認する。攻撃前も現在HPと同roundセッカ・エスペル使用を要求する。古い軽減を仮定しない。既存の通常経路は維持し、別階/消費済みphaseは移行しない。
+
+[AppMedia B11データ](https://appmedia.jp/pazudora/5088673)を10/7に再参照。アルレシャ通常行動52,020/57,800、HP50%以下の強化後104,040/115,600と記載されているが、2023年資料の数値を現行実機の固定事実とは扱わない。最大1回の回復充填と実HP・実CDを使い、長期耐久へ拡張しない。
+
+dev95の実機では13:58:14に回復消しの充填[6,12]を1回送信。実ミオンCD1→0でround10→11を確認。13:59:15セッカ1回発動/実CD4、13:59:46ミオン1回発動/実CD2、14:00:17エスペル1回発動/実CD5を同round11で確認し、14:00:40に水T字・水2セット・回復の攻撃を1回送信。14:01:12以降の新しい実Battle12/22を2枚で確認し、B11アルレシャの突破とround11→12をVERIFIEDにした (`progress-floor-1791349271824.json/png`)。追加充填やスキルの再送なし。dev95は289 JVM、署名Release・両lint、[Actions 37573888633](https://github.com/iwa45645/PADAutoSolver/actions/runs/37573888633)のbuild/signed-preview両成功。今回も途中更新・再開を含む開発検証で、安定周回の成功回数は0のまま。
+
+
+dev95 [Actions 37573888633](https://github.com/iwa45645/PADAutoSolver/actions/runs/37573888633)は対象code commit `3144f1dbb604fd02d2a4c65b1f3dc71e73795e15` のbuild/signed-preview両成功。289 JVM・固定署名Release・両lintローカル成功。dev94の両jobも成功。
+
+最新実機保存: `progress-stop-1791349401987.json`、floor12/observed12/op2/phase15/round13、reason `PROGRESS_CHARGE_SHIELD_HP_REQUIRED`。送信状態 `VERIFIED`、awaitingTurn=False。実機続行はこの保存と現在画面を確認し、消費済み操作を再送しない。
+
+dev95でB12へ自動引き継ぎ。14:01:51ミオンCD2から最初の充填1回、実CD2→1でround12→13を確認。14:02:47オーディン1回発動、使用後CD5を新しいtooltipで確認。2回目の充填前に実ミオンCD1を取得したが、HP文字が水色の564952/612892で、専用色抽出はgreen/yellow/whiteのみのため読み取れず、14:03:24 `PROGRESS_CHARGE_SHIELD_HP_REQUIRED` で停止 (`progress-stop-1791349401987.json/png`)。observedMaxHp/hpLowerBound=0。敵・盤面は既知、floor12/op2/phase15/round13、セッカround11・オーディンround13。2回目充填・ミオン・攻撃は未送信。
+
+dev96/versionCode99は、HP専用の数値ROIで実水色の芯RGB(64,224,255)とその境界を抽出する。pinkバー・black輪郭・彩度の低いblueを拒否するテストを追加。数字の置換は行わず、同最大HPの新鮮2読取・15秒期限・実HPバー下限・セッカ残存・実ミオンCD1などの充填条件を維持。更新後は使用済みオーディンを再送せず、CDとHPの再取得から続ける。
+
+dev96は290 JVM・固定署名Release・両lintローカル成功。[Actions 37574719048](https://github.com/iwa45645/PADAutoSolver/actions/runs/37574719048)のbuild/signed-preview両job成功。14:08:25以降の新しい複数画面で水色の564952/612892を実OCRし、HP証拠を復旧。14:08:31 B12の2回目充填1回、実ミオンCD1→0でround13→14を確認。14:09:35ミオン1回発動/CD2、14:09:58水T字・水2セット・回復の攻撃1回。14:10:28前後の実Battle13/22を2枚で確認しround14→15・B12突破をVERIFIED (`progress-floor-1791349828386.json/png`)。使用済みオーディンは再送なし。
+
+同じdev96でB13に自動引き継ぎ。14:11:06充填、ミオンCD1→0でround15→16を確認。14:12:06セッカ使用/CD4、14:12:36ミオン使用/CD2、14:12:59攻撃。14:13:31前後にBattle14/22を2枚で確認しB13突破・round16→17を確定。B14の新しい入口保存 `progress-floor-1791350025238.json/png` はfloor14/observed14/op0/phase1/round17。B12後半〜B14入口は同APKで自動進行したが、この潜入全体は複数APKでの開発再開試験のためfresh無中断クリアに加算しない。
+
+
+dev96 [Actions 37574719048](https://github.com/iwa45645/PADAutoSolver/actions/runs/37574719048)は対象code commit `6e7af352c9890b15c3dccb1bdf90b7570fba556d` のbuild/signed-preview両成功。290 JVM・固定署名Release・両lintローカル成功。dev94の両jobも成功。
+
+最新実機保存: `progress-stop-1791350247734.json`、floor15/observed15/op0/phase15/round19、reason `PROGRESS_CHARGE_SHIELD_HP_REQUIRED`。送信状態 `VERIFIED`、awaitingTurn=False。実機続行はこの保存と現在画面を確認し、消費済み操作を再送しない。
+
+dev96は14:14:14エスペル使用/CD5、14:14:40前後に充填/ミオンCD1→0、14:15:41ミオン使用/CD2、14:16:05攻撃を本体で実行。14:16:41前後に実Battle15/22を2枚確認し、B14突破・round18→19を確定 (`progress-stop-1791350207649.json/png`)。同じAPKでB15へ引き継いだが、入口カウントが今回5/2/4/5で既存字形に一致せず、14:17:30に充填前停止 (`progress-stop-1791350247734.json/png`)。HP612892/612892、HP下限381230、敵・全盤面既知、ルーレット0、実ミオンCD1。floor15/op0/phase15/round19。B15の戦闘入力はなし。
+
+dev97/versionCode100はこの入口の4数字参照を追加。別時点の全画面を独立fixture、blankと別数字2を否定fixtureにする。初回291件のテストで2番目の字形認識に失敗を検出したため、そのfixtureを流用せず色抽出を修正。実画素の芯はRGB(255,128,128)の薄赤色で、表示上の色の印象とは区別した。白/赤/薄赤の数字部分を対象にし、pinkバー・green敵画像・black輪郭を拒否。実形状のcore100以上/errors10未満という既存字形条件は緩めず、以前の参照も保持する。二重の充填や即時攻撃への回避は入れない。実機結果は確定後に記載する。
+
+
+dev97 [Actions 37576082921](https://github.com/iwa45645/PADAutoSolver/actions/runs/37576082921)は対象code commit `13ce0f4d624ef918558bb76aaddf37bc3b766533` のbuild/signed-preview両成功。292 JVM・固定署名Release・両lintローカル成功。dev94の両jobも成功。
+
+最新実機保存: `progress-stop-1791350718060.json`、floor15/observed15/op0/phase15/round19、reason `PROGRESS_CHARGE_SHIELD_HP_REQUIRED`。送信状態 `PREPARED`、awaitingTurn=False。実機続行はこの保存と現在画面を確認し、消費済み操作を再送しない。
+
+
+dev98 [Actions 37576703468](https://github.com/iwa45645/PADAutoSolver/actions/runs/37576703468)は対象code commit `07d8fe84f0b9556c945162c028b2eb7357e6ded5` のbuild/signed-preview両成功。292 JVM・固定署名Release・両lintローカル成功。dev94の両jobも成功。
+
+最新実機保存: `progress-stop-1791351134372.json`、floor15/observed15/op0/phase15/round19、reason `PROGRESS_CHARGE_SHIELD_HP_REQUIRED`。送信状態 `PREPARED`、awaitingTurn=False。実機続行はこの保存と現在画面を確認し、消費済み操作を再送しない。
+
+dev97はB15カウンターを一度照合してPREPAREDを保存したが、薄赤数字がさらに白へ寄った別時点で条件を外れ、充填は送信せず停止した。dev98はRGB(255,217,217)を含む赤→白の芯を対象にし、独立の薄色fixtureも通過。14:32:16に再停止したが4数字の現在maskは全slot core279/289/289/283、errors0で一致し、敵も一致していた。停止画像のcell9（鍵付き闇）を現行参照で再分類すると距離約.102で未知であり、入口時のboardKnown値は古い記録だった。両版ともB15充填を送信していない。
+
+dev99/versionCode102は鍵付き闇cell9/火cell26だけを、偶数5枚と別時点12枚から参照へ追加。奇数5枚＋dev98停止画像の全180マスは独立fixtureとして維持する。初回293テストでは独立frame1/cell9が未知として失敗したので、検証画像を参照へ移さず追加採取で修正した。293 JVM・Release・両lintがローカル成功。既存の毒270/火180/木180/7×6 168マスはheld-out画素を変えず現行参照バンクで検査する。距離.07/margin.035を維持。phase15では現在のchargeBoardKnown/chargeBoardDistances/chargeEnemyMatched/chargeObservedMask/chargeSafeを保存して、入口判定の古い値だけで停止原因を判断しない。
+
+
+dev99 [Actions 37577334076](https://github.com/iwa45645/PADAutoSolver/actions/runs/37577334076)は対象code commit `0d39ba737bd90f1afce201d7951d31e8fe8ba1b4` のbuild/signed-preview両成功。293 JVM・固定署名Release・両lintローカル成功。dev94の両jobも成功。
+
+最新実機保存: `progress-readiness-1791351665755.json`、floor15/observed15/op2/phase13/round20、reason `None`。送信状態 `VERIFIED`、awaitingTurn=False。実機続行はこの保存と現在画面を確認し、消費済み操作を再送しない。
+
+
+dev99 [Actions 37577334076](https://github.com/iwa45645/PADAutoSolver/actions/runs/37577334076)は対象code commit `0d39ba737bd90f1afce201d7951d31e8fe8ba1b4` のbuild/signed-preview両成功。293 JVM・固定署名Release・両lintローカル成功。dev94の両jobも成功。
+
+最新実機保存: `progress-stop-1791351727437.json`、floor15/observed15/op3/phase9/round20、reason `PROGRESS_STALE_PLAN`。送信状態 `PREPARED`、awaitingTurn=False。実機続行はこの保存と現在画面を確認し、消費済み操作を再送しない。
+
+dev99実機:14:39:48 B15充填を本体で1回送信、14:40:28までに実ミオンCD1→0でround19→20を確定。14:40:49セッカ1回発動/使用後CD4、14:41:20ミオン1回発動/使用後CD2。14:42:10は攻撃PREPARED/op3/phase9、PROGRESS_STALE_PLANで停止 (`progress-stop-1791351727437.json/png`)。B15攻撃は未送信。経路保存1712073→停止1727437のwall差15.364秒で、phase9の初回年齢検査後に盤面・mask認識が経路TTL15秒をまたぐ可能性がある。dev100は認識後に同じ時刻で年齢・盤面を評価し、期限超過だけは未送信の最新盤面から再探索する。実盤面変化/mask不一致の停止とTTLは維持する。検証前に原因断定や突破と扱わない。
+
+
+dev100 [Actions 37577893700](https://github.com/iwa45645/PADAutoSolver/actions/runs/37577893700)は対象code commit `d37097d09cc0955b40f9b486d24af52310e5fa49` のbuild/signed-preview両成功。294 JVM・固定署名Release・両lintローカル成功。dev94の両jobも成功。
+
+最新実機保存: `progress-plan-1791352022732.json`、floor15/observed15/op3/phase9/round20、reason `None`。送信状態 `PREPARED`、awaitingTurn=False。実機続行はこの保存と現在画面を確認し、消費済み操作を再送しない。
+
+dev100は294 JVM・固定署名Release・両lintローカル成功、対象commit d37097d09cc0955b40f9b486d24af52310e5fa49 のActions37577893700両job成功。実機では認識後age15318ms・mask0・sourceと同じ30マスを保存し、TTL超過で再探索へ進んだ (`progress-plan-1791352022732.json`)。14:47:05には本体の60秒無進行watchdogで停止。攻撃送信なし。さらに独立画像5枚を再分類し、うち3枚で鍵付き水cell26が距離.080/.118/.100となり未知、他2枚は全既知。dev101は火から水に変わった鍵付きcell26のみを、偶数5枚＋別時点12枚から参照へ追加。奇数5枚＋前の攻撃前停止画像の全180マスで検証し、前の全盤面fixture画素は保持する。
+
+dev101/versionCode104は295 JVM・固定署名Release・両lintローカル成功。14:53:35にB15の未送信攻撃だけを本体で1回送信。14:54:12までの新しいBattle16/22を2画面で確認し、B15突破をVERIFIED/round20→21 (`progress-floor-1791352463490.json/png`)。充填・セッカ・ミオンは再送なし。同じAPKでB16へ自動引き継ぎ、14:54:55オーディン1回発動、実使用後CD5を確認 (`progress-skill-verified-1791352504081.json/png`)。この潜入全体はAPK更新を含むため無中断成功へ加算しない。
+
+
+dev101 [Actions 37578500727](https://github.com/iwa45645/PADAutoSolver/actions/runs/37578500727)は対象code commit `825e4c3fc92361c524fbab0244f4f973b295501b` のbuild/signed-preview両成功。295 JVM・固定署名Release・両lintローカル成功。dev94の両jobも成功。
+
+最新実機保存: `progress-charge-prepared-1791352524438.json`、floor16/observed16/op1/phase15/round21、reason `None`。送信状態 `PREPARED`、awaitingTurn=False。実機続行はこの保存と現在画面を確認し、消費済み操作を再送しない。
+
+dev101のActions37578500727は対象commit825e4c3fc92361c524fbab0244f4f973b295501bでbuild/signed-preview両成功。B16オーディン使用後、実ミオンCD1とHP547942/612892・HP下限380667・セッカround20/現在21を確認。充填route[1,7]をPREPAREDで保存 (`progress-charge-prepared-1791352524438.json/png`)。14:56:16に本体watchdog停止。充填stageAction/ACKはなく、入力なし。別の実停止画像 b16-pause.png を分類すると鍵付き闇cell27だけ距離.099で未知。他の条件の古い入口値とは分離する。dev102は実cell27の表示を別時点で補い、以前の独立fixtureは保持して検査する。
+
+dev102/versionCode105はB16鍵付き闇cell27だけを、偶数5枚＋別時点24枚から追加。初回296件中1件でheld-out frame2/cell27が未知として失敗を検出し、検証画像を参照へ移さず追加採取で修正した。296 JVM・固定署名Release・両lintローカル成功。前の毒・強化色・7×6・B15の独立fixture画素を保持し、現行参照バンクで検査。距離.07/margin.035は維持。既使用オーディンは再送しない。CIと実機結果は確定後に追記する。
+
+dev102実機:15:06:19 B16の1回目充填を本体で送信し、実ミオンCD1→0でround21→22。15:07:26ミオン1回発動/使用後CD2、15:07:51水T字＋水2セット＋回復の攻撃を本体で1回送信。15:08:21前後のメニューはBattle16/22で、敵の次状態を確認中 (`progress-floor-1791353301798.json/png`、op4/phase1/round22/ACKNOWLEDGED/awaitingTurn=true)。次の充填や攻撃の実機結果は別に確定する。
+
+
+dev102 [Actions 37579613414](https://github.com/iwa45645/PADAutoSolver/actions/runs/37579613414)は対象code commit `18da6ed1ac61eda5fe0916f58e9b579455a455a2` のbuild/signed-preview両成功。296 JVM・固定署名Release・両lintローカル成功。dev94の両jobも成功。
+
+最新実機保存: `progress-turn-proof-1791353369779.json`、floor16/observed16/op5/phase18/round23、reason `None`。送信状態 `ACKNOWLEDGED`、awaitingTurn=True。実機続行はこの保存と現在画面を確認し、消費済み操作を再送しない。
+
+dev102続行:15:08:31の実CD1でB16最初の攻撃後round22→23を確定。15:08:54二回目充填、15:09:34までの実CD0でround23→24を確定。15:09:55ミオン1回発動/実使用後CD2、15:10:20二回目攻撃を本体で送信。15:10:56までに新しいBattle17/22を2画面で確認しB16突破/round24→25をVERIFIED (`progress-floor-1791353467757.json/png`)。B16充填再開〜B17入口は同dev102で進行。B15やB16オーディンを再送しない。
+
+
+dev102 [Actions 37579613414](https://github.com/iwa45645/PADAutoSolver/actions/runs/37579613414)は対象code commit `18da6ed1ac61eda5fe0916f58e9b579455a455a2` のbuild/signed-preview両成功。296 JVM・固定署名Release・両lintローカル成功。dev94の両jobも成功。
+
+最新実機保存: `progress-floor-1791353467757.json`、floor17/observed17/op0/phase1/round25、reason `None`。送信状態 `VERIFIED`、awaitingTurn=False。実機続行はこの保存と現在画面を確認し、消費済み操作を再送しない。
+
+
+dev102 [Actions 37579613414](https://github.com/iwa45645/PADAutoSolver/actions/runs/37579613414)は対象code commit `18da6ed1ac61eda5fe0916f58e9b579455a455a2` のbuild/signed-preview両成功。296 JVM・固定署名Release・両lintローカル成功。dev94の両jobも成功。
+
+最新実機保存: `progress-stop-1791353488902.json`、floor17/observed17/op0/phase2/round25、reason `PROGRESS_ENEMY_BOARD_REQUIRED`。送信状態 `VERIFIED`、awaitingTurn=False。実機続行はこの保存と現在画面を確認し、消費済み操作を再送しない。
+
+dev102はB17入口で15:11:31 PROGRESS_ENEMY_BOARD_REQUIRED停止 (`progress-stop-1791353488902.json/png`)。実Battle17/22、op0/phase2/round25、盤面既知、mask0、既存カストル敵参照は不一致。実出現は覚醒ポルックス。B17のスキル/パズル入力なし。攻略情報[AppMedia B17](https://appmedia.jp/pazudora/5088688)および[Game8 裏修羅17〜22F](https://game8.jp/pazudora/341830)で、ポルックスは状態異常無効999/落ちコンなし10ターン、通常行動に6コンボ以下吸収を確認。実画面とも一致する。トップの星アイコンだけを覚醒無効と推測しない。
+
+dev103/versionCode106はポルックスを実参照＋別時点の肯定fixture/既存カストルと欠落・blankの否定fixtureで区別。literal floor17/未消費op0/入口round/実mask0/参照一致が揃うときだけPOLLUX_NO_ROULETTEを保存。以降の期待maskも0を保存し、継承していないルーレットを仮定しない。新規のルーレットが実際に出れば0不一致で停止する。B20/21のHP・CD・敵・盤面・実roundなどは維持し、0マスクでは12/17セルを未知のまま無視しない。B17攻撃は水T・水2セット・回復に加え初回波で7コンボを要求し、落ちコンやリーダー加算を必要コンボの証拠へ加算しない。既存カストルの100色組合せ検算は維持する。実機結果は確定後に追記。
+
+dev103実機:15:22:33セッカ1回発動/実使用後CD4、15:23:02前後に充填1回。実ミオンCD1→0でround25→26。15:24:03ミオン1回発動/使用後CD2。15:24:28本体が水T・水2セット・回復・初手7コンボで攻撃を送信 (`progress-puzzle-prepared-1791354262987.json/png`)。実結果の次階層確認は別に確定する。
+
+
+dev103 [Actions 37581047090](https://github.com/iwa45645/PADAutoSolver/actions/runs/37581047090)は対象code commit `79078c6c2bba58a04981695dd0de2da5d52b305b` のbuild/signed-preview両成功。300 JVM・固定署名Release・両lintローカル成功。dev94の両jobも成功。
+
+最新実機保存: `progress-skill-verified-1791354347434.json`、floor18/observed18/op0/phase6/round27、reason `None`。送信状態 `VERIFIED`、awaitingTurn=False。実機続行はこの保存と現在画面を確認し、消費済み操作を再送しない。
+
+dev103は対象commit79078c6c2bba58a04981695dd0de2da5d52b305bのActions37581047090でbuild/signed-preview両job成功。B17攻撃のprepared記録はminimumFirstCombos7/firstWaveCombos7/水3セット/回復1/T1。15:25:01までにBattle18/22を2新鮮画面確認し、B17突破・round26→27をVERIFIED (`progress-floor-1791354298004.json/png`)。同じdev103でB18へ引き継ぎ、15:25:39オーディン1回発動/実使用後CD5 (`progress-skill-verified-1791354347434.json/png`)。ポルックス由来のmask0を維持し、未発生のルーレットを仮定しない。ここまでのB17入口〜B18は同APKで進行したが、潜入全体は更新ありの開発再開試験。
+
+dev103 B18続行は充填で実ミオンCD1→0・round27→28、15:27:08ミオン1回発動/使用後CD2。15:27:27に `PROGRESS_NO_VALID_ROUTE:Puzzle goal unsatisfied` で攻撃前停止 (`progress-stop-1791354444846.json/png`)。現在の実盤面は水7個、回復7個、木9個、闇7個。水T5個と独立した水3個のセットに最低8個必要で、探索時間を増やしても達成不能。保存のsourceBoard/planCurrentBoard/minimumFirstCombosは前のB17計画の残存値なので、B18の現在盤面の証拠に流用しない。
+
+dev104/versionCode107はB18の実水数をattackBoard/attackWaterCountに保存し、未消費op3・入口から1ターン・同ターンのミオンVERIFIED・オーディン吸収無効が有効・実mask0・既知盤面・未回復の場合のみ、水不足でルカのアシストを確認する。回復のみを作る本体を代用せず、実CD base=-1/assist=0と発動確認画面の「かつての水柱」を確認する。既存のrecoveryPendingと送信前消費記録を使い、使用後CD5を検証して同じ未消費攻撃へ戻る。使用済みミオン/オーディンは再送しない。302 JVM・固定署名Release・debug/release lintローカル成功。実機結果とCIは確定後に追記する。
+
+dev104実機:再開時の発光で盤面比較は再試行されたが、条件が揃って保存済みB18/op3/round28を復元。15:38:48ルカを本体が長押しし、実base=-1/assist=0を確認 (`progress-readiness-1791355129979.json/png`)。15:39:04「かつての水柱」を本体で1回発動。実水15/回復15への変化、使用後のルカ本体CD5を検証。回復済みround28、オーディンround27を保持し、15:39:28に水T1/水4セット/回復5セットの検算済み経路を本体で送信 (`progress-puzzle-prepared-1791355163316.json/png`)。15:40:03までにBattle19/22を新しい2画面で確認し、B18突破/round28→29をVERIFIED (`progress-floor-1791355199427.json/png`)。15:40:11以降、同じdev104でB19入口を確認 (`progress-floor-1791355213623.json/png`)。既使用オーディン/ミオン/充填の再送なし。CI37582473985のbuild/signed-preview両成功。更新ありの開発再開であり無中断クリアへ加算しない。
+
+
+dev104 [Actions 37582473985](https://github.com/iwa45645/PADAutoSolver/actions/runs/37582473985)は対象code commit `7298b26b6c59fe627178f649a6bf13fc29e74a70` のbuild/signed-preview両成功。302 JVM・固定署名Release・両lintローカル成功。dev94の両jobも成功。
+
+最新実機保存: `progress-stop-1791355244753.json`、floor19/observed19/op0/phase15/round29、reason `PROGRESS_CHARGE_SHIELD_HP_REQUIRED`。送信状態 `VERIFIED`、awaitingTurn=False。実機続行はこの保存と現在画面を確認し、消費済み操作を再送しない。
+
+dev104はB19最初の充填前に15:40:44 `PROGRESS_CHARGE_SHIELD_HP_REQUIRED` で停止 (`progress-stop-1791355244753.json/png`)。敵参照一致・実mask0・全30既知・実ミオンCD1・最大HP612892/HP下限381230・入口round29だがchargeSafe=false。実満タンHPバーは黄/赤、以前の入口参照は紫/水色で、色付き距離.07367が閾値.025を超える。同じROIを別時点の実機画面で取得して確認した。B19充填/スキル/攻撃は未送信。
+
+dev105/versionCode108はB19の固定940×50 HPバーROIで彩色部分の色相を正規化し、枠と灰色の未充填部分は保持して比較する。純Java UraEnemyHpBarを本体とJVM試験で共用。旧満タン参照・旧50%参照・実停止画像・別時点実機満タン画像をhash付きfixtureへ保存し、満タン肯定・50%否定・片側欠落否定・空/形状不正否定を検査。実機満タンは正規化距離.01033、旧50%は.03641。閾値.025、敵一致、HP/CD/入口round/盤面/実mask0チェックは維持。50%後のヘイスト開始のHP確認も同じ色相正規化を使う。実機結果は別途確定する。
+
+
+dev105 [Actions 37583364535](https://github.com/iwa45645/PADAutoSolver/actions/runs/37583364535)は対象code commit `8a8de0d19d28d5825d4ca529c40c8a170c951309` のbuild/signed-preview両成功。304 JVM・固定署名Release・両lintローカル成功。dev94の両jobも成功。
+
+最新実機保存: `progress-readiness-1791355735958.json`、floor19/observed19/op2/phase13/round30、reason `None`。送信状態 `VERIFIED`、awaitingTurn=False。実機続行はこの保存と現在画面を確認し、消費済み操作を再送しない。
+
+
+## 利用者指定の保存・停止（2026-10-07）
+
+dev105でB19入口の満タン判定は色相正規化距離.008735・全30既知・実mask0・HP/CD条件が揃い、最初の充填を本体で1回送信。実ミオンCD1→0を確認しround29→30。15:48:36ミオン1回発動、使用後CD2をVERIFIED (`progress-skill-verified-1791355724366.json/png`)。B19現在盤面は水17/回復2なので回復不足。15:48:54本体がルカの使用可否を読み、実CD3を取得 (`progress-readiness-1791355735958.json/png`)。ルカ発動とB19攻撃は未送信。
+
+利用者の「一度保存して停止」に従い、15:49頃に本体の停止ボタンを操作。AutoPuzzleServiceがなく、MediaProjection=nullであることをdumpsysで確認。ユーザー補助は設定を保持するため接続されたまま。現在は自動攻略も画面共有も停止し、再開していない。元のネイティブcheckpoint JSONは書き換えず、手動停止理由・画面hash・checkpoint hashを `dev105-user-stop.json` に別記し、`dev105-user-stop.png` とサービス・共有停止のテキスト証拠を保存。
+
+再開は利用者の指示を受けてから。現在のB19/round30、未消費ATTACK/op2、recoveryPending=trueを維持し、充填・ミオンを再送しない。回復2個/ルカ実CD3のため、この状態から攻撃へ無条件に進めない。次の開発では回復欠損への対応が必要。B18はdev104で突破済み、B19突破・この潜入のCLEAR・安定周回は未確認。最終版304 JVM、署名付きRelease、debug/release lint、対象commit8a8de0d19d28d5825d4ca529c40c8a170c951309のActions37583364535両job成功。途中更新・停止ありの開発検証で、fresh3/無中断クリア0、安定受入未達。
