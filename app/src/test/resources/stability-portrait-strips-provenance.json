@@ -1,0 +1,26 @@
+{
+  "sources": {
+    "held-6-1-1791167591430.png": "c353a27e2863110403da5bece1eb1e9b9c88711a01ba9980a0684a5bb7c25b85",
+    "held-6-0-1791167573954.png": "c6892daa538e00f2f9209a7dc895edc60027a0c32b66c64a42c189c249356513",
+    "b3-stop-1791340664701.png": "10046d3fbcc506ee2cb5d0e10bce962b0026cc9760ed305b5243b4f55cdcf79b",
+    "live.png": "10aafb1fab5ac1764493ff691ad1a6c6fd67993c7312421115cc1a974135aeca",
+    "resume-rejected-1791169271907.png": "6c6698a5b7f32b50f9324c9f5c5f350828ca35cf57f97b8d0067b7bba81f214e",
+    "resume-rejected-1791169285714.png": "4f9dcb3c26e8f9cacaf369b253b67ffaf06930007401c8742210336eab642853",
+    "resume-rejected-1791169299537.png": "363b30a619ec484b9be49c13acef926e0c6bbca69448d69bd72b56b378a4434a",
+    "resume-rejected-1791169313464.png": "7a13c48e9577f317258024178327868ba87c5565db64b97a22ca2423e853ff60"
+  },
+  "Y": [
+    1500,
+    1500
+  ],
+  "X": [
+    40,
+    105
+  ],
+  "width": 60,
+  "height": 30,
+  "derivedFixtures": true,
+  "independentLiveClear": false,
+  "distanceLimit": 0.04,
+  "alignment": "same native bounds dx8/dy24; coarse then 1px refinement"
+}

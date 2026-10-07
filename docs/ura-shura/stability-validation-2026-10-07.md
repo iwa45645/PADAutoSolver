@@ -69,3 +69,10 @@ dev77の[Actions 37562710338](https://github.com/iwa45645/PADAutoSolver/actions/
 11:37:47、phase6/step3 `B3_SKILL_POSTCONDITION:3` で停止。実CD2は読めたが名称を「7リリアントコンチエルト」と読み違えた (`b3-held-1791340661235.json/png`、`b3-stop-1791340664701.json/png`)。実見出し画像は既存 `post-mion-skill-header.png` への近似距離.000974、セッカ.10979、ルカ.12691。既存.025の照合基準を維持した。
 
 次のdev78/versionCode81はB4で使用中の既存ミオン/ルカの見出し画像をB3の使用後確認にも適用し、残りターンは独立した実読取を必要とする。無関係なアシスト行のOCR競合が本体行を消さないようreadBaseを使う。名称だけ不明でCDが正しく一致する場合は最大2回、別拡大率で使用後観察を取得。CD不一致は停止。発動済みミオンの再送は許可しない。独立した停止実画像の見出しfixtureと他スキル・未知の否定、再観察の境界試験を追加。ビルド・実機・CI結果は取得後に追記する。
+
+
+dev78ローカル260 JVM・固定署名Release・両lint成功。Actions 37563150217初回はsigned-preview成功、debug packageDebugで失敗（JVM試験は成功、詳細原因はログから不明）。失敗jobの再実行を要求し、同runの再試行でbuild/signed-preview両成功を確認した。初回失敗を省略しない。
+
+実機dev78は11:43:17 `BATTLE_RESUME_CAPTURE_REQUIRED`で操作前停止。保存盤面は全30セル現在画面と一致していたが、キャラクターの実CD/バフ点滅がy1460の照合帯に入り、エスペル.1854などで再開条件不一致。数字はy1498まで延びていた。`resume-scene-rejected-1791340993456.json/png`、`dev78-portrait-comparison.png`で記録した。
+
+dev79/versionCode82は二つの照合帯をy1500の左右の独立した絵柄領域（slot内x40/105、各60×30）へ移し、各.04、移動許容dx8/dy24と細かい再照合を維持する。10/5の独立4実フレームと10/7の実B3停止/現在画像、6個体の相互不一致と変身前エスペルの否定を検証する。参照を現在フレームで上書きせず、保存状態と現在画面をその都度比較する。261 JVM・署名Release・両lintの結果、CI、実機再開を取得後に追記する。
