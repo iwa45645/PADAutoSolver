@@ -60,6 +60,7 @@ final class UraProgressController {
                 if(UraProgressPolicy.script(target)==null)return null;
                 c.floor=target;c.script=UraProgressPolicy.script(target);
                 for(Iterator<String> it=data.keys();it.hasNext();){String k=it.next();c.record.put(k,data.get(k));}
+                c.script=UraProgressPolicy.script(c.floor,c.record.optBoolean("b11ChargeFirst"));
                 c.phase=data.getInt("phase");c.operation=data.optInt("operation");c.round=data.optInt("round");c.floorStartRound=data.optInt("floorStartRound");c.step=data.optInt("step");c.charged=data.optBoolean("charged");
                 c.step=UraProgressPolicy.rukaReadinessStep(c.floor,c.operation,c.phase,c.step);
                 if(c.phase==5||c.phase==6)c.phase=5;
@@ -125,7 +126,7 @@ final class UraProgressController {
         if(phase==25)return stop(frame,List.of(),"URA_SHURA_CLEAR_AND_RESULT_VERIFIED",time,seq);
         if(terminalOnly)return retry(frame,List.of(),"URA_TERMINAL_CLEAR_EVIDENCE_REQUIRED",time,seq);
         int hpLowerBound=0;
-        if(phase==15||(phase==7&&floor==9&&record.has("b9InitialMionCooldown"))) {
+        if(phase==15||(phase==7&&(floor==9&&record.has("b9InitialMionCooldown")||floor==11&&record.optBoolean("b11ChargeFirst")))) {
             int[] hp=UraB3Policy.hp(nav.readUraHp(frame));hpEvidence.observe(hp,time,seq);
             int maximum=hpEvidence.maximum(time);hpLowerBound=vision.b3HpLowerBound(frame,maximum);
             record.put("observedMaxHp",maximum).put("hpLowerBound",hpLowerBound);
@@ -195,12 +196,19 @@ final class UraProgressController {
             captureHeld(d,nav,"progress-readiness");return d;
         }
         if(phase==14) {
+            if(held!=null&&(held.baseNamed(SKILLS[step])||heading)
+                &&UraProgressPolicy.b11ChargeFirst(floor,operation,phase,round,floorStartRound,step,held.baseRemaining)) {
+                return finishReviewedReadiness(frame,nav,"progress-b11-sekka-delayed","B11：セッカ実CD1を確認し回復充填へ",()->{
+                    try{record.put("b11ChargeFirst",true).put("b11ChargeEntryRound",round);}catch(JSONException e){throw new IllegalStateException(e);}
+                    script=UraProgressPolicy.script(floor,true);step=UraProgressPolicy.MION;phase=16;prepared=false;misses=0;
+                },time,seq);
+            }
             if(step==UraProgressPolicy.SEKKA&&held!=null&&(held.baseNamed(SKILLS[step])||heading)
                 &&UraProgressPolicy.b9RetainShield(floor,operation,round,floorStartRound,record.optInt("sekkaRound",-1),
                     record.optInt("lastSkill",-1),record.optInt("lastSkillRound",-1),record.optString("dispatchState"),
                     record.optString("pendingAction"),record.optString("gameTurnProof"),held.baseRemaining)) {
                 record.put("b9RetainedShieldRound",round);
-                return finishB9Readiness(frame,nav,"progress-b9-shield-retained","B9：未使用セッカを確認し次の読取へ",()->{operation++;phase=2;misses=0;},time,seq);
+                return finishReviewedReadiness(frame,nav,"progress-b9-shield-retained","B9：未使用セッカを確認し次の読取へ",()->{operation++;phase=2;misses=0;},time,seq);
             }
             if(step==UraProgressPolicy.RUKA_RECOVERY){
                 int layer=UraProgressPolicy.rukaRecoveryLayer(held,heading);
@@ -230,12 +238,12 @@ final class UraProgressController {
                     return stop(frame,List.of(),"PROGRESS_B9_DELAYED_CD_COURSE_REQUIRED",time,seq);
                 if(held.baseRemaining>0) {
                     record.put("chargeMionRemaining",held.baseRemaining).put("b9DelayedChargeActive",true);
-                    return finishB9Readiness(frame,nav,"progress-b9-delay-readiness","B9：実CDとHPを確認して回復で充填",()->{phase=15;prepared=false;misses=0;},time,seq);
+                    return finishReviewedReadiness(frame,nav,"progress-b9-delay-readiness","B9：実CDとHPを確認して回復で充填",()->{phase=15;prepared=false;misses=0;},time,seq);
                 }
             }
             if(held!=null&&(held.baseNamed(SKILLS[step])||heading)
                 &&UraProgressPolicy.b9SkipCharge(floor,operation,round,floorStartRound,record.optInt("b9RetainedShieldRound",-1),held.baseRemaining)) {
-                return finishB9Readiness(frame,nav,"progress-b9-charge-skipped","B9：ミオンの実CD0を確認し充填を省略",()->{operation++;phase=2;misses=0;},time,seq);
+                return finishReviewedReadiness(frame,nav,"progress-b9-charge-skipped","B9：ミオンの実CD0を確認し充填を省略",()->{operation++;phase=2;misses=0;},time,seq);
             }
             int expected=UraProgressPolicy.chargeCooldown(floor,operation);
             if(held==null||!(held.baseNamed(SKILLS[step])||heading)||!Integer.valueOf(expected).equals(held.baseRemaining))return retry(frame,List.of(),"PROGRESS_CHARGE_MION_COOLDOWN_REQUIRED:"+expected,time,seq);
@@ -262,13 +270,16 @@ final class UraProgressController {
             if(floor==22)safe=UraProgressPolicy.safeB22Charge(board,hp,operation,round,floorStartRound,mionRemaining,vision.distance(frame,"progress-b22-entry-hp.png",130,1205,940,50)<.025);
             if(floor==10)safe=UraProgressPolicy.safeB10Charge(board,hp,floor,operation,round,floorStartRound,
                 record.optInt("odinRound",-1),record.optInt("lastSkillRound",-1),record.optInt("lastSkill",-1),mionRemaining);
+            boolean b11First=floor==11&&record.optBoolean("b11ChargeFirst");
+            if(b11First)safe=UraProgressPolicy.safeB11FirstCharge(board,hp,floor,operation,round,floorStartRound,
+                record.optInt("b11ChargeEntryRound",-1),mionRemaining);
             boolean b9Delay=floor==9&&record.optBoolean("b9DelayedChargeActive");
             if(b9Delay)safe=UraProgressPolicy.safeB9DelayedCharge(board,hp,floor,operation,round,floorStartRound,
                 record.optInt("b9RetainedShieldRound",-1),record.optInt("b9InitialMionCooldown",-1),mionRemaining,vision.b9RedRedKappa(frame));
             if(!enemy(frame)||mask(frame)!=expectedMask()||!safe)return retry(frame,List.of(),"PROGRESS_CHARGE_SHIELD_HP_REQUIRED",time,seq);
             if(floor==20)safe=UraProgressPolicy.safeB20Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining);
             if(!safe)return retry(frame,List.of(),"PROGRESS_B20_CHARGE_HP_OR_COOLDOWN_REQUIRED",time,seq);
-            List<Integer> route=b9Delay?UraChargeRoute.findHealing(board):UraChargeRoute.find(board,cols(),rows(),expectedMask(),floor==21||floor==22);misses=0;
+            List<Integer> route=b9Delay||b11First?UraChargeRoute.findHealing(board):UraChargeRoute.find(board,cols(),rows(),expectedMask(),floor==21||floor==22);misses=0;
             if(!prepared){prepareReceipt("CHARGE",mionRemaining);if(floor==22)record.put("b22ExpectedRestoredMaxHp",hpEvidence.maximum(time));record.put("chargeRoute",new JSONArray(route)).put("chargeHpLowerBound",hpLowerBound).put("chargeSourceBoard",array(board)).put("chargeCols",cols()).put("chargeRows",rows());save(frame,List.of(),"progress-charge-prepared",time,seq);prepared=true;return waitFor("残存軽減・HP下限・実コンボを再照合");}
             StagePolicy.Decision d=consumingAction(new StagePolicy.Item("PROGRESS_CHARGE",610,1700),"B"+floor+"：現在HPを確認し実コンボで充填",10,true,seq);puzzle(d,route);return d;
         }
@@ -297,6 +308,8 @@ final class UraProgressController {
         }
         if(phase==7) {
             if(floor==9&&record.has("b9InitialMionCooldown")&&hpLowerBound<350000)return retry(frame,List.of(),"PROGRESS_B9_ATTACK_HP_REQUIRED",time,seq);
+            if(floor==11&&record.optBoolean("b11ChargeFirst")&&(hpLowerBound<350000
+                ||round!=floorStartRound+1||record.optInt("sekkaRound",-1)!=round))return retry(frame,List.of(),"PROGRESS_B11_CHARGE_ATTACK_HP_SHIELD_REQUIRED",time,seq);
             if(cols()!=6||rows()!=5)return stop(frame,List.of(),"PROGRESS_ATTACK_LAYOUT_NOT_RESTORED",time,seq);
             byte[] board=board(frame);
             if(!enemy(frame)||mask(frame)!=expectedMask()||board==null)return retry(frame,List.of(),"PROGRESS_ATTACK_BOARD_REQUIRED",time,seq);
@@ -372,13 +385,13 @@ final class UraProgressController {
         }
         return stop(frame,List.of(),"PROGRESS_UNKNOWN_STATE",time,seq);
     }
-    private StagePolicy.Decision finishB9Readiness(Bitmap frame,StageNavigator nav,String proof,String status,Runnable done,long time,long seq)throws Exception {
+    private StagePolicy.Decision finishReviewedReadiness(Bitmap frame,StageNavigator nav,String proof,String status,Runnable done,long time,long seq)throws Exception {
         UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
         UraReadinessExit.Outcome exit=read!=null
             ?UraReadinessExit.evaluate(true,vision.backControl(frame,read),false,false)
-            :UraReadinessExit.evaluate(false,false,vision.b9RedRedKappa(frame),mask(frame)==0&&board(frame)!=null);
-        if(exit==UraReadinessExit.Outcome.WAIT)return retry(frame,List.of(),"PROGRESS_B9_READINESS_EXIT_REQUIRED",time,seq);
-        if(!prepared){save(frame,List.of(),proof,time,seq);prepared=true;return waitFor("B9：保存後の新しい画面で確認");}
+            :UraReadinessExit.evaluate(false,false,floor==9?vision.b9RedRedKappa(frame):enemy(frame),mask(frame)==0&&board(frame)!=null);
+        if(exit==UraReadinessExit.Outcome.WAIT)return retry(frame,List.of(),"PROGRESS_B"+floor+"_READINESS_EXIT_REQUIRED",time,seq);
+        if(!prepared){save(frame,List.of(),proof,time,seq);prepared=true;return waitFor("B"+floor+"：保存後の新しい画面で確認");}
         if(exit==UraReadinessExit.Outcome.CLOSE_MODAL)return action(read.back,status,done);
         done.run();persistState();return waitFor(status);
     }

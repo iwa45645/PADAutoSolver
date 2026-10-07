@@ -22,6 +22,16 @@ final class UraProgressPolicy {
         if(floor==22)return new int[]{CHARGE,RUKA_RECOVERY,ODIN,MION,ATTACK}; // Only the reviewed dark-Menoa sprite is actionable.
         return null;
     }
+    static int[] script(int floor,boolean b11ChargeFirst) {
+        return floor==11&&b11ChargeFirst?new int[]{CHARGE,SEKKA,MION,ESPER,ATTACK}:script(floor);
+    }
+    static boolean b11ChargeFirst(int floor,int operation,int phase,int round,int start,int step,Integer sekkaRemaining) {
+        return floor==11&&operation==0&&(phase==13||phase==14)&&round==start&&step==SEKKA&&Integer.valueOf(1).equals(sekkaRemaining);
+    }
+    /** One healing turn at reviewed Alrescha entry, with actual CD1 and no assumed shield. */
+    static boolean safeB11FirstCharge(byte[] board,int hp,int floor,int operation,int round,int start,int entryRound,Integer mionRemaining) {
+        return floor==11&&entryRound==start&&safeFirstCharge(board,hp,operation,round,start,mionRemaining);
+    }
     static boolean safeCharge(byte[] board,int hp,int round,int sekkaRound,int skillRound,Integer mionRemaining) {
         return safeCharge(board,hp,round,sekkaRound,skillRound,mionRemaining,6,5);
     }
