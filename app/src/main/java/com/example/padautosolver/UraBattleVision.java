@@ -119,6 +119,17 @@ final class UraBattleVision {
     boolean leonisFullHealth(Bitmap frame)throws Exception {
         return distance(frame,"b3-leonis-full-hp.png",180,1220,900,20)<.035;
     }
+    double factDistance(Bitmap frame)throws Exception {
+        if(frame.getWidth()!=1220||frame.getHeight()!=2712)return 1;
+        double best=1;
+        for(int dx=-12;dx<=12;dx+=4)for(int dy=-12;dy<=12;dy+=4)
+            best=Math.min(best,distance(frame,"b3-fact-face.png",180+dx,640+dy,350,390));
+        return best;
+    }
+    boolean fact(Bitmap frame)throws Exception{return factDistance(frame)<.055;}
+    boolean factFullHealth(Bitmap frame)throws Exception {
+        return distance(frame,"b3-fact-full-hp.png",180,1220,900,20)<.035;
+    }
     boolean recoveredB3Hp(Bitmap frame)throws Exception {
         return distance(frame,"b3-recovered-hp.png",770,1554,425,54)<.02;
     }
@@ -133,12 +144,12 @@ final class UraBattleVision {
         Bitmap ref=template("progress-b22-restored-max-hp.png"),crop=Bitmap.createBitmap(frame,975,1554,220,54);
         try{return UraHpGlyph.matches(pixels(ref),pixels(crop),220,54);}finally{crop.recycle();}
     }
-    int b3HpLowerBound(Bitmap frame) {
+    int b3HpLowerBound(Bitmap frame,int verifiedMaximum) {
         // Count the contiguous actual pink fill; white digits can only shorten this bound.
-        // The verified unchanged team's maximum HP is 611045. Subtract 8 px at the edge.
+        // Scale only with a maximum independently read from the current live battle.
         int[] scan=new int[1090*3];int row=0;
         for(int y:new int[]{1566,1570,1574})frame.getPixels(scan,row++*1090,1090,90,y,1090,1);
-        return UraB3Policy.hpFillLowerBound(scan);
+        return UraB3Policy.hpFillLowerBound(scan,verifiedMaximum);
     }
     boolean lucifer(Bitmap frame)throws Exception {
         if(frame.getWidth()!=1220||frame.getHeight()!=2712)return false;

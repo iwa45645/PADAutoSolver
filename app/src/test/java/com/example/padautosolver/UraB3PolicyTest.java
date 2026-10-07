@@ -6,11 +6,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 public class UraB3PolicyTest {
     @Test public void survivalNeedsActualRecoveryAndBothPostCooldowns(){
-        assertFalse(UraB3Policy.recoveryVerified(new int[]{2445,611045},4,5));
-        assertTrue(UraB3Policy.recoveryVerified(new int[]{246863,611045},4,5));
-        assertFalse(UraB3Policy.recoveryVerified(new int[]{246863,611045},null,5));
-        assertFalse(UraB3Policy.recoveryVerified(new int[]{246863,611045},4,0));
-        assertFalse(UraB3Policy.recoveryVerified(new int[]{246863,611046},4,5));
+        assertFalse(UraB3Policy.recoveryVerified(new int[]{2445,611045},611045,4,5));
+        assertTrue(UraB3Policy.recoveryVerified(new int[]{246863,611045},611045,4,5));
+        assertFalse(UraB3Policy.recoveryVerified(new int[]{246863,611045},611045,null,5));
+        assertFalse(UraB3Policy.recoveryVerified(new int[]{246863,611045},611045,4,0));
+        assertFalse(UraB3Policy.recoveryVerified(new int[]{246863,611046},611045,4,5));
     }
     @Test public void unknownOrMixedBoardCannotAuthorizeDarkRefresh(){
         byte[] b=new byte[30];Arrays.fill(b,(byte)4);assertTrue(UraB3Policy.allDark(b));
@@ -27,10 +27,10 @@ public class UraB3PolicyTest {
         try(DataInputStream in=new DataInputStream(new GZIPInputStream(getClass().getResourceAsStream("/b3-hp-246863.rgb.gz")))) {
             for(int i=0;i<scan.length;i++)scan[i]=in.readInt();
         }
-        int bound=UraB3Policy.hpFillLowerBound(scan);assertTrue(bound>=230000);assertTrue(bound<=246863);
+        int bound=UraB3Policy.hpFillLowerBound(scan,611045);assertTrue(bound>=230000);assertTrue(bound<=246863);
         // A white digit/unknown region may truncate the bound, never extrapolate the fill.
         for(int y=0;y<3;y++)scan[y*1090+100]=0xffffffff;
-        assertTrue(UraB3Policy.hpFillLowerBound(scan)<60000);
-        assertEquals(0,UraB3Policy.hpFillLowerBound(null));
+        assertTrue(UraB3Policy.hpFillLowerBound(scan,611045)<60000);
+        assertEquals(0,UraB3Policy.hpFillLowerBound(null,611045));
     }
 }

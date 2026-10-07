@@ -14,6 +14,7 @@ final class UraB4Controller {
     private static final int[] CDS={3,5,2,4};
     private final Context context;private final UraBattleVision vision;
     private final JSONObject record=new JSONObject();
+    private final UraHpEvidence hpEvidence=new UraHpEvidence();
     private int phase,step,round,misses;
     private long lastSequence=-1,actionAt,actionSequence,menuAt;
     private boolean charged,saved,prepared,postSaved;
@@ -61,6 +62,12 @@ final class UraB4Controller {
     StagePolicy.Decision inspect(Bitmap frame,StageNavigator nav,long time,long seq)throws Exception {
         if(seq<=lastSequence)return waitFor("B4：新しい画面を待機");lastSequence=seq;
         if(frame.getWidth()!=1220||frame.getHeight()!=2712)return stop(frame,List.of(),"B4_CALIBRATION_MISMATCH",time,seq);
+        int hpLowerBound=0;
+        if(phase==2||phase==7||phase==15) {
+            int[] hp=UraB3Policy.hp(nav.readUraHp(frame));hpEvidence.observe(hp,time,seq);
+            int maximum=hpEvidence.maximum(time);hpLowerBound=vision.b3HpLowerBound(frame,maximum);
+            record.put("observedMaxHp",maximum).put("hpLowerBound",hpLowerBound);
+        }
         if(phase==0||phase==1) {
             List<StagePolicy.Item> text=nav.readUraCombat(frame);
             if(UraCombatText.blocked(text))return stop(frame,text,"B4_GAME_OVER_OR_PURCHASE",time,seq);
@@ -88,7 +95,7 @@ final class UraB4Controller {
             long mask=vision.rouletteMask(frame);byte[] board=vision.rouletteBoard(frame,mask);
             if(board==null)return retry(frame,List.of(),"B4_STABLE_BOARD_UNKNOWN",time,seq);
             if(!charged) {
-                if(Long.bitCount(mask)!=5||!vision.b4ChargeCounters(frame)||vision.b3HpLowerBound(frame)<230000)return retry(frame,List.of(),"B4_CHARGE_COUNTERS_2_5_2_AND_HP_REQUIRED",time,seq);
+                if(Long.bitCount(mask)!=5||!vision.b4ChargeCounters(frame)||hpLowerBound<230000)return retry(frame,List.of(),"B4_CHARGE_COUNTERS_2_5_2_AND_HP_REQUIRED",time,seq);
                 // One turn is safe because ALL actual counters are >=2. No claim of zero combos.
                 List<Integer> route=RoulettePlan.chargeRoute(board,mask);
                 if(!prepared){charged=true;phase=10;round=0;record.put("chargeRoute",new JSONArray(route));save(frame,List.of(),"b4-charge-consumed",time,seq);charged=false;phase=2;prepared=true;return waitFor("B4：攻撃まで2ターン以上を再照合");}
@@ -145,7 +152,7 @@ final class UraB4Controller {
         if(phase==7) {
             long mask=vision.rouletteMask(frame);byte[] board=vision.rouletteBoard(frame,mask);
             if(Long.bitCount(mask)!=1||board==null)return retry(frame,List.of(),"B4_ROULETTE_MASK_OR_BOARD_UNKNOWN",time,seq);
-            if(!vision.gears(frame)||vision.b3HpLowerBound(frame)<230000)return retry(frame,List.of(),"B4_ENEMY_AND_HP_REQUIRED",time,seq);
+            if(!vision.gears(frame)||hpLowerBound<230000)return retry(frame,List.of(),"B4_ENEMY_AND_HP_REQUIRED",time,seq);
             try{plan=RoulettePlan.solveEsper(board,mask,44,1200,5000,now());}catch(IllegalArgumentException e){return stop(frame,List.of(),"B4_NO_ROBUST_ROUTE:"+e.getMessage(),time,seq);}
             record.put("rouletteMask",mask).put("sourceBoard",array(board)).put("route",new JSONArray(plan.path)).put("worstWater",plan.water).put("worstHeal",plan.heal).put("worstWaterT",plan.waterT).put("worstFirstWaveCombos",plan.combos).put("proof","ALL_TEN_COLORS_T_WATER2_HEAL_FIRST_WAVE_NO_ROULETTE_VISIT");
             phase=9;prepared=false;save(frame,List.of(),"b4-plan",time,seq);return waitFor("B4：全ルーレット色で水T字・水2セット＋回復を確認");
@@ -181,7 +188,7 @@ final class UraB4Controller {
         if(phase==15) {
             long mask=vision.rouletteMask(frame);byte[] board=vision.rouletteBoard(frame,mask);
             boolean counters=true;for(int i=0;i<3;i++)counters&=vision.distance(frame,"b4-counter-wait-"+i+".png",112+i*380,730,45,55)<.09;
-            if(Long.bitCount(mask)!=1||board==null||!vision.gears(frame)||!counters||vision.b3HpLowerBound(frame)<230000)return retry(frame,List.of(),"B4_EXTRA_CHARGE_HP_AND_COUNTERS_1_4_1_REQUIRED",time,seq);
+            if(Long.bitCount(mask)!=1||board==null||!vision.gears(frame)||!counters||hpLowerBound<230000)return retry(frame,List.of(),"B4_EXTRA_CHARGE_HP_AND_COUNTERS_1_4_1_REQUIRED",time,seq);
             misses=0;
             List<Integer> route=RoulettePlan.chargeRoute(board,mask);record.put("extraChargeRoute",new JSONArray(route));
             if(!prepared){extraCharged=true;phase=10;record.put("extraChargeUnshieldedMaxDamage",201700);save(frame,List.of(),"b4-extra-charge-consumed",time,seq);extraCharged=false;phase=15;prepared=true;return waitFor("B4：HP下限23万が左右の合計20万1700を超えることを再照合");}

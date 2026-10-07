@@ -13,6 +13,7 @@ final class UraB5Controller {
     private static final int[] SLOTS={5,4},CDS={2,5};
     private final Context context;private final UraBattleVision vision;
     private final JSONObject record=new JSONObject();
+    private final UraHpEvidence hpEvidence=new UraHpEvidence();
     private int phase,step,round,misses;
     private long lastSequence=-1,actionAt,actionSequence,menuAt;
     private boolean charged,saved,prepared,postSaved;
@@ -60,6 +61,12 @@ final class UraB5Controller {
     StagePolicy.Decision inspect(Bitmap frame,StageNavigator nav,long time,long seq)throws Exception {
         if(seq<=lastSequence)return waitFor("B5：新しい画面を待機");lastSequence=seq;
         if(frame.getWidth()!=1220||frame.getHeight()!=2712)return stop(frame,List.of(),"B5_CALIBRATION_MISMATCH",time,seq);
+        int hpLowerBound=0;
+        if(phase==15) {
+            int[] hp=UraB3Policy.hp(nav.readUraHp(frame));hpEvidence.observe(hp,time,seq);
+            int maximum=hpEvidence.maximum(time);hpLowerBound=vision.b3HpLowerBound(frame,maximum);
+            record.put("observedMaxHp",maximum).put("hpLowerBound",hpLowerBound);
+        }
         if(phase==0||phase==1) {
             List<StagePolicy.Item> text=nav.readUraCombat(frame);
             if(UraCombatText.blocked(text))return stop(frame,text,"B5_GAME_OVER_OR_PURCHASE",time,seq);
@@ -106,9 +113,9 @@ final class UraB5Controller {
         }
         if(phase==15) {
             byte[] board=vision.luciferBoard(frame);
-            if(!vision.napoleon(frame)||vision.rouletteMask(frame)!=0||!UraB5Policy.safeCharge(board,vision.b3HpLowerBound(frame),held==null?null:held.baseRemaining,charged))return retry(frame,List.of(),"B5_CHARGE_HP_AND_COOLDOWN_REQUIRED",time,seq);
+            if(!vision.napoleon(frame)||vision.rouletteMask(frame)!=0||!UraB5Policy.safeCharge(board,hpLowerBound,held==null?null:held.baseRemaining,charged))return retry(frame,List.of(),"B5_CHARGE_HP_AND_COOLDOWN_REQUIRED",time,seq);
             List<Integer> route=RoulettePlan.chargeRoute(board,0);misses=0;
-            if(!prepared){charged=true;phase=10;record.put("chargeRoute",new JSONArray(route)).put("minimumChargeHp",UraB5Policy.MIN_CHARGE_HP).put("chargeHpLowerBound",vision.b3HpLowerBound(frame));save(frame,List.of(),"b5-charge-consumed",time,seq);charged=false;phase=15;prepared=true;return waitFor("B5：HP下限23万以上を再照合");}
+            if(!prepared){charged=true;phase=10;record.put("chargeRoute",new JSONArray(route)).put("minimumChargeHp",UraB5Policy.MIN_CHARGE_HP).put("chargeHpLowerBound",hpLowerBound);save(frame,List.of(),"b5-charge-consumed",time,seq);charged=false;phase=15;prepared=true;return waitFor("B5：HP下限23万以上を再照合");}
             StagePolicy.Decision d=action(new StagePolicy.Item("B5_CHARGE",610,1700),"B5：必ず1コンボ消してミオンを溜める",()->{charged=true;phase=10;actionAt=now();misses=0;});puzzle(d,route);return d;
         }
         if(phase==3) {

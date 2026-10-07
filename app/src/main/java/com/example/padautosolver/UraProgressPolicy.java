@@ -104,9 +104,9 @@ final class UraProgressPolicy {
         if(Integer.valueOf(0).equals(info.baseRemaining))return 1;
         return Integer.valueOf(-1).equals(info.baseRemaining)&&Integer.valueOf(0).equals(info.assistRemaining)?2:0;
     }
-    static boolean b22AttackAllowed(int operation,int round,int start,int recoveryRound,int odinRound,int skillRound,int lastSkill,int[] hp,boolean awokenNull) {
+    static boolean b22AttackAllowed(int operation,int round,int start,int recoveryRound,int odinRound,int skillRound,int lastSkill,int[] hp,int verifiedMaximum,boolean awokenNull) {
         return operation==4&&round==start+1&&recoveryRound==round&&odinRound==round&&skillRound==round&&lastSkill==MION
-            &&hp!=null&&hp[1]==611045&&hp[0]>0&&!awokenNull;
+            &&hp!=null&&verifiedMaximum>=100000&&hp[1]==verifiedMaximum&&hp[0]>0&&hp[0]<=hp[1]&&!awokenNull;
     }
     static boolean safeB22Charge(byte[] board,int hp,int operation,int round,int start,Integer mionRemaining,boolean fullEnemyBars) {
         return fullEnemyBars&&safeFirstCharge(board,hp,operation,round,start,mionRemaining);

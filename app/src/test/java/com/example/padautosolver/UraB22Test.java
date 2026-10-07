@@ -26,11 +26,13 @@ public class UraB22Test {
         assertEquals(0,UraProgressPolicy.rukaRecoveryLayer(null,true));
     }
     @Test public void attackRequiresRestoredAwakeningsAndSameTurnRecoveryAbsorptionAndMion(){
-        assertTrue(UraProgressPolicy.b22AttackAllowed(4,39,38,39,39,39,1,new int[]{244416,611045},false));
-        assertFalse(UraProgressPolicy.b22AttackAllowed(4,39,38,39,39,39,1,new int[]{244416,244416},false));
-        assertFalse(UraProgressPolicy.b22AttackAllowed(4,39,38,39,39,39,1,new int[]{244416,611045},true));
-        assertFalse(UraProgressPolicy.b22AttackAllowed(4,39,38,38,39,39,1,new int[]{244416,611045},false));
-        assertFalse(UraProgressPolicy.b22AttackAllowed(4,39,38,39,38,39,1,new int[]{244416,611045},false));
-        assertFalse(UraProgressPolicy.b22AttackAllowed(4,39,38,39,39,38,1,new int[]{244416,611045},false));
+        assertTrue(UraProgressPolicy.b22AttackAllowed(4,39,38,39,39,39,1,new int[]{244416,611045},611045,false));
+        assertTrue(UraProgressPolicy.b22AttackAllowed(4,39,38,39,39,39,1,new int[]{244660,612278},612278,false));
+        assertFalse(UraProgressPolicy.b22AttackAllowed(4,39,38,39,39,39,1,new int[]{244660,612278},0,false));
+        assertFalse(UraProgressPolicy.b22AttackAllowed(4,39,38,39,39,39,1,new int[]{244416,244416},611045,false));
+        assertFalse(UraProgressPolicy.b22AttackAllowed(4,39,38,39,39,39,1,new int[]{244416,611045},611045,true));
+        assertFalse(UraProgressPolicy.b22AttackAllowed(4,39,38,38,39,39,1,new int[]{244416,611045},611045,false));
+        assertFalse(UraProgressPolicy.b22AttackAllowed(4,39,38,39,38,39,1,new int[]{244416,611045},611045,false));
+        assertFalse(UraProgressPolicy.b22AttackAllowed(4,39,38,39,39,38,1,new int[]{244416,611045},611045,false));
     }
 }

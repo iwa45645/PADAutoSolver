@@ -1,7 +1,7 @@
 package com.example.padautosolver;
 import java.util.*;
 import java.util.regex.*;
-/** Reviewed Leonis branch only. Unknown HP/boards cannot authorize a survival turn. */
+/** Reviewed B3 branches. Unknown HP/boards cannot authorize a survival turn. */
 final class UraB3Policy {
     static boolean allDark(byte[] board) {
         if(board==null||board.length!=30)return false;
@@ -18,14 +18,19 @@ final class UraB3Policy {
             found=new int[]{current,max};
         }return found;
     }
-    static boolean recoveryVerified(int[] hp,Integer sekkaCooldown,Integer esperCooldown) {
-        return hp!=null&&hp[1]==611045&&hp[0]>=230000
+    static boolean recoveryVerified(int[] hp,int verifiedMaximum,Integer sekkaCooldown,Integer esperCooldown) {
+        return hp!=null&&verifiedMaximum>=100000&&hp[1]==verifiedMaximum&&hp[0]>=230000&&hp[0]<=hp[1]
             &&Integer.valueOf(4).equals(sekkaCooldown)&&Integer.valueOf(5).equals(esperCooldown);
     }
     static int count(byte[] board,int color){int n=0;if(board!=null)for(byte b:board)if(b==color)n++;return n;}
     static boolean needsRuka(byte[] board){return count(board,5)<3&&count(board,0)+count(board,4)>=3;}
-    static int hpFillLowerBound(int[] scan) {
-        if(scan==null||scan.length!=1090*3)return 0;
+    static boolean factRefreshBoard(byte[] board) {
+        if(board==null||board.length!=30||count(board,4)<3)return false;
+        for(byte orb:board)if(orb!=1&&orb!=2&&orb!=4)return false;
+        return count(board,1)>0&&count(board,2)>0;
+    }
+    static int hpFillLowerBound(int[] scan,int verifiedMaximum) {
+        if(scan==null||scan.length!=1090*3||verifiedMaximum<100000)return 0;
         int filledColumns=0;
         for(int x=0;x<1090;x++) {
             int filled=0;
@@ -35,6 +40,6 @@ final class UraB3Policy {
             }
             if(filled<2)break;filledColumns++;
         }
-        return Math.max(0,filledColumns-9)*611045/1090;
+        return (int)((long)Math.max(0,filledColumns-9)*verifiedMaximum/1090);
     }
 }

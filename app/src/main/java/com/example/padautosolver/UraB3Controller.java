@@ -25,6 +25,9 @@ final class UraB3Controller {
     private volatile long heldAt,heldSequence;
     private Integer sekkaCooldown,esperCooldown;
     private UraPuzzlePlan plan;
+    private boolean fact;
+    private int heldRecaptures;
+    private final UraHpEvidence hpEvidence=new UraHpEvidence();
     private UraB3Controller(Context context){this.context=context;vision=new UraBattleVision(context);}
     static UraB3Controller resume(Context context,Bitmap live)throws Exception {
         if(live.getWidth()!=1220||live.getHeight()!=2712)return null;
@@ -49,24 +52,29 @@ final class UraB3Controller {
                 else if(p==9)c.phase=8;
                 else if(p==0||p==1)c.phase=0;
                 else if(p==4)c.phase=3;
+                else if(p==14)c.phase=13;
                 c.actionAt=now()-18000;c.record.remove("failureReason");return c;
             }
             // Once this native run consumed an action, the older B2 checkpoint cannot
             // authorize a fresh B3 opening (and duplicate the recovery skill).
-            if(sameSource&&"B3_LEONIS".equals(data.optString("mode")))return null;
+            if(sameSource&&data.optString("mode").startsWith("B3_"))return null;
         }
-        if(!c.vision.leonis(live)||!UraB3Policy.allDark(c.vision.luciferBoard(live)))return null;
+        byte[] entryBoard=c.vision.luciferBoard(live);
+        boolean leonis=c.vision.leonis(live)&&UraB3Policy.allDark(entryBoard);
+        c.fact=c.vision.fact(live)&&UraB3Policy.factRefreshBoard(entryBoard);
+        if(leonis==c.fact)return null;
         if(!b2.isFile()||!b2image.isFile())return null;
         JSONObject data=b2Record;
         if(data.optInt("phase")!=7||data.optInt("observedFloor")!=3||data.optInt("trial")!=2||!"ALL".equals(data.optString("instruction")))return null;
         Bitmap old=BitmapFactory.decodeFile(b2image.getPath());boolean same=false;
         try{same=old!=null&&UraBattleVision.sameRunPortraits(old,live)&&Arrays.equals(c.vision.luciferBoard(old),c.vision.luciferBoard(live));}finally{if(old!=null)old.recycle();}
         if(!same)return null;
-        c.record.put("runId",UUID.randomUUID().toString()).put("sourceB2RunId",data.getString("runId")).put("mode","B3_LEONIS");return c;
+        c.record.put("runId",UUID.randomUUID().toString()).put("sourceB2RunId",data.getString("runId")).put("mode",c.fact?"B3_FACT":"B3_LEONIS");return c;
     }
     private void restore(JSONObject data)throws Exception {
         for(Iterator<String> it=data.keys();it.hasNext();){String key=it.next();record.put(key,data.get(key));}
         phase=data.getInt("phase");round=data.optInt("round");step=data.optInt("step");
+        fact="B3_FACT".equals(data.optString("mode"));
         if(!data.isNull("sekkaCooldown"))sekkaCooldown=data.getInt("sekkaCooldown");
         if(!data.isNull("esperCooldown"))esperCooldown=data.getInt("esperCooldown");
     }
@@ -98,11 +106,12 @@ final class UraB3Controller {
         }
         if(phase==12)return stop(frame,List.of(),"B3_CLEAR_VERIFIED_B4_CAPTURE_REQUIRED",time,seq);
         if(phase==2) {
-            if(!vision.leonis(frame))return retry(frame,List.of(),"B3_LEONIS_REQUIRED",time,seq);
+            if(!enemy(frame))return retry(frame,List.of(),"B3_BRANCH_ENEMY_REQUIRED",time,seq);
             byte[] board=vision.luciferBoard(frame);if(board==null)return retry(frame,List.of(),"B3_BOARD_UNKNOWN",time,seq);
             record.put("checkpointBoard",array(board));
             if(round==0) {
-                if(!UraB3Policy.allDark(board)||!vision.leonisFullHealth(frame))return stop(frame,List.of(),"B3_OPENING_ALL_DARK_AND_FULL_ENEMY_HP_REQUIRED",time,seq);
+                if(!(fact?UraB3Policy.factRefreshBoard(board):UraB3Policy.allDark(board))
+                    ||!(fact?vision.factFullHealth(frame):vision.leonisFullHealth(frame)))return stop(frame,List.of(),"B3_OPENING_BOARD_AND_FULL_ENEMY_HP_REQUIRED",time,seq);
                 step=0;
             } else {
                 if(round>1)return stop(frame,List.of(),"B3_ATTACK_NOT_CLEARED",time,seq);
@@ -117,13 +126,14 @@ final class UraB3Controller {
                 return retry(frame,text,"B3_SKILL_NOT_READY_OR_IDENTITY:"+step,time,seq);
             // Persist consumed observation state before dispatch, so an interrupted call cannot replay.
             if(!prepared){phase=5;save(frame,text,"b3-skill-consumed",time,seq);phase=4;prepared=true;return waitFor("B3：スキル証拠保存後に再照合");}
-            return action(read.activate,"B3："+SKILLS[step]+"を発動",()->{phase=5;actionAt=now();actionSequence=seq;misses=0;held=null;});
+            return action(read.activate,"B3："+SKILLS[step]+"を発動",()->{phase=5;actionAt=now();actionSequence=seq;misses=0;heldRecaptures=0;held=null;});
         }
         if(phase==5) {
             if(now()-actionAt<1500)return waitFor("B3：スキル演出を待機");
             StagePolicy.Decision d=action(new StagePolicy.Item("B3_POST_"+step,100+203*SLOTS[step],1425),"B3：使用後のスキル残りターンを取得",()->{phase=6;misses=0;postSaved=false;});
             d.holdMs=4000;d.heldStampedFrame=(image,current,t,s)->{
                 List<StagePolicy.Item> text=nav.readUraHeldSkill(image);UraHeldSkillInfo info=UraHeldSkillInfo.read(text);
+                if(info==null){text=nav.readUraHeldSkillDense(image);info=UraHeldSkillInfo.read(text);}
                 if(!current.getAsBoolean())return;
                 held=info;heldAt=t;heldSequence=s;
                 heldSekkaHeading=step==0&&vision.sekkaPostHeading(image);
@@ -133,6 +143,7 @@ final class UraB3Controller {
             };return d;
         }
         if(phase==6) {
+            if(held==null&&heldRecaptures++<2){phase=5;return waitFor("B3：使用後の表示を再取得（再発動なし）");}
             if(held==null)return retry(frame,List.of(),"B3_HELD_POST_REQUIRED",time,seq);
             if(heldAt<=actionAt||heldSequence<=actionSequence||!(held.baseNamed(SKILLS[step])||step==0&&heldSekkaHeading)||!Integer.valueOf(COOLDOWNS[step]).equals(held.baseRemaining))
                 return stop(frame,List.of(),"B3_SKILL_POSTCONDITION:"+step,time,seq);
@@ -145,35 +156,32 @@ final class UraB3Controller {
         }
         if(phase==7) {
             List<StagePolicy.Item> hpText=nav.readUraHp(frame);int[] hp=UraB3Policy.hp(hpText);
-            int lowerBound=vision.b3HpLowerBound(frame);
-            boolean recoveredPixels=round==0&&vision.recoveredB3Hp(frame);
-            if(hp==null&&recoveredPixels)hp=new int[]{246863,611045};
-            // After the recovery checkpoint, a conservative fill measurement may
-            // authorize only the minimum-HP gate; it is not recorded as an exact HP read.
-            if(hp==null&&round==1&&record.optInt("maxHp")==611045&&lowerBound>=60000)hp=new int[]{lowerBound,611045};
-            record.put("hpLowerBound",lowerBound).put("recoveredHpPixelsVerified",recoveredPixels).put("hpEvidence",recoveredPixels?"REVIEWED_246863_PIXELS":UraB3Policy.hp(hpText)==null?"CONTIGUOUS_BAR_LOWER_BOUND":"OCR");
-            if(round==0&&(!UraB3Policy.recoveryVerified(hp,sekkaCooldown,esperCooldown)||lowerBound<230000))return retry(frame,hpText,"B3_RECOVERY_HP_REQUIRED",time,seq);
-            if(round==1&&(hp==null||hp[0]<60000))return retry(frame,hpText,"B3_ATTACK_HP_REQUIRED",time,seq);
+            hpEvidence.observe(hp,time,seq);int maximum=hpEvidence.maximum(time);
+            int lowerBound=vision.b3HpLowerBound(frame,maximum);
+            record.put("hpLowerBound",lowerBound).put("hpEvidence","TWO_FRESH_LITERAL_MAXIMUM_READS_AND_CONTIGUOUS_BAR");
+            if(round==0&&(!UraB3Policy.recoveryVerified(hp,maximum,sekkaCooldown,esperCooldown)||lowerBound<230000))return retry(frame,hpText,"B3_RECOVERY_HP_REQUIRED",time,seq);
+            if(round==1&&(!hpEvidence.matches(hp,time)||hp[0]<60000))return retry(frame,hpText,"B3_ATTACK_HP_REQUIRED",time,seq);
             record.put("hp",hp[0]).put("maxHp",hp[1]);phase=8;misses=0;save(frame,hpText,"b3-hp-verified",time,seq);return waitFor("B3：HPを確認して盤面を探索");
         }
         if(phase==8) {
-            if(!vision.leonis(frame))return stop(frame,List.of(),"B3_PUZZLE_ENEMY_CHANGED",time,seq);
+            if(!enemy(frame))return stop(frame,List.of(),"B3_PUZZLE_ENEMY_CHANGED",time,seq);
             byte[] board=vision.luciferBoard(frame);if(board==null)return retry(frame,List.of(),"B3_BOARD_UNKNOWN",time,seq);
-            PuzzleGoal goal=round==0?new PuzzleGoal(PuzzleGoal.Type.FULL_CLEAR,4,0):PuzzleGoal.esperMionAndHeal();
-            if(round==0&&!UraB3Policy.allDark(board))return stop(frame,List.of(),"B3_REFRESH_BOARD_CHANGED",time,seq);
+            PuzzleGoal goal=round==0?(fact?PuzzleGoal.clearColor(4,UraB3Policy.count(board,4)):new PuzzleGoal(PuzzleGoal.Type.FULL_CLEAR,4,0)):PuzzleGoal.esperMionAndHeal();
+            if(round==0&&!(fact?UraB3Policy.factRefreshBoard(board):UraB3Policy.allDark(board)))return stop(frame,List.of(),"B3_REFRESH_BOARD_CHANGED",time,seq);
             PuzzleSolver.Result result=round==0?new PuzzleSolver.Result(List.of(0,1,0),1,30,2,0,0,true):PuzzleSolver.solve(board,6,5,44,2500,1800,goal);
             try{plan=new UraPuzzlePlan(board,result,goal,now());}catch(IllegalArgumentException e){return stop(frame,List.of(),"B3_NO_VALID_ROUTE:"+e.getMessage(),time,seq);}
             record.put("sourceBoard",array(board)).put("route",new JSONArray(plan.path)).put("goal",goal.type.name()).put("predictedCombos",plan.stats.combos)
                 .put("waterCombos",plan.stats.colorCombos[3]).put("healCombos",plan.stats.colorCombos[5]).put("firstWaterT",plan.stats.firstTShapes[3]).put("puzzleConsumed",false);
+            if(fact&&round==1)record.put("leaderAddedCombos",8).put("minimumTotalCombos",11).put("fixedFollowUp",22000000);
             phase=9;prepared=false;save(frame,List.of(),"b3-plan",time,seq);
             // The panel's expanded route preview covers Leonis' face on this device.
             // Keep the immutable dry-run evidence in the native log and leave that ROI visible.
-            return waitFor(round==0?"B3：回復・軽減後に闇30個を消して盤面更新":"B3：水2セット＋回復の経路を再照合");
+            return waitFor(round==0?"B3：回復・軽減後に闇を消して盤面更新":"B3：水T字・水2セット＋回復の経路を再照合");
         }
         if(phase==9) {
             byte[] board=vision.luciferBoard(frame);
             if(board==null&&plan!=null&&now()-plan.plannedAt<15000)return waitFor("B3：盤面の発光が収まるまで待機");
-            double enemyDistance=vision.leonisDistance(frame);
+            double enemyDistance=fact?vision.factDistance(frame):vision.leonisDistance(frame);
             record.put("dispatchBoard",board==null?JSONObject.NULL:array(board)).put("planAgeMs",plan==null?-1:now()-plan.plannedAt).put("enemyDistance",enemyDistance);
             if(plan==null||!plan.current(board,now()))return stop(frame,List.of(),"B3_STALE_PLAN",time,seq);
             if(enemyDistance>=.055)return waitFor("B3：敵の発光が収まった画面で再照合");
@@ -185,11 +193,33 @@ final class UraB3Controller {
             List<StagePolicy.Item> text=nav.readUraCombat(frame);
             if(UraCombatText.blocked(text))return stop(frame,text,"B3_GAME_OVER_OR_PURCHASE",time,seq);
             if(now()-actionAt<18000)return waitFor("B3：コンボ・敵行動・次階層を待機");
+            if(round==0){phase=13;return waitFor("B3：盤面更新の実ターンをセッカの残りターンで確認");}
             round++;phase=0;misses=0;save(frame,text,"b3-result",time,seq);return waitFor("B3：パズル後の実階層を確認");
+        }
+        if(phase==13) {
+            held=null;
+            StagePolicy.Decision d=action(new StagePolicy.Item("B3_REFRESH_TURN_PROOF",303,1425),"B3：セッカの実残りターンを取得",()->{phase=14;misses=0;});
+            d.holdMs=4000;d.heldStampedFrame=(image,current,t,s)->{
+                List<StagePolicy.Item> text=nav.readUraHeldSkill(image);UraHeldSkillInfo info=UraHeldSkillInfo.readBase(text);
+                if(info==null){text=nav.readUraHeldSkillDense(image);info=UraHeldSkillInfo.readBase(text);}
+                if(!current.getAsBoolean())return;
+                held=info;heldAt=t;heldSequence=s;heldSekkaHeading=vision.sekkaPostHeading(image);
+                record.put("refreshSekkaRemaining",info==null?JSONObject.NULL:info.baseRemaining);save(image,text,"b3-refresh-turn-read",t,s);
+            };return d;
+        }
+        if(phase==14) {
+            if(held==null)return retry(frame,List.of(),"B3_REFRESH_TURN_READ_REQUIRED",time,seq);
+            if(heldAt<=actionAt||heldSequence<=actionSequence||!(held.baseNamed(SKILLS[0])||heldSekkaHeading)||!Integer.valueOf(3).equals(held.baseRemaining))
+                return stop(frame,List.of(),"B3_REFRESH_TURN_NOT_VERIFIED",time,seq);
+            UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
+            if(read==null||!vision.backControl(frame,read))return retry(frame,List.of(),"B3_REFRESH_PROOF_BACK_REQUIRED",time,seq);
+            record.put("refreshTurnProof","named-sekka-cooldown-4-to-3");
+            return action(read.back,"B3：盤面更新の1ターン経過を確認",()->{round=1;phase=0;misses=0;});
         }
         return stop(frame,List.of(),"B3_UNKNOWN_STATE",time,seq);
     }
     private void advanceSkill(){phase=(step==0||step==2)?3:7;if(step==0)step=1;else if(step==2)step=3;misses=0;}
+    private boolean enemy(Bitmap frame)throws Exception{return fact?vision.fact(frame):vision.leonis(frame);}
     private static JSONArray array(byte[] b){JSONArray a=new JSONArray();for(byte x:b)a.put(x);return a;}
     private static byte[] bytes(JSONArray a)throws Exception{if(a==null)return null;byte[] b=new byte[a.length()];for(int i=0;i<b.length;i++)b[i]=(byte)a.getInt(i);return b;}
     private static long now(){return android.os.SystemClock.elapsedRealtime();}

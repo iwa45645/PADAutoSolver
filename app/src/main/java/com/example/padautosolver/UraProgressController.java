@@ -13,6 +13,7 @@ final class UraProgressController {
     private static final int[] SLOTS={1,5,0,2,4,3,4},CDS={4,2,5,5,5,3,5};
     private final Context context;private final UraBattleVision vision;
     private final JSONObject record=new JSONObject();
+    private final UraHpEvidence hpEvidence=new UraHpEvidence();
     private int floor=6,operation,phase,step,round,floorStartRound,misses;
     private int[] script=UraProgressPolicy.script(6);
     private long lastSequence=-1,actionAt,actionSequence,menuAt;
@@ -122,6 +123,12 @@ final class UraProgressController {
         }
         if(phase==25)return stop(frame,List.of(),"URA_SHURA_CLEAR_AND_RESULT_VERIFIED",time,seq);
         if(terminalOnly)return retry(frame,List.of(),"URA_TERMINAL_CLEAR_EVIDENCE_REQUIRED",time,seq);
+        int hpLowerBound=0;
+        if(phase==15) {
+            int[] hp=UraB3Policy.hp(nav.readUraHp(frame));hpEvidence.observe(hp,time,seq);
+            int maximum=hpEvidence.maximum(time);hpLowerBound=vision.b3HpLowerBound(frame,maximum);
+            record.put("observedMaxHp",maximum).put("hpLowerBound",hpLowerBound);
+        }
         if(phase==0||phase==1) {
             List<StagePolicy.Item> text=nav.readUraCombat(frame);
             if(UraCombatText.blocked(text))return stop(frame,text,"PROGRESS_GAME_OVER_OR_PURCHASE",time,seq);
@@ -212,7 +219,7 @@ final class UraProgressController {
         }
         if(phase==15) {
             byte[] board=board(frame);
-            int hp=vision.b3HpLowerBound(frame);int sekkaRound=record.optInt("sekkaRound",-1),mionRemaining=record.optInt("chargeMionRemaining",-1);
+            int hp=hpLowerBound;int sekkaRound=record.optInt("sekkaRound",-1),mionRemaining=record.optInt("chargeMionRemaining",-1);
             boolean safe=UraProgressPolicy.safeCharge(board,hp,round,sekkaRound,record.optInt("lastSkillRound",-1),mionRemaining,cols(),rows())
                 ||UraProgressPolicy.safeB12Charge(board,hp,floor,operation,round,floorStartRound,sekkaRound,mionRemaining)
                 ||UraProgressPolicy.safeB13Charge(board,hp,floor,operation,round,floorStartRound,mionRemaining)
@@ -229,7 +236,7 @@ final class UraProgressController {
             if(floor==20)safe=UraProgressPolicy.safeB20Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining);
             if(!safe)return retry(frame,List.of(),"PROGRESS_B20_CHARGE_HP_OR_COOLDOWN_REQUIRED",time,seq);
             List<Integer> route=UraChargeRoute.find(board,cols(),rows(),expectedMask(),floor==21||floor==22);misses=0;
-            if(!prepared){prepareReceipt("CHARGE",mionRemaining);record.put("chargeRoute",new JSONArray(route)).put("chargeHpLowerBound",vision.b3HpLowerBound(frame)).put("chargeSourceBoard",array(board)).put("chargeCols",cols()).put("chargeRows",rows());save(frame,List.of(),"progress-charge-prepared",time,seq);prepared=true;return waitFor("残存軽減・HP下限・実コンボを再照合");}
+            if(!prepared){prepareReceipt("CHARGE",mionRemaining);if(floor==22)record.put("b22ExpectedRestoredMaxHp",hpEvidence.maximum(time));record.put("chargeRoute",new JSONArray(route)).put("chargeHpLowerBound",hpLowerBound).put("chargeSourceBoard",array(board)).put("chargeCols",cols()).put("chargeRows",rows());save(frame,List.of(),"progress-charge-prepared",time,seq);prepared=true;return waitFor("残存軽減・HP下限・実コンボを再照合");}
             StagePolicy.Decision d=consumingAction(new StagePolicy.Item("PROGRESS_CHARGE",610,1700),"B"+floor+"：現在HPを確認し実コンボで充填",10,true,seq);puzzle(d,route);return d;
         }
         if(phase==3) {
@@ -266,7 +273,7 @@ final class UraProgressController {
             if(floor==18&&!UraProgressPolicy.odinAbsorbActive(round,record.optInt("odinRound",-1)))return stop(frame,List.of(),"PROGRESS_B18_DAMAGE_ABSORB_EXPIRED",time,seq);
             if(floor==19&&operation==6&&!UraProgressPolicy.b19SecondAttackAllowed(operation,round,floorStartRound,record.optInt("yukineAssistRound",-1),record.optInt("sekkaRound",-1),record.optInt("lastSkillRound",-1),record.optInt("lastSkill",-1)))return stop(frame,List.of(),"PROGRESS_B19_HASTE_SHIELD_MION_REQUIRED",time,seq);
             if(floor==22){
-                if(!verifyB22Recovery(frame,nav,time,seq)||!UraProgressPolicy.b22AttackAllowed(operation,round,floorStartRound,record.optInt("b22RecoverySkillRound",-1),record.optInt("odinRound",-1),record.optInt("lastSkillRound",-1),record.optInt("lastSkill",-1),b22Hp(frame,nav),b22AwokenNull(frame)))
+                if(!verifyB22Recovery(frame,nav,time,seq)||!UraProgressPolicy.b22AttackAllowed(operation,round,floorStartRound,record.optInt("b22RecoverySkillRound",-1),record.optInt("odinRound",-1),record.optInt("lastSkillRound",-1),record.optInt("lastSkill",-1),b22Hp(frame,nav),record.optInt("b22ExpectedRestoredMaxHp"),b22AwokenNull(frame)))
                     return retry(frame,List.of(),"PROGRESS_B22_RECOVERY_ABSORB_MION_REQUIRED",time,seq);
             }
             if(!UraB5Policy.enoughRecovery(board)) {
@@ -334,17 +341,15 @@ final class UraProgressController {
     }
     private int[] b22Hp(Bitmap frame,StageNavigator nav)throws Exception {
         int[] hp=UraB3Policy.hp(nav.readUraHp(frame));
-        if(hp!=null)return hp;
-        int lower=vision.b3HpLowerBound(frame);
-        return vision.b22RestoredMaximum(frame)&&lower>0?new int[]{lower,611045}:null;
+        return hpEvidence.matches(hp,now())?hp:null;
     }
     private boolean verifyB22Recovery(Bitmap frame,StageNavigator nav,long time,long seq)throws Exception {
         if(record.optInt("b22RecoverySkillRound",-1)!=round||b22AwokenNull(frame))return false;
         List<StagePolicy.Item> text=nav.readUraHp(frame);int[] hp=UraB3Policy.hp(text);
+        hpEvidence.observe(hp,time,seq);
         boolean exact=hp!=null;
-        if(hp==null){int lower=vision.b3HpLowerBound(frame);if(vision.b22RestoredMaximum(frame)&&lower>0)hp=new int[]{lower,611045};}
-        record.put("b22HpEvidence",exact?"literal-ocr":"reviewed-max-glyph-and-current-fill-lower-bound");
-        if(hp==null||hp[1]!=611045||hp[0]<=0)return false;
+        record.put("b22HpEvidence",exact?"two-fresh-literal-maximum-reads":"unreadable");
+        if(!hpEvidence.matches(hp,time)||hp[0]<=0||hp[1]!=record.optInt("b22ExpectedRestoredMaxHp"))return false;
         record.put("b22HpOrLowerBound",hp[0]).put("b22ActualMaxHp",hp[1]).put("b22RecoveryVerifiedRound",round);
         if(!record.optBoolean("b22RecoveryEvidenceSaved")){save(frame,text,"progress-b22-recovery-verified",time,seq);record.put("b22RecoveryEvidenceSaved",true);}
         return true;

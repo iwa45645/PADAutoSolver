@@ -1,0 +1,63 @@
+{
+  "source": "native lucifer-stop-1791172834933.png",
+  "sourceSha256": "12f5d986cf94be655de451610782cb481c1a09ac5e536c6a979388b68171a358",
+  "observedFloor": 3,
+  "observedHp": [
+    244660,
+    612278
+  ],
+  "reviewedBoard": [
+    2,
+    4,
+    4,
+    4,
+    4,
+    1,
+    2,
+    4,
+    4,
+    4,
+    4,
+    1,
+    1,
+    4,
+    4,
+    4,
+    4,
+    1,
+    2,
+    4,
+    4,
+    4,
+    4,
+    2,
+    2,
+    4,
+    4,
+    4,
+    4,
+    2
+  ],
+  "regions": {
+    "b3-fact-face": [
+      180,
+      640,
+      530,
+      1030
+    ],
+    "b3-fact-full-hp": [
+      180,
+      1220,
+      1080,
+      1240
+    ]
+  },
+  "positiveFixture": "1px offset of same native frame; not independent live evidence",
+  "negativeFixtures": [
+    "b3-leonis-face.png",
+    "b2-lucifer-face.png"
+  ],
+  "strategyReference": "https://appmedia.jp/pazudora/5088673",
+  "strategyReadDate": "2026-10-07",
+  "leaderEvidence": "runtime-testing-2026-10-05.md B7 literal leader skill: Esper T +5; Mion water2 +3 and fixed22000000"
+}
