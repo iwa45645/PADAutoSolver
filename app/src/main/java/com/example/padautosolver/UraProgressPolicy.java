@@ -113,10 +113,21 @@ final class UraProgressPolicy {
             String dispatch,String pending,String turnProof,Integer sekkaRemaining) {
         return floor==9&&operation==0&&round==start&&sekkaRound>=0&&round-sekkaRound==3
             &&lastSkill==RUKA_RECOVERY&&skillRound==round-1&&"VERIFIED".equals(dispatch)&&"CHARGE".equals(pending)
-            &&"literal-next-floor-two-frames:9".equals(turnProof)&&Integer.valueOf(1).equals(sekkaRemaining);
+            &&"literal-next-floor-two-frames:9".equals(turnProof)&&(Integer.valueOf(1).equals(sekkaRemaining)||Integer.valueOf(4).equals(sekkaRemaining));
     }
     static boolean b9SkipCharge(int floor,int operation,int round,int start,int retainedShieldRound,Integer mionRemaining) {
-        return floor==9&&operation==1&&round==start&&retainedShieldRound==round&&Integer.valueOf(0).equals(mionRemaining);
+        return floor==9&&operation==1&&round>=start&&round-start<=3&&retainedShieldRound==start&&Integer.valueOf(0).equals(mionRemaining);
+    }
+    static boolean b9CooldownCourse(int round,int start,int initial,Integer remaining) {
+        return initial>=0&&initial<=3&&round>=start&&round-start<=initial
+            &&remaining!=null&&remaining==initial-(round-start);
+    }
+    /** Three reviewed ordinary enemies total 120160 raw damage; each input needs fresh HP evidence. */
+    static boolean safeB9DelayedCharge(byte[] board,int hp,int floor,int operation,int round,int start,int retainedShieldRound,int initial,Integer remaining,boolean reviewedTrio) {
+        if(!reviewedTrio||floor!=9||operation!=1||retainedShieldRound!=start||hp<350000
+            ||!b9CooldownCourse(round,start,initial,remaining)||remaining==null||remaining<=0||board==null||board.length!=30)return false;
+        for(byte orb:board)if(orb<0||orb>6)return false;
+        return true;
     }
     static boolean b22AttackAllowed(int operation,int round,int start,int recoveryRound,int odinRound,int skillRound,int lastSkill,int[] hp,int verifiedMaximum,boolean awokenNull) {
         return operation==4&&round==start+1&&recoveryRound==round&&odinRound==round&&skillRound==round&&lastSkill==MION

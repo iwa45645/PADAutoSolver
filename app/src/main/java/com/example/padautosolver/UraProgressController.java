@@ -125,7 +125,7 @@ final class UraProgressController {
         if(phase==25)return stop(frame,List.of(),"URA_SHURA_CLEAR_AND_RESULT_VERIFIED",time,seq);
         if(terminalOnly)return retry(frame,List.of(),"URA_TERMINAL_CLEAR_EVIDENCE_REQUIRED",time,seq);
         int hpLowerBound=0;
-        if(phase==15) {
+        if(phase==15||(phase==7&&floor==9&&record.has("b9InitialMionCooldown"))) {
             int[] hp=UraB3Policy.hp(nav.readUraHp(frame));hpEvidence.observe(hp,time,seq);
             int maximum=hpEvidence.maximum(time);hpLowerBound=vision.b3HpLowerBound(frame,maximum);
             record.put("observedMaxHp",maximum).put("hpLowerBound",hpLowerBound);
@@ -219,6 +219,20 @@ final class UraProgressController {
             StagePolicy.Decision d=action(new StagePolicy.Item("PROGRESS_CHARGE_READY",1115,1425),"B"+floor+"：ミオンの残りターンを確認",()->{phase=17;misses=0;});captureHeld(d,nav,"progress-charge-ready");return d;
         }
         if(phase==17) {
+            if(floor==9&&operation==1&&record.optInt("b9RetainedShieldRound",-1)==floorStartRound
+                &&held!=null&&(held.baseNamed(SKILLS[step])||heading)) {
+                if(!record.has("b9InitialMionCooldown")&&round==floorStartRound&&held.baseRemaining!=null&&held.baseRemaining>=0&&held.baseRemaining<=3)
+                    record.put("b9InitialMionCooldown",held.baseRemaining);
+                if(!UraProgressPolicy.b9CooldownCourse(round,floorStartRound,record.optInt("b9InitialMionCooldown",-1),held.baseRemaining))
+                    return stop(frame,List.of(),"PROGRESS_B9_DELAYED_CD_COURSE_REQUIRED",time,seq);
+                if(held.baseRemaining>0) {
+                    UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
+                    if(read==null||!vision.backControl(frame,read))return retry(frame,List.of(),"PROGRESS_B9_CHARGE_BACK_REQUIRED",time,seq);
+                    record.put("chargeMionRemaining",held.baseRemaining).put("b9DelayedChargeActive",true);
+                    save(frame,List.of(),"progress-b9-delay-readiness",time,seq);
+                    return action(read.back,"B9：実CDとHPを確認して回復で充填",()->{phase=15;prepared=false;misses=0;});
+                }
+            }
             if(held!=null&&(held.baseNamed(SKILLS[step])||heading)
                 &&UraProgressPolicy.b9SkipCharge(floor,operation,round,floorStartRound,record.optInt("b9RetainedShieldRound",-1),held.baseRemaining)) {
                 UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
@@ -249,10 +263,13 @@ final class UraProgressController {
             if(floor==20)safe=UraProgressPolicy.safeB20Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining);
             if(floor==21)safe=UraProgressPolicy.safeB21Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining,vision.distance(frame,"progress-b21-entry-hp.png",130,1205,940,50)<.025);
             if(floor==22)safe=UraProgressPolicy.safeB22Charge(board,hp,operation,round,floorStartRound,mionRemaining,vision.distance(frame,"progress-b22-entry-hp.png",130,1205,940,50)<.025);
+            boolean b9Delay=floor==9&&record.optBoolean("b9DelayedChargeActive");
+            if(b9Delay)safe=UraProgressPolicy.safeB9DelayedCharge(board,hp,floor,operation,round,floorStartRound,
+                record.optInt("b9RetainedShieldRound",-1),record.optInt("b9InitialMionCooldown",-1),mionRemaining,vision.b9RedRedKappa(frame));
             if(!enemy(frame)||mask(frame)!=expectedMask()||!safe)return retry(frame,List.of(),"PROGRESS_CHARGE_SHIELD_HP_REQUIRED",time,seq);
             if(floor==20)safe=UraProgressPolicy.safeB20Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining);
             if(!safe)return retry(frame,List.of(),"PROGRESS_B20_CHARGE_HP_OR_COOLDOWN_REQUIRED",time,seq);
-            List<Integer> route=UraChargeRoute.find(board,cols(),rows(),expectedMask(),floor==21||floor==22);misses=0;
+            List<Integer> route=b9Delay?UraChargeRoute.findHealing(board):UraChargeRoute.find(board,cols(),rows(),expectedMask(),floor==21||floor==22);misses=0;
             if(!prepared){prepareReceipt("CHARGE",mionRemaining);if(floor==22)record.put("b22ExpectedRestoredMaxHp",hpEvidence.maximum(time));record.put("chargeRoute",new JSONArray(route)).put("chargeHpLowerBound",hpLowerBound).put("chargeSourceBoard",array(board)).put("chargeCols",cols()).put("chargeRows",rows());save(frame,List.of(),"progress-charge-prepared",time,seq);prepared=true;return waitFor("残存軽減・HP下限・実コンボを再照合");}
             StagePolicy.Decision d=consumingAction(new StagePolicy.Item("PROGRESS_CHARGE",610,1700),"B"+floor+"：現在HPを確認し実コンボで充填",10,true,seq);puzzle(d,route);return d;
         }
@@ -280,6 +297,7 @@ final class UraProgressController {
             finishSkill();return waitFor("本体スキルの使用を確認済み");
         }
         if(phase==7) {
+            if(floor==9&&record.has("b9InitialMionCooldown")&&hpLowerBound<350000)return retry(frame,List.of(),"PROGRESS_B9_ATTACK_HP_REQUIRED",time,seq);
             if(cols()!=6||rows()!=5)return stop(frame,List.of(),"PROGRESS_ATTACK_LAYOUT_NOT_RESTORED",time,seq);
             byte[] board=board(frame);
             if(!enemy(frame)||mask(frame)!=expectedMask()||board==null)return retry(frame,List.of(),"PROGRESS_ATTACK_BOARD_REQUIRED",time,seq);
@@ -346,7 +364,9 @@ final class UraProgressController {
             if(!UraTurnProof.cooldown(record.optInt("pendingMionBefore",-1),held.baseRemaining,held.baseNamed(SKILLS[1])||heading,record.optLong("dispatchSequence",Long.MAX_VALUE),heldSequence))
                 return stop(frame,List.of(),"PROGRESS_TURN_NOT_VERIFIED:"+held.baseRemaining,time,seq);
             UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
-            Runnable finish=()->{try{verifyTurn("named-mion-cd:"+held.baseRemaining);phase=2;misses=0;persistState();}catch(Exception e){throw new IllegalStateException(e);}};
+            Runnable finish=()->{try{verifyTurn("named-mion-cd:"+held.baseRemaining);phase=2;
+                if(floor==9&&record.optBoolean("b9DelayedChargeActive")&&record.optString("pendingAction").equals("CHARGE")){operation=1;phase=16;}
+                misses=0;persistState();}catch(Exception e){throw new IllegalStateException(e);}};
             if(read!=null&&vision.backControl(frame,read))return action(read.back,"B"+floor+"：ターン確認を閉じる",finish);
             if(board(frame)==null)return retry(frame,List.of(),"PROGRESS_TURN_DIALOG_OR_BOARD_REQUIRED",time,seq);
             finish.run();return waitFor("実CDの減少を確認して次の手順へ");
