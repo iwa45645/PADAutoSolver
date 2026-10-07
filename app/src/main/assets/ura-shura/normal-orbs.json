@@ -8174,5 +8174,181 @@
   {
     "file": "stability-b10-expanded-oct7-4-41.png",
     "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-0-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-0-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-2-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-2-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-4-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-4-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-6-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-6-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-8-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-8-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-cycle-0-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-cycle-0-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-cycle-2-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-cycle-2-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-cycle-4-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-cycle-4-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-cycle-6-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-cycle-6-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-cycle-8-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-cycle-8-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-0-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-0-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-1-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-1-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-2-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-2-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-3-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-3-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-4-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-4-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-5-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-5-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-6-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-6-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-7-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-7-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-8-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-8-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-9-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-9-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-10-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-10-26.png",
+    "color": 0
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-11-9.png",
+    "color": 4
+  },
+  {
+    "file": "stability-b15-locked-oct7-extra-11-26.png",
+    "color": 0
   }
 ]

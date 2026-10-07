@@ -1,0 +1,117 @@
+{
+  "training": [
+    {
+      "source": "b15-locked-cycle-0.png",
+      "sha256": "324c5ba18a14df5e2fd3818e0395432a92f876fb223841976ccba8d3dae85c97"
+    },
+    {
+      "source": "b15-locked-cycle-2.png",
+      "sha256": "4c9ff333e58790cfe64badff1097760e939e9033e015f3b6c298fd5093deed39"
+    },
+    {
+      "source": "b15-locked-cycle-4.png",
+      "sha256": "859817187225b88f49c11a8ff31496df47fc6bfb2e7c576fa411606f18e4ecaf"
+    },
+    {
+      "source": "b15-locked-cycle-6.png",
+      "sha256": "67bc741bf0bbd76a848e63d903c8e8647b48e6343509043031b1d64073aff5f2"
+    },
+    {
+      "source": "b15-locked-cycle-8.png",
+      "sha256": "2706d4c7a45050607bc2ca66ca934406e5d9ce140343c95af7c8f45fa066ddf6"
+    },
+    {
+      "source": "b15-locked-extra-0.png",
+      "sha256": "1ddf06347d0c94fdc82ba5fc81fb21473ae160249b6fb88c92c8d75d232d6c18"
+    },
+    {
+      "source": "b15-locked-extra-1.png",
+      "sha256": "c8e8c506f772f695e0423a7b9cefacf376b0296d72c0fbadf9546386634e792d"
+    },
+    {
+      "source": "b15-locked-extra-2.png",
+      "sha256": "8361b75995cf2b8fd17b50ed19d18a8c10f36da1e772beb1cf55ff90f26eaaae"
+    },
+    {
+      "source": "b15-locked-extra-3.png",
+      "sha256": "788daecbac930654cd5c0150b54e9296fda2593d18854316711c5ff877e4a787"
+    },
+    {
+      "source": "b15-locked-extra-4.png",
+      "sha256": "611e7879f0cd8f9f9ca81231048af6bebe87ff48a30bef6bac64b4a0ca3f36ca"
+    },
+    {
+      "source": "b15-locked-extra-5.png",
+      "sha256": "a83d6d91afa0d8a8d1c956d2d49f24ded2f78799029f09aca094b98babbc0887"
+    },
+    {
+      "source": "b15-locked-extra-6.png",
+      "sha256": "33f659e5828261b76cfc86b4cd26cbbb208b62a630672cd322eb04636b91c7e5"
+    },
+    {
+      "source": "b15-locked-extra-7.png",
+      "sha256": "b99829eb078c12cdba8ff9e10b5504359733a42de28eb488880572429ed86c54"
+    },
+    {
+      "source": "b15-locked-extra-8.png",
+      "sha256": "42d20380902a56ea1143affe068c1059a5bedf1d2e89aab97936668e5e4e302d"
+    },
+    {
+      "source": "b15-locked-extra-9.png",
+      "sha256": "5595d0a49fab54dc6cab2c5231aea0bb5e62154ba867f74e2caa0f0ad7c205ea"
+    },
+    {
+      "source": "b15-locked-extra-10.png",
+      "sha256": "72e6173fe02478a0ea1ebb945d269231ca62f77027c276438eafa0342c317214"
+    },
+    {
+      "source": "b15-locked-extra-11.png",
+      "sha256": "bdc596f06d94f69677c7c18db74613a2c14be85c610d1e8ef9c2eb99171b0fa8"
+    }
+  ],
+  "heldout": {
+    "b15-locked-cycle-1.png": "14707a15ab8ad891cf00e735e2bfaedb9051e99a0d181eae9fce075797aef63c",
+    "b15-locked-cycle-3.png": "7a5f9eb22974474b238a5a13b99edeb341d1d2b43d0b2b99986c3bebd782bc4b",
+    "b15-locked-cycle-5.png": "2159f54aa522e9a161b6ba8864973344a90bbae861d0b744b86d578861097903",
+    "b15-locked-cycle-7.png": "3b74aeac93220dc6b7e5b2941e1755f066e806cb3e4e710a31b924a09d1ecebc",
+    "b15-locked-cycle-9.png": "2b3705725f89dcd80d887260818f172bd6d641b736cfc8631aef52311acb54b6",
+    "progress-stop-1791351134372.png": "67188474d0822ea5e37d9048a2cc9244fe820e793aa0a82f138c838288ef9166"
+  },
+  "board": [
+    2,
+    0,
+    1,
+    0,
+    2,
+    3,
+    4,
+    5,
+    0,
+    4,
+    5,
+    2,
+    1,
+    2,
+    5,
+    0,
+    4,
+    5,
+    3,
+    2,
+    4,
+    0,
+    1,
+    4,
+    5,
+    4,
+    0,
+    5,
+    2,
+    4
+  ],
+  "thresholds": [
+    0.07,
+    0.035
+  ],
+  "description": "Even real frames and separately captured extra frames train only locked dark9/fire26; independent odd frames and earlier stopped frame replay all30. Existing held-out payloads retained."
+}

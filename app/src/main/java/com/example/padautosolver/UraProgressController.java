@@ -276,7 +276,10 @@ final class UraProgressController {
             boolean b9Delay=floor==9&&record.optBoolean("b9DelayedChargeActive");
             if(b9Delay)safe=UraProgressPolicy.safeB9DelayedCharge(board,hp,floor,operation,round,floorStartRound,
                 record.optInt("b9RetainedShieldRound",-1),record.optInt("b9InitialMionCooldown",-1),mionRemaining,vision.b9RedRedKappa(frame));
-            if(!enemy(frame)||mask(frame)!=expectedMask()||!safe)return retry(frame,List.of(),"PROGRESS_CHARGE_SHIELD_HP_REQUIRED",time,seq);
+            boolean chargeEnemy=enemy(frame);long chargeMask=mask(frame);
+            record.put("chargeBoardKnown",board!=null).put("chargeBoardDistances",vision.boardDistances==null?new JSONArray():new JSONArray(vision.boardDistances))
+                .put("chargeEnemyMatched",chargeEnemy).put("chargeObservedMask",chargeMask).put("chargeSafe",safe);
+            if(!chargeEnemy||chargeMask!=expectedMask()||!safe)return retry(frame,List.of(),"PROGRESS_CHARGE_SHIELD_HP_REQUIRED",time,seq);
             if(floor==20)safe=UraProgressPolicy.safeB20Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining);
             if(!safe)return retry(frame,List.of(),"PROGRESS_B20_CHARGE_HP_OR_COOLDOWN_REQUIRED",time,seq);
             List<Integer> route=b9Delay||b11First?UraChargeRoute.findHealing(board):UraChargeRoute.find(board,cols(),rows(),expectedMask(),floor==21||floor==22);misses=0;
