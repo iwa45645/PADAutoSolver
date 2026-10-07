@@ -45,7 +45,7 @@ final class UraProgressController {
                     }
                     if(same&&(data.optInt("phase")==7||data.optInt("phase")==9)) {
                         byte[] before=c.vision.luciferBoard(old),current=c.vision.luciferBoard(live);
-                        if(data.optInt("floor")>=17&&data.optInt("floor")<=19){
+                        if(data.optInt("floor")>=17&&data.optInt("floor")<=19&&!data.optBoolean("b17PolluxNoSpinners")){
                             before=c.vision.rouletteBoard(old,UraDualRoulettePlan.MASK);current=c.vision.rouletteBoard(live,UraDualRoulettePlan.MASK);
                             same=c.vision.rouletteMask(old)==UraDualRoulettePlan.MASK&&c.vision.rouletteMask(live)==UraDualRoulettePlan.MASK;
                         }
@@ -174,6 +174,8 @@ final class UraProgressController {
         }
         if(phase==12)return stop(frame,List.of(),"B"+floor+"_CLEAR_VERIFIED_B"+(floor+1)+"_CAPTURE_REQUIRED",time,seq);
         if(phase==2) {
+            if(floor==17&&!record.optBoolean("b17PolluxNoSpinners")&&UraProgressPolicy.polluxEntry(floor,operation,round,floorStartRound,mask(frame),vision.b17Pollux(frame)))
+                record.put("b17PolluxNoSpinners",true).put("b17Variant","POLLUX_NO_ROULETTE");
             boolean matched=enemy(frame);long mask=mask(frame);byte[] current=board(frame);
             record.put("enemyMatched",matched).put("rouletteMask",mask).put("boardKnown",current!=null).put("boardCols",cols()).put("boardRows",rows()).put("boardDistances",vision.boardDistances==null?new JSONArray():new JSONArray(vision.boardDistances));
             // Only open the reviewed recovery skill while water's unmatchable marker obscures its artwork.
@@ -264,9 +266,9 @@ final class UraProgressController {
             if(floor==16&&operation==4)safe=UraProgressPolicy.safeB16SecondCharge(board,hp,floor,operation,round,floorStartRound,mionRemaining,
                 record.optBoolean("b16BuffsInvalidated"),vision.distance(frame,"progress-b16-half-hp.png",130,1205,940,50)<.025);
             if(dual()&&floor!=20)safe=UraProgressPolicy.safeB17Charge(board,mask(frame),hp,floor,round,sekkaRound,record.optInt("lastSkillRound",-1),mionRemaining);
-            if(floor==19)safe=UraProgressPolicy.safeB19FirstCharge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining,vision.distance(frame,"progress-b19-entry-hp.png",130,1205,940,50)<.025);
-            if(floor==20)safe=UraProgressPolicy.safeB20Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining);
-            if(floor==21)safe=UraProgressPolicy.safeB21Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining,vision.distance(frame,"progress-b21-entry-hp.png",130,1205,940,50)<.025);
+            if(floor==19)safe=UraProgressPolicy.safeB19FirstCharge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining,vision.distance(frame,"progress-b19-entry-hp.png",130,1205,940,50)<.025,record.optBoolean("b17PolluxNoSpinners"));
+            if(floor==20)safe=UraProgressPolicy.safeB20Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining,record.optBoolean("b17PolluxNoSpinners"));
+            if(floor==21)safe=UraProgressPolicy.safeB21Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining,vision.distance(frame,"progress-b21-entry-hp.png",130,1205,940,50)<.025,record.optBoolean("b17PolluxNoSpinners"));
             if(floor==22)safe=UraProgressPolicy.safeB22Charge(board,hp,operation,round,floorStartRound,mionRemaining,vision.distance(frame,"progress-b22-entry-hp.png",130,1205,940,50)<.025);
             if(floor==10)safe=UraProgressPolicy.safeB10Charge(board,hp,floor,operation,round,floorStartRound,
                 record.optInt("odinRound",-1),record.optInt("lastSkillRound",-1),record.optInt("lastSkill",-1),mionRemaining);
@@ -280,7 +282,7 @@ final class UraProgressController {
             record.put("chargeBoardKnown",board!=null).put("chargeBoardDistances",vision.boardDistances==null?new JSONArray():new JSONArray(vision.boardDistances))
                 .put("chargeEnemyMatched",chargeEnemy).put("chargeObservedMask",chargeMask).put("chargeSafe",safe);
             if(!chargeEnemy||chargeMask!=expectedMask()||!safe)return retry(frame,List.of(),"PROGRESS_CHARGE_SHIELD_HP_REQUIRED",time,seq);
-            if(floor==20)safe=UraProgressPolicy.safeB20Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining);
+            if(floor==20)safe=UraProgressPolicy.safeB20Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining,record.optBoolean("b17PolluxNoSpinners"));
             if(!safe)return retry(frame,List.of(),"PROGRESS_B20_CHARGE_HP_OR_COOLDOWN_REQUIRED",time,seq);
             List<Integer> route=b9Delay||b11First?UraChargeRoute.findHealing(board):UraChargeRoute.find(board,cols(),rows(),expectedMask(),floor==21||floor==22);misses=0;
             if(!prepared){prepareReceipt("CHARGE",mionRemaining);if(floor==22)record.put("b22ExpectedRestoredMaxHp",hpEvidence.maximum(time));record.put("chargeRoute",new JSONArray(route)).put("chargeHpLowerBound",hpLowerBound).put("chargeSourceBoard",array(board)).put("chargeCols",cols()).put("chargeRows",rows());save(frame,List.of(),"progress-charge-prepared",time,seq);prepared=true;return waitFor("残存軽減・HP下限・実コンボを再照合");}
@@ -336,10 +338,11 @@ final class UraProgressController {
                 record.put("sourceBoard",array(board)).put("route",new JSONArray(dualPlan.path)).put("dualRouletteProofPairs",100);
                 phase=9;prepared=false;save(frame,List.of(),"progress-dual-plan",time,seq);return waitFor("B"+floor+"：全100色組合せで水T字・水2セット・回復を検算済み");
             }
-            PuzzleGoal goal=PuzzleGoal.esperMionAndHeal();PuzzleSolver.Result result=PuzzleSolver.solve(board,6,5,44,2500,2400,goal);
+            PuzzleGoal goal=floor==17&&record.optBoolean("b17PolluxNoSpinners")?PuzzleGoal.esperMionSevenFirstAndHeal():PuzzleGoal.esperMionAndHeal();PuzzleSolver.Result result=PuzzleSolver.solve(board,6,5,44,2500,2400,goal);
             try{plan=new UraPuzzlePlan(board,result,goal,now());}catch(IllegalArgumentException e){return stop(frame,List.of(),"PROGRESS_NO_VALID_ROUTE:"+e.getMessage(),time,seq);}
             record.put("sourceBoard",array(board)).put("route",new JSONArray(plan.path)).put("predictedCombos",plan.stats.combos).put("waterCombos",plan.stats.colorCombos[3]).put("healCombos",plan.stats.colorCombos[5]);
             record.put("firstWaterT",plan.stats.firstTShapes[3]);
+            record.put("minimumFirstCombos",goal.minimumFirstCombos).put("firstWaveCombos",Arrays.stream(plan.stats.firstColorCombos).sum());
             phase=9;prepared=false;save(frame,List.of(),"progress-plan",time,seq);return waitFor("B"+floor+"：水2セット＋回復の経路を再照合");
         }
         if(phase==9) {
@@ -363,7 +366,7 @@ final class UraProgressController {
             if(!plan.current(board,checkedAt)||currentMask!=0)return stop(frame,List.of(),"PROGRESS_STALE_PLAN",time,seq);
             if(!enemy(frame))return waitFor("B"+floor+"：敵の発光が収まった画面を待機");
             if(!prepared){prepareReceipt("ATTACK",2);save(frame,List.of(),"progress-puzzle-prepared",time,seq);prepared=true;return waitFor("B"+floor+"：送信直前の盤面を再照合");}
-            StagePolicy.Decision d=consumingAction(new StagePolicy.Item("PROGRESS_PUZZLE",610,1700),"B"+floor+"：水T字・水2セット＋回復で攻撃",10,true,seq);puzzle(d,plan.path);return d;
+            StagePolicy.Decision d=consumingAction(new StagePolicy.Item("PROGRESS_PUZZLE",610,1700),"B"+floor+"：水T字・水2セット＋回復"+(plan.goal.minimumFirstCombos>0?"・初手7コンボ":"")+"で攻撃",10,true,seq);puzzle(d,plan.path);return d;
         }
         if(phase==10) {
             List<StagePolicy.Item> text=nav.readUraCombat(frame);if(UraCombatText.blocked(text))return stop(frame,text,"PROGRESS_GAME_OVER_OR_PURCHASE",time,seq);
@@ -469,9 +472,10 @@ final class UraProgressController {
         return vision.progressBoard(frame,cols(),rows());
     }
     private long mask(Bitmap frame)throws Exception {return vision.rouletteMask(frame,cols(),rows());}
-    private boolean dual(){return floor>=17&&floor<=19||(floor==20||floor==21)&&expectedMask()==UraDualRoulettePlan.MASK;}
-    private long expectedMask(){return floor==21?round==floorStartRound?UraDualRoulettePlan.MASK:0:floor==20?UraProgressPolicy.b20Mask(round,floorStartRound):floor>=17&&floor<=19?UraDualRoulettePlan.MASK:0;}
+    private boolean dual(){return floor>=17&&floor<=21&&expectedMask()==UraDualRoulettePlan.MASK;}
+    private long expectedMask(){return UraProgressPolicy.expectedMask(floor,round,floorStartRound,record.optBoolean("b17PolluxNoSpinners"));}
     private boolean enemy(Bitmap frame)throws Exception {
+        if(floor==17&&record.optBoolean("b17PolluxNoSpinners"))return vision.b17Pollux(frame);
         if(floor==9&&vision.b9RedRedKappa(frame))return true;
         double best=1;for(int dx=-12;dx<=12;dx+=6)for(int dy=-12;dy<=12;dy+=6)best=Math.min(best,vision.distance(frame,"progress-b"+floor+"-enemy.png",260+dx,650+dy,550,500));return best<.055;
     }

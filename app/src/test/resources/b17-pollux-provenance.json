@@ -1,0 +1,17 @@
+{
+  "reference": "progress-stop-1791353488902.png",
+  "referenceSha256": "0075ae09330465338859df2abdc8124cec4cd6468fda642055f7047a7b92da8c",
+  "heldout": "b17-pollux-independent.png",
+  "heldoutSha256": "48167e3437766894dcdbe606a698e63f18263aa6195e185fe085fc8ec4430bec",
+  "negative": "Existing Castor enemy reference",
+  "roi": [
+    260,
+    650,
+    550,
+    500
+  ],
+  "limit": 0.055,
+  "floor": 17,
+  "nativeCombatDispatched": false,
+  "source": "https://appmedia.jp/pazudora/5088688"
+}

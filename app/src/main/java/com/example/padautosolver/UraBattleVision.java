@@ -64,6 +64,11 @@ final class UraBattleVision {
             best=Math.min(best,distance(frame,"progress-b9-red-red-kappa.png",40+dx,650+dy,1140,500));
         return best<.055;
     }
+    boolean b17Pollux(Bitmap frame)throws Exception {
+        double best=1;for(int dx=-12;dx<=12;dx+=6)for(int dy=-12;dy<=12;dy+=6)
+            best=Math.min(best,distance(frame,"progress-b17-pollux.png",260+dx,650+dy,550,500));
+        return best<.055;
+    }
     private boolean b5Enemy(Bitmap frame,String reference)throws Exception {
         if(frame.getWidth()!=1220||frame.getHeight()!=2712)return false;
         double best=1;

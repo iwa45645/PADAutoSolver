@@ -7,16 +7,21 @@ public final class PuzzleGoal {
     public final Type type;
     public final int color, exactCombos;
     public final boolean requiresComboDrop;
+    public final int minimumFirstCombos;
     public PuzzleGoal(Type type, int color, int exactCombos) {
         this(type,color,exactCombos,false);
     }
     public PuzzleGoal(Type type, int color, int exactCombos, boolean requiresComboDrop) {
+        this(type,color,exactCombos,requiresComboDrop,0);
+    }
+    private PuzzleGoal(Type type,int color,int exactCombos,boolean requiresComboDrop,int minimumFirstCombos) {
         if (type == null || color < 0 || color > 9 || exactCombos < 0 || exactCombos > (type==Type.CLEAR_COLOR?30:21))
             throw new IllegalArgumentException("Invalid goal");
         if (type == Type.SPECIAL_LUCIFER || type == Type.STALL)
             throw new IllegalArgumentException("Verified instruction/survival conditions required");
         this.type = type; this.color = color; this.exactCombos = exactCombos;
         this.requiresComboDrop=requiresComboDrop;
+        this.minimumFirstCombos=minimumFirstCombos;
     }
     public static PuzzleGoal water() { return new PuzzleGoal(Type.WATER_TWO_COMBOS, 3, 0); }
     public static PuzzleGoal clearColor(int color,int count) {
@@ -27,7 +32,10 @@ public final class PuzzleGoal {
     // Legacy Mion-only goal; does not claim Esper's T-shape leader activation.
     public static PuzzleGoal esperMion() { return water(); }
     public static PuzzleGoal esperMionAndHeal() { return new PuzzleGoal(Type.WATER_TWO_COMBOS_HEAL_AND_T,3,0); }
+    public static PuzzleGoal esperMionSevenFirstAndHeal() { return new PuzzleGoal(Type.WATER_TWO_COMBOS_HEAL_AND_T,3,0,false,7); }
+    private int firstCombos(PuzzleSolver.MatchStats s){int count=0;for(int n:s.firstColorCombos)count+=n;return count;}
     boolean satisfied(PuzzleSolver.MatchStats s, int cells) {
+        if(firstCombos(s)<minimumFirstCombos)return false;
         if(requiresComboDrop && s.comboDropsMatched==0)return false;
         switch (type) {
             case WATER_TWO_COMBOS: return s.colorCombos[3] >= 2;
@@ -60,6 +68,7 @@ public final class PuzzleGoal {
     int score(PuzzleSolver.MatchStats s, int cells) {
         int preference = (type == Type.NO_COMBO || type == Type.EXACT_COMBO) ? -s.matched : s.combos * 100 + s.matched;
         return (satisfied(s, cells) ? 1000000 : 0) + progress(s) + preference + Math.min(1,s.colorCombos[5]) * 20
+                + (minimumFirstCombos>0?Math.min(minimumFirstCombos,firstCombos(s))*5000:0)
                 + (requiresComboDrop ? Math.min(1,s.comboDropsMatched)*30000 : 0);
     }
 }
