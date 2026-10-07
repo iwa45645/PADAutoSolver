@@ -108,3 +108,20 @@ dev82の[Actions 37565932582](https://github.com/iwa45645/PADAutoSolver/actions/
 同じdev82のままB6デネボラに本体が引き継いだ。Progress runId `a1316f97-e64c-4045-a85a-204b843d7041`。12:19:52セッカ発動/CD4確認、12:20:19充填、12:21実ミオンCD1→0でturnを確定、12:21:21ミオン発動/CD2確認、12:21:44最初の水T字攻撃。超根性95%を残した実B6、12:22にミオンCD2→1を取得したが、12:22:40 `PROGRESS_TURN_DIALOG_OR_BOARD_REQUIRED` で停止。`progress-stop-1791343358062.json/png` はoperation4/phase19/round1、ACKNOWLEDGED/awaitingTurn=true。画像は戦闘画面、実HP606287/612892、右下の強化火cell27が既存参照.07568で未知。前回のboardKnown=trueは操作準備時の診断で、停止画像の全マス読取成功を示すものではない。
 
 dev83/versionCode86は強化火cell27/29の表示10種類を偶数実キャプチャから追加。奇数5枚とそれ以前の停止画像の全30マスを独立fixtureにし、同一のnative classifierで180マスを照合。既存9枚の毒盤面270マスも新しい参照一式で再検査。距離.07/分離margin.035は維持。操作・turn・resumeのロジックは変更せず、再開時は新しいミオンCD読取と全盤面認識からturnを確認し、既存攻撃を再送しない。272 JVM・固定署名Release・両lintローカル成功。CIと実機続行は取得後に追記。
+
+
+dev83 [Actions 37566795872](https://github.com/iwa45645/PADAutoSolver/actions/runs/37566795872)はsigned-preview成功、buildは追加テスト2件のmanifest hash不一致で失敗。Windows実ファイルCRLF、GitのLinux checkout LFで、JSON内容に差がなくてもbyte hashが異なった。改行だけをLFへ正規化して全内容hashを照合する修正をdev84に含めた。PNGのbyte hash、画素、認識閾値は変更していない。修正後272件のローカル再実行成功。失敗CIを成功と扱わない。
+
+dev83本体を12:28:04に再開。初回攻撃は再送せずミオンCDを読み直し、round2へ進む。エスペル使用/CD5、1回の充填と実CD確認、12:30:01ミオン使用/CD2を確認。12:30:14オーディン残り0を読み取ったが名前が「神泉植グングニール」のため、12:30:26発動前に停止 (`progress-stop-1791343824360.json/png`)。同run operation7/phase14/round3、オーディン未使用、ミオン使用は同roundでVERIFIED。実HP560056/612892、敵属性吸収は残り7。
+
+dev84/versionCode87はオーディンの本体見出し「神泉槍グングニール」をROI(130,230,490,50)、距離.025で照合する。10/7の未使用実tooltipを参照とし、10/5の独立B20/B22使用後CD5画像で一致(.000822)、セッカ・ルカ・ミオン・空白で不一致を検証。過去CD5画像は名前の判別テスト用であり、現在の使用後CD証拠として流用しない。現在の0/発動後5、named modalと有効な本体ボタンの照合を維持し、OCR文字置換は追加していない。273 JVM・固定署名Release・両lintローカル成功。CIと実機続行は取得後に追記。
+
+
+dev84 [Actions 37567472627](https://github.com/iwa45645/PADAutoSolver/actions/runs/37567472627)はbuild/signed-preview両job成功。Linuxでも273件のJVMテスト成功。12:36:30に本体再開し、未使用オーディン実CD0を確認。12:36:47オーディン1回発動、12:36:50の新しい実tooltipでCD5と見出しを確認 (`progress-held-1791344211796.json/png`)。ミオンはround3の既存VERIFIED記録を維持し、再発動なし。12:37:12二回目の水T字・水2セット・回復攻撃。12:37:38〜46の実メニューでBattle7/22を2枚確認 (`progress-floor-1791344262347.json/png`)、次階層の証拠でturn/receiptをVERIFIEDに更新し、B7へ自動進行。
+
+この到達はdev74の中断試行をdev75〜84で更新/再開した開発検証。新規潜入試行合計3、無中断クリア0。同一最終APK20試行/95%以上/誤操作0は未達。B6以降のCD/次階層によるturn確認は実機で確認したが、B1〜B5のreceipt/turn共通化、PNG/JSONの共通hash確定、全分岐は未完了。
+
+
+dev84ではB7の実階層を確認後、12:38:27セッカ1回発動、使用後CD4・同round4のshield記録をVERIFIEDにした。しかしコンボドロップ付きの木cell2が距離.08459で未知のため、12:38:47 `PROGRESS_POST_DIALOG_OR_BOARD_REQUIRED` で停止 (`progress-stop-1791344325590.json/png`)。operation0/phase6/round4、セッカ使用済み。次の充填・ミオン・攻撃は未送信。
+
+dev85/versionCode88はコンボ木cell2の実表示を追加。最初の偶数5参照は発光中に偏り、独立fixtureの静止時を未知として検出した。失敗fixtureを参照へ流用せず、別の時点で追加6フレームを撮影し、静止時・発光時の計11参照にした。最初の奇数5枚とそれ以前の停止画像180マスを再検査。最新参照一式で強化火180マスと毒270マスも検査し、距離.07/分離margin.035を維持。274 JVM、固定署名Release、両lintローカル成功。セッカを再発動せずphase5の使用後観察から本体で再開。CIと実機結果は取得後に追記。

@@ -1,0 +1,126 @@
+{
+  "description": "Five even training frames plus six newly captured quiet/glowing phases of reviewed combo wood cell2. Earlier odd frames and original stop remain independent full-board fixtures. Thresholds .07/.035 unchanged.",
+  "training": [
+    {
+      "file": "stability-b7-combo-wood-oct7-0.png",
+      "color": 2,
+      "cell": 2,
+      "source": "b7-combo-wood-cycle-0.png",
+      "sourceSha256": "925cd8ae51bdc38154b1403d64f2e1e23a8a81c526a78315dc9ddef95adf281e"
+    },
+    {
+      "file": "stability-b7-combo-wood-oct7-2.png",
+      "color": 2,
+      "cell": 2,
+      "source": "b7-combo-wood-cycle-2.png",
+      "sourceSha256": "41dbadc8633d287053a33732b961bca6cd99d13d09d46a5429bcc0010f26aced"
+    },
+    {
+      "file": "stability-b7-combo-wood-oct7-4.png",
+      "color": 2,
+      "cell": 2,
+      "source": "b7-combo-wood-cycle-4.png",
+      "sourceSha256": "1f781165a4abe873433fe43fe0283ba5729aba4c29522893663f43a537bc1fdf"
+    },
+    {
+      "file": "stability-b7-combo-wood-oct7-6.png",
+      "color": 2,
+      "cell": 2,
+      "source": "b7-combo-wood-cycle-6.png",
+      "sourceSha256": "fddd3574d689abf099431706542853862abdba90118483344249627ea3a9a250"
+    },
+    {
+      "file": "stability-b7-combo-wood-oct7-8.png",
+      "color": 2,
+      "cell": 2,
+      "source": "b7-combo-wood-cycle-8.png",
+      "sourceSha256": "2fd73d701701a1df0c4d770236cd98d9392cee877627c98a3bfb3bc291d2879e"
+    },
+    {
+      "file": "stability-b7-combo-wood-oct7-extra-0.png",
+      "color": 2,
+      "cell": 2,
+      "source": "b7-combo-wood-train-extra-0.png",
+      "sourceSha256": "3cbfd0f7b3f7e39290898808867fbbf6a1ce96e9adf4e9f34685e5944b980815"
+    },
+    {
+      "file": "stability-b7-combo-wood-oct7-extra-1.png",
+      "color": 2,
+      "cell": 2,
+      "source": "b7-combo-wood-train-extra-1.png",
+      "sourceSha256": "49f3d5bb31b4a37fa1f71b38680c5d1b162525a3eef36873e2e8c4e92649bf0e"
+    },
+    {
+      "file": "stability-b7-combo-wood-oct7-extra-2.png",
+      "color": 2,
+      "cell": 2,
+      "source": "b7-combo-wood-train-extra-2.png",
+      "sourceSha256": "5ba449c4168b53f0135760278fb4843781d4518e1a1395ad6ef859ee5e52c7e0"
+    },
+    {
+      "file": "stability-b7-combo-wood-oct7-extra-3.png",
+      "color": 2,
+      "cell": 2,
+      "source": "b7-combo-wood-train-extra-3.png",
+      "sourceSha256": "ac68252de2ac766378650759d9883cd3f2725be2cfb62a0aeef32225eaf4d4a5"
+    },
+    {
+      "file": "stability-b7-combo-wood-oct7-extra-4.png",
+      "color": 2,
+      "cell": 2,
+      "source": "b7-combo-wood-train-extra-4.png",
+      "sourceSha256": "249d76f4628612a18003045a26b3e887902ab6ac2a935331e82269e1e0d25990"
+    },
+    {
+      "file": "stability-b7-combo-wood-oct7-extra-5.png",
+      "color": 2,
+      "cell": 2,
+      "source": "b7-combo-wood-train-extra-5.png",
+      "sourceSha256": "9ba82f4fabdfed8207bba4953e9551e9786ad85a9c4276b81774c162e374eeda"
+    }
+  ],
+  "heldout": {
+    "b7-combo-wood-cycle-1.png": "f3f54c0008ff1c4d2107d062c6572106c5d2ba6fce2de0200dac430046794449",
+    "b7-combo-wood-cycle-3.png": "ca371dd17a655280cb50fc38b2e8811deb3ab7127eef2ed72ff933ea06c53261",
+    "b7-combo-wood-cycle-5.png": "d7ddebe2ddd573e1bb63e25019edd2892af55b49503d2d2d9bf4688de33e0f47",
+    "b7-combo-wood-cycle-7.png": "f6af08b69185db155b0f2ae0f34ccb42527fe11b2d9ed55de27ed3eae3c4c477",
+    "b7-combo-wood-cycle-9.png": "15f382903e0d83ec5816bf267900a629e8568306c43c7d5110251ec02b97ac86",
+    "progress-stop-1791344325590.png": "09120d6e5a207b7a366d3bfc095673403baad621fac9691331a5dbac31cdcb1e"
+  },
+  "board": [
+    3,
+    3,
+    2,
+    4,
+    2,
+    5,
+    4,
+    3,
+    0,
+    0,
+    4,
+    4,
+    0,
+    5,
+    4,
+    2,
+    0,
+    0,
+    4,
+    4,
+    3,
+    5,
+    2,
+    3,
+    5,
+    3,
+    2,
+    4,
+    3,
+    0
+  ],
+  "runId": "a1316f97-e64c-4045-a85a-204b843d7041",
+  "floor": 7,
+  "sekkaAlreadyVerified": true,
+  "sekkaRemaining": 4
+}
