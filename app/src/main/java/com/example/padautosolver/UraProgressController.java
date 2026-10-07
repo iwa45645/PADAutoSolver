@@ -255,6 +255,8 @@ final class UraProgressController {
             if(floor==20)safe=UraProgressPolicy.safeB20Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining);
             if(floor==21)safe=UraProgressPolicy.safeB21Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining,vision.distance(frame,"progress-b21-entry-hp.png",130,1205,940,50)<.025);
             if(floor==22)safe=UraProgressPolicy.safeB22Charge(board,hp,operation,round,floorStartRound,mionRemaining,vision.distance(frame,"progress-b22-entry-hp.png",130,1205,940,50)<.025);
+            if(floor==10)safe=UraProgressPolicy.safeB10Charge(board,hp,floor,operation,round,floorStartRound,
+                record.optInt("odinRound",-1),record.optInt("lastSkillRound",-1),record.optInt("lastSkill",-1),mionRemaining);
             boolean b9Delay=floor==9&&record.optBoolean("b9DelayedChargeActive");
             if(b9Delay)safe=UraProgressPolicy.safeB9DelayedCharge(board,hp,floor,operation,round,floorStartRound,
                 record.optInt("b9RetainedShieldRound",-1),record.optInt("b9InitialMionCooldown",-1),mionRemaining,vision.b9RedRedKappa(frame));

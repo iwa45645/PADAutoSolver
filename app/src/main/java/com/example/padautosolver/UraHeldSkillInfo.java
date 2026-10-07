@@ -66,7 +66,7 @@ final class UraHeldSkillInfo {
         for(var line:lines)if(line.text.startsWith("UCD1_")||line.text.startsWith("UCD2_")) {
             int index=line.text.charAt(3)-'1';String tail=line.text.substring(5);
             // The calibrated cooldown column sometimes omits the kana ター; digits remain literal.
-            Matcher m=Pattern.compile("^あと([0-9]{1,3})(?:ターン|ーン)$").matcher(tail);
+            Matcher m=Pattern.compile("^あと([0-9]{1,3})(?:ターン|ーン|ター)$").matcher(tail);
             Integer n=null;
             if(m.find())n=Integer.valueOf(m.group(1));
             else if(tail.equals("使用可能"))n=Integer.valueOf(0);

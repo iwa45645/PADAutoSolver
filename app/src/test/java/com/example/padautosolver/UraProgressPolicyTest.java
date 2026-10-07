@@ -3,6 +3,18 @@ import java.util.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 public class UraProgressPolicyTest {
+    @Test public void b10FirstChargeNeedsActualHpAndCurrentOdinProofWithoutExpiredShield(){
+        assertTrue(UraProgressPolicy.safeB10Charge(new byte[42],350000,10,1,8,8,8,8,3,1));
+        assertFalse(UraProgressPolicy.safeB10Charge(new byte[42],349999,10,1,8,8,8,8,3,1));
+        assertFalse(UraProgressPolicy.safeB10Charge(new byte[42],350000,10,1,9,8,9,9,3,1));
+        assertFalse(UraProgressPolicy.safeB10Charge(new byte[42],350000,10,2,8,8,8,8,3,1));
+        assertFalse(UraProgressPolicy.safeB10Charge(new byte[42],350000,10,1,8,8,7,8,3,1));
+        assertFalse(UraProgressPolicy.safeB10Charge(new byte[42],350000,10,1,8,8,8,8,1,1));
+        assertFalse(UraProgressPolicy.safeB10Charge(new byte[30],350000,10,1,8,8,8,8,3,1));
+        assertFalse(UraProgressPolicy.safeB10Charge(new byte[42],350000,10,1,8,8,8,8,3,0));
+        assertFalse(UraProgressPolicy.safeB10Charge(new byte[42],350000,10,1,8,8,8,8,3,null));
+        byte[] damaged=new byte[42];damaged[5]=8;assertFalse(UraProgressPolicy.safeB10Charge(damaged,350000,10,1,8,8,8,8,3,1));
+    }
     @Test public void b19HasteCannotUseTheWrongLayerOrGuessOverchargedBaseReadiness(){
         assertTrue(UraProgressPolicy.yukineAssistReady(new UraHeldSkillInfo("雪花の氷乱","10連ガチャパワー",-1,0)));
         assertFalse(UraProgressPolicy.yukineAssistReady(new UraHeldSkillInfo("雪花の氷乱","10連ガチャパワー",0,0)));

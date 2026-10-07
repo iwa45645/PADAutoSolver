@@ -3,6 +3,13 @@ import org.junit.Test;
 import java.util.List;
 import static org.junit.Assert.*;
 public class UraHeldSkillInfoTest {
+ @Test public void calibratedB10ColumnCanLoseFinalKanaWithoutInventingIdentity(){
+  var info=UraHeldSkillInfo.readBase(List.of(new StagePolicy.Item("スキルT:7リリアントコンチェルト",365,923),new StagePolicy.Item("あと1ターン",1043,923),item("UCD1_停止"),item("UCD1_あと1ター"),item("UCD2_あと17ターン")));
+  assertNotNull(info);assertEquals(Integer.valueOf(1),info.baseRemaining);assertFalse(info.baseNamed("ブリリアントコンチェルト"));
+  assertNull(UraHeldSkillInfo.readBase(List.of(item("UCD1_あとTター"))));
+  assertNull(UraHeldSkillInfo.readBase(List.of(item("UCD1_あと1ターンXX"))));
+  assertNull(UraHeldSkillInfo.readBase(List.of(item("スキル1:ブリリアントコンチェルトあと1ターン"),item("UCD1_あと2ター"))));
+ }
  @Test public void actualYukineFiveVersusFifteenConflictRequiresAnotherImageRead(){
   assertNull(UraHeldSkillInfo.read(List.of(item("スキル1:雪雲の一変使用可能"),item("スキル2:10連ガチャパワーあと5ターン"),item("UCD1_使用可能"),item("UCD2_あと15ターン"))));
   var fresh=UraHeldSkillInfo.read(List.of(item("スキル1:雪雲の一変使用可能"),item("スキル2:10連ガチャパワーあと15ターン"),item("UCD1_使用可能"),item("UCD2_あと15ターン")));

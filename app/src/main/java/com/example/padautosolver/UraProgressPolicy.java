@@ -129,6 +129,13 @@ final class UraProgressPolicy {
         for(byte orb:board)if(orb<0||orb>6)return false;
         return true;
     }
+    /** Reviewed Perseus entry, one charge only; do not assume an expired Sekka shield. */
+    static boolean safeB10Charge(byte[] board,int hp,int floor,int operation,int round,int start,int odinRound,int skillRound,int lastSkill,Integer remaining) {
+        if(floor!=10||operation!=1||round!=start||odinRound!=round||skillRound!=round||lastSkill!=ODIN
+            ||hp<350000||!Integer.valueOf(1).equals(remaining)||board==null||board.length!=42)return false;
+        for(byte orb:board)if(orb<0||orb>6)return false;
+        return true;
+    }
     static boolean b22AttackAllowed(int operation,int round,int start,int recoveryRound,int odinRound,int skillRound,int lastSkill,int[] hp,int verifiedMaximum,boolean awokenNull) {
         return operation==4&&round==start+1&&recoveryRound==round&&odinRound==round&&skillRound==round&&lastSkill==MION
             &&hp!=null&&verifiedMaximum>=100000&&hp[1]==verifiedMaximum&&hp[0]>0&&hp[0]<=hp[1]&&!awokenNull;
