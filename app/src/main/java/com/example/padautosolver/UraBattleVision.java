@@ -20,6 +20,13 @@ final class UraBattleVision {
         Bitmap a=Bitmap.createScaledBitmap(crop,48,32,true),b=Bitmap.createScaledBitmap(ref,48,32,true);
         try{return TeamIconMatch.distance(pixels(a),pixels(b));}finally{if(a!=crop)a.recycle();crop.recycle();if(b!=ref)b.recycle();}
     }
+    double b19BarDistance(Bitmap frame,boolean half)throws Exception {
+        Bitmap ref=template(half?"progress-b19-half-hp.png":"progress-b19-entry-hp.png");
+        Bitmap crop=Bitmap.createBitmap(frame,130,1205,940,50);
+        Bitmap a=Bitmap.createScaledBitmap(crop,48,32,true),b=Bitmap.createScaledBitmap(ref,48,32,true);
+        try{return UraEnemyHpBar.distance(pixels(b),pixels(a));}
+        finally{if(a!=crop)a.recycle();crop.recycle();if(b!=ref)b.recycle();}
+    }
     /** Literal reviewed 13/22 glyphs, at the menu's calibrated position; no OCR replacement. */
     boolean menuFloor13(Bitmap frame)throws Exception {
         Bitmap ref=template("menu-floor13.png");int errors=0;

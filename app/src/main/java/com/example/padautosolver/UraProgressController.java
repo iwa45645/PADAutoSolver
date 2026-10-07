@@ -186,7 +186,7 @@ final class UraProgressController {
             if(operation>=script.length)return stop(frame,List.of(),"PROGRESS_SCRIPT_NOT_CLEARED",time,seq);
             if(floor==22&&operation>=2&&!verifyB22Recovery(frame,nav,time,seq))return retry(frame,List.of(),"PROGRESS_B22_AWAKENINGS_HP_RESTORE_REQUIRED",time,seq);
             int op=script[operation];prepared=false;
-            if(op==UraProgressPolicy.YUKINE_ASSIST&&!UraProgressPolicy.b19HasteAllowed(floor,operation,round,floorStartRound,vision.distance(frame,"progress-b19-half-hp.png",130,1205,940,50)<.025))return stop(frame,List.of(),"PROGRESS_B19_HALF_HP_REQUIRED",time,seq);
+            if(op==UraProgressPolicy.YUKINE_ASSIST&&!UraProgressPolicy.b19HasteAllowed(floor,operation,round,floorStartRound,vision.b19BarDistance(frame,true)<.025))return stop(frame,List.of(),"PROGRESS_B19_HALF_HP_REQUIRED",time,seq);
             if(op==UraProgressPolicy.CHARGE){step=UraProgressPolicy.MION;phase=16;}
             else if(op==UraProgressPolicy.ATTACK)phase=7;
             else {step=op;phase=13;}
@@ -270,7 +270,10 @@ final class UraProgressController {
             if(floor==16&&operation==4)safe=UraProgressPolicy.safeB16SecondCharge(board,hp,floor,operation,round,floorStartRound,mionRemaining,
                 record.optBoolean("b16BuffsInvalidated"),vision.distance(frame,"progress-b16-half-hp.png",130,1205,940,50)<.025);
             if(dual()&&floor!=20)safe=UraProgressPolicy.safeB17Charge(board,mask(frame),hp,floor,round,sekkaRound,record.optInt("lastSkillRound",-1),mionRemaining);
-            if(floor==19)safe=UraProgressPolicy.safeB19FirstCharge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining,vision.distance(frame,"progress-b19-entry-hp.png",130,1205,940,50)<.025,record.optBoolean("b17PolluxNoSpinners"));
+            if(floor==19){
+                double bars=vision.b19BarDistance(frame,false);record.put("b19EntryBarDistance",bars);
+                safe=UraProgressPolicy.safeB19FirstCharge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining,bars<.025,record.optBoolean("b17PolluxNoSpinners"));
+            }
             if(floor==20)safe=UraProgressPolicy.safeB20Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining,record.optBoolean("b17PolluxNoSpinners"));
             if(floor==21)safe=UraProgressPolicy.safeB21Charge(board,mask(frame),hp,operation,round,floorStartRound,mionRemaining,vision.distance(frame,"progress-b21-entry-hp.png",130,1205,940,50)<.025,record.optBoolean("b17PolluxNoSpinners"));
             if(floor==22)safe=UraProgressPolicy.safeB22Charge(board,hp,operation,round,floorStartRound,mionRemaining,vision.distance(frame,"progress-b22-entry-hp.png",130,1205,940,50)<.025);

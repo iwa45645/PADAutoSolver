@@ -1,0 +1,32 @@
+{
+  "sources": [
+    {
+      "name": "progress-b19-entry-hp.png",
+      "sha256": "bf2e486cdb2d5ecf67b2f1e56c0a042ff7e3010fe487f41737b88f9894ec076a"
+    },
+    {
+      "name": "progress-b19-half-hp.png",
+      "sha256": "02e0f51a4fc03579a9925009dc73cdb5c66a6b72c3e551e8612602b4583fbe8c"
+    },
+    {
+      "name": "progress-stop-1791355244753.png",
+      "sha256": "724865b373ec85d852a0daefa3ae2c7b878a9ca0f482a46216536724dc741064"
+    },
+    {
+      "name": "b19-entry-independent.png",
+      "sha256": "f2a6017095eb2f626960f41a5c4bdf932fb51e1eab33c63b8ba9035cfd0e4eee"
+    }
+  ],
+  "heldout": "b19-entry-independent.png",
+  "roi": [
+    130,
+    1205,
+    940,
+    50
+  ],
+  "referenceColors": "purple/cyan full, red/yellow half",
+  "currentColors": "yellow/red full",
+  "limit": 0.025,
+  "nativeB19ChargeDispatched": false,
+  "source": "https://appmedia.jp/pazudora/5088688"
+}
