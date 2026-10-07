@@ -9,6 +9,18 @@ public class UraCombatTextTest {
   assertFalse(UraCombatText.blocked(List.of(i("5ターンの間、最大HPの40%分のHPを回復"))));
  }
  private StagePolicy.Item i(String s){return new StagePolicy.Item(s,610,1375);}
+ @Test public void misreadHeaderWithRealMenuControlsPermitsOnlyASeparateRead(){
+  var menu=List.of(new StagePolicy.Item("戻る",610,2150),new StagePolicy.Item("状況確認",610,1373),
+    new StagePolicy.Item("入手アイテム確認",610,1762),new StagePolicy.Item("裏魔門の寺護者",845,900),new StagePolicy.Item("BattHe 4/22",610,1006));
+  assertTrue(UraCombatText.menuLayout(menu));assertFalse(UraCombatText.joined(menu).contains("裏魔門の守護者"));
+  assertEquals(-1,UraCombatText.floor(menu));
+ }
+ @Test public void missingMisplacedOrPurchaseMenuDoesNotPermitHeaderRecovery(){
+  assertFalse(UraCombatText.menuLayout(List.of(new StagePolicy.Item("戻る",610,2150),new StagePolicy.Item("状況確認",610,1373))));
+  assertFalse(UraCombatText.menuLayout(List.of(i("戻る"),i("状況確認"),i("入手アイテム確認"))));
+  assertFalse(UraCombatText.menuLayout(List.of(new StagePolicy.Item("戻る",610,2150),new StagePolicy.Item("状況確認",610,1373),
+    new StagePolicy.Item("入手アイテム確認",610,1762),i("魔法石を使用"))));
+ }
  @Test public void onlyCurrentBothAbsorptionsAtTwoTurnsPass(){
   var good=List.of(i("状況確認"),i("2ターンの間、敵の属性吸収を無効化"),i("2ターンの間、敵のダメージ吸収を無効化"));
   assertTrue(UraCombatText.absorptionsTwoTurns(good));

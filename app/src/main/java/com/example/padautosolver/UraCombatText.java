@@ -11,6 +11,12 @@ final class UraCombatText {
             int n=Integer.parseInt(m.group(1));if(n<1||n>22||found>0&&found!=n)return -1;found=n;
         }}return found;
     }
+    /** Menu controls permit another header read, not an inferred dungeon or floor. */
+    static boolean menuLayout(List<StagePolicy.Item> items){
+        return !blocked(items)&&control(items,"戻る",2080,2220)!=null
+            &&control(items,"状況確認",1300,1440)!=null
+            &&control(items,"入手アイテム確認",1680,1830)!=null;
+    }
     static boolean absorptionsTwoTurns(List<StagePolicy.Item> items){
         String s=joined(items);
         return s.contains("状況確認")&&s.contains(UraDialogPolicy.clean("2ターンの間敵の属性吸収を無効化"))&&s.contains(UraDialogPolicy.clean("2ターンの間敵のダメージ吸収を無効化"));
