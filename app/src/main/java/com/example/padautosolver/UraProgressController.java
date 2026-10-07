@@ -190,6 +190,15 @@ final class UraProgressController {
             captureHeld(d,nav,"progress-readiness");return d;
         }
         if(phase==14) {
+            if(step==UraProgressPolicy.SEKKA&&held!=null&&(held.baseNamed(SKILLS[step])||heading)
+                &&UraProgressPolicy.b9RetainShield(floor,operation,round,floorStartRound,record.optInt("sekkaRound",-1),
+                    record.optInt("lastSkill",-1),record.optInt("lastSkillRound",-1),record.optString("dispatchState"),
+                    record.optString("pendingAction"),record.optString("gameTurnProof"),held.baseRemaining)) {
+                UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
+                if(read==null||!vision.backControl(frame,read))return retry(frame,List.of(),"PROGRESS_B9_READINESS_BACK_REQUIRED",time,seq);
+                record.put("b9RetainedShieldRound",round);save(frame,List.of(),"progress-b9-shield-retained",time,seq);
+                return action(read.back,"B9：残存軽減を維持し未使用セッカを閉じる",()->{operation++;phase=2;misses=0;});
+            }
             if(step==UraProgressPolicy.RUKA_RECOVERY){
                 int layer=UraProgressPolicy.rukaRecoveryLayer(held,heading);
                 if(layer==0)return retry(frame,List.of(),"PROGRESS_RUKA_RECOVERY_READINESS_REQUIRED",time,seq);
@@ -210,6 +219,13 @@ final class UraProgressController {
             StagePolicy.Decision d=action(new StagePolicy.Item("PROGRESS_CHARGE_READY",1115,1425),"B"+floor+"：ミオンの残りターンを確認",()->{phase=17;misses=0;});captureHeld(d,nav,"progress-charge-ready");return d;
         }
         if(phase==17) {
+            if(held!=null&&(held.baseNamed(SKILLS[step])||heading)
+                &&UraProgressPolicy.b9SkipCharge(floor,operation,round,floorStartRound,record.optInt("b9RetainedShieldRound",-1),held.baseRemaining)) {
+                UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
+                if(read==null||!vision.backControl(frame,read))return retry(frame,List.of(),"PROGRESS_B9_CHARGE_BACK_REQUIRED",time,seq);
+                save(frame,List.of(),"progress-b9-charge-skipped",time,seq);
+                return action(read.back,"B9：ミオンの実CD0を確認し充填を省略",()->{operation++;phase=2;misses=0;});
+            }
             int expected=UraProgressPolicy.chargeCooldown(floor,operation);
             if(held==null||!(held.baseNamed(SKILLS[step])||heading)||!Integer.valueOf(expected).equals(held.baseRemaining))return retry(frame,List.of(),"PROGRESS_CHARGE_MION_COOLDOWN_REQUIRED:"+expected,time,seq);
             record.put("chargeMionRemaining",expected);
@@ -406,6 +422,7 @@ final class UraProgressController {
     private boolean dual(){return floor>=17&&floor<=19||(floor==20||floor==21)&&expectedMask()==UraDualRoulettePlan.MASK;}
     private long expectedMask(){return floor==21?round==floorStartRound?UraDualRoulettePlan.MASK:0:floor==20?UraProgressPolicy.b20Mask(round,floorStartRound):floor>=17&&floor<=19?UraDualRoulettePlan.MASK:0;}
     private boolean enemy(Bitmap frame)throws Exception {
+        if(floor==9&&vision.b9RedRedKappa(frame))return true;
         double best=1;for(int dx=-12;dx<=12;dx+=6)for(int dy=-12;dy<=12;dy+=6)best=Math.min(best,vision.distance(frame,"progress-b"+floor+"-enemy.png",260+dx,650+dy,550,500));return best<.055;
     }
     private boolean waterUnmatch(Bitmap frame)throws Exception {

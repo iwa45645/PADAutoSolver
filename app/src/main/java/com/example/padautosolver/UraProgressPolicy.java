@@ -108,6 +108,16 @@ final class UraProgressPolicy {
     static int rukaReadinessStep(int floor,int operation,int phase,int step) {
         return floor==8&&operation==0&&(phase==13||phase==14)&&step==RUKA?RUKA_RECOVERY:step;
     }
+    /** B8's recovery board can clear on the charge itself. Require that exact verified receipt. */
+    static boolean b9RetainShield(int floor,int operation,int round,int start,int sekkaRound,int lastSkill,int skillRound,
+            String dispatch,String pending,String turnProof,Integer sekkaRemaining) {
+        return floor==9&&operation==0&&round==start&&sekkaRound>=0&&round-sekkaRound==3
+            &&lastSkill==RUKA_RECOVERY&&skillRound==round-1&&"VERIFIED".equals(dispatch)&&"CHARGE".equals(pending)
+            &&"literal-next-floor-two-frames:9".equals(turnProof)&&Integer.valueOf(1).equals(sekkaRemaining);
+    }
+    static boolean b9SkipCharge(int floor,int operation,int round,int start,int retainedShieldRound,Integer mionRemaining) {
+        return floor==9&&operation==1&&round==start&&retainedShieldRound==round&&Integer.valueOf(0).equals(mionRemaining);
+    }
     static boolean b22AttackAllowed(int operation,int round,int start,int recoveryRound,int odinRound,int skillRound,int lastSkill,int[] hp,int verifiedMaximum,boolean awokenNull) {
         return operation==4&&round==start+1&&recoveryRound==round&&odinRound==round&&skillRound==round&&lastSkill==MION
             &&hp!=null&&verifiedMaximum>=100000&&hp[1]==verifiedMaximum&&hp[0]>0&&hp[0]<=hp[1]&&!awokenNull;

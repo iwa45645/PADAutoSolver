@@ -1,0 +1,26 @@
+{
+  "sources": [
+    {
+      "file": "b9-red-red-kappa-reference.png",
+      "sha256": "84b22ac723612dec91dad1dea6f7edc5a5b1db0b84246aff16d67b8bd4ae8b70"
+    },
+    {
+      "file": "b9-red-red-kappa-recheck.png",
+      "sha256": "e0f2e26523d929ab4b108c69d75b35126f85f894f56f38e3f64435fe73a1a59d"
+    },
+    {
+      "file": "progress-stop-1791345028555.png",
+      "sha256": "033201db5e4865c871dd37adf5d20266a223f61812c7f0e29c24c9c2138bc16e"
+    }
+  ],
+  "roi": [
+    40,
+    650,
+    1140,
+    500
+  ],
+  "actualFloor": 9,
+  "limit": 0.055,
+  "heldOutRecognitionOnly": true,
+  "nativeClearVerified": false
+}
