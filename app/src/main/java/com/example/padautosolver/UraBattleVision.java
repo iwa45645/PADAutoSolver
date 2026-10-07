@@ -6,8 +6,9 @@ import java.util.*;
 import org.json.*;
 final class UraBattleVision {
     private final Context context;private final Map<String,Bitmap> templates=new HashMap<>();
-    private final Map<String,int[]> orbReferences=new HashMap<>();
     private JSONArray normalReferences;
+    private int[][] orbPixels;
+    private int[] orbColors;
     double[] boardDistances;
     UraBattleVision(Context context){this.context=context;}
     private Bitmap template(String name)throws Exception {
@@ -260,6 +261,15 @@ final class UraBattleVision {
             while((read=in.read(bytes))!=-1)out.write(bytes,0,read);
             normalReferences=new JSONArray(out.toString("UTF-8"));
         }
+        if(orbPixels==null) {
+            int[][] loaded=new int[normalReferences.length()][];int[] colors=new int[loaded.length];
+            for(int i=0;i<loaded.length;i++) {
+                JSONObject row=normalReferences.getJSONObject(i);colors[i]=row.getInt("color");
+                Bitmap reference=template(row.getString("file")),scaled=Bitmap.createScaledBitmap(reference,48,48,true);
+                loaded[i]=pixels(scaled);if(scaled!=reference)scaled.recycle();
+            }
+            orbColors=colors;orbPixels=loaded;
+        }
         // Reviewed B1/B2 orb fixtures. Unrecognised artwork is UNKNOWN, never a hue-only guess.
         byte[] board=new byte[cols*rows];boardDistances=new double[cols*rows];
         for(int cell=0;cell<board.length;cell++) {
@@ -267,20 +277,10 @@ final class UraBattleVision {
             float size=1220f/cols,top=2712-84-rows*size;int cropSize=Math.round(160f*6/cols);
             Bitmap crop=Bitmap.createBitmap(frame,Math.round((cell%cols+.5f)*size)-cropSize/2,Math.round(top+(cell/cols+.5f)*size)-cropSize/2,cropSize,cropSize);
             Bitmap small=Bitmap.createScaledBitmap(crop,48,48,true);int[] live=pixels(small);small.recycle();crop.recycle();
-            double[] byColor=new double[special?10:6];Arrays.fill(byColor,1);
-            for(int i=0;i<normalReferences.length();i++) {
-                JSONObject reference=normalReferences.getJSONObject(i);
-                int refColor=reference.getInt("color");String name=reference.getString("file");
-                if(refColor>=byColor.length)continue;
-                int[] ref=orbReferences.get(name);
-                if(ref==null){Bitmap scaled=Bitmap.createScaledBitmap(template(name),48,48,true);ref=pixels(scaled);scaled.recycle();orbReferences.put(name,ref);}
-                byColor[refColor]=Math.min(byColor[refColor],TeamIconMatch.distance(live,ref));
-            }
-            int color=0;for(int c=1;c<byColor.length;c++)if(byColor[c]<byColor[color])color=c;
-            double other=1;for(int c=0;c<byColor.length;c++)if(c!=color)other=Math.min(other,byColor[c]);
-            boardDistances[cell]=byColor[color];
-            if(byColor[color]>.07||other-byColor[color]<.035)return null;
-            board[cell]=(byte)color;
+            UraOrbClassifier.Match match=UraOrbClassifier.classify(live,orbPixels,orbColors,special?10:6);
+            boardDistances[cell]=match.distance;
+            if(match.color<0)return null;
+            board[cell]=(byte)match.color;
         }
         return board;
     }

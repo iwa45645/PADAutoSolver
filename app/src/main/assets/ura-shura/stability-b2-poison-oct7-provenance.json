@@ -1,0 +1,261 @@
+{
+  "description": "Even device frames train four reviewed poison cells; odd frames and the earlier native stop are independent full30-board replay fixtures. No threshold relaxation or instruction inference.",
+  "board": [
+    2,
+    0,
+    1,
+    1,
+    3,
+    6,
+    1,
+    4,
+    6,
+    7,
+    7,
+    4,
+    7,
+    3,
+    6,
+    2,
+    0,
+    3,
+    6,
+    5,
+    1,
+    3,
+    6,
+    2,
+    7,
+    3,
+    4,
+    1,
+    4,
+    3
+  ],
+  "references": [
+    {
+      "file": "stability-b2-poison-oct7-0-9.png",
+      "color": 7,
+      "cell": 9,
+      "source": "poison-cycle-0.png",
+      "sourceSha256": "201a16cecce73bbfbcb1c30a7570cddfb408ef4752104e1109d2cc9c5bcae5b5"
+    },
+    {
+      "file": "stability-b2-poison-oct7-0-10.png",
+      "color": 7,
+      "cell": 10,
+      "source": "poison-cycle-0.png",
+      "sourceSha256": "201a16cecce73bbfbcb1c30a7570cddfb408ef4752104e1109d2cc9c5bcae5b5"
+    },
+    {
+      "file": "stability-b2-poison-oct7-0-12.png",
+      "color": 7,
+      "cell": 12,
+      "source": "poison-cycle-0.png",
+      "sourceSha256": "201a16cecce73bbfbcb1c30a7570cddfb408ef4752104e1109d2cc9c5bcae5b5"
+    },
+    {
+      "file": "stability-b2-poison-oct7-0-24.png",
+      "color": 7,
+      "cell": 24,
+      "source": "poison-cycle-0.png",
+      "sourceSha256": "201a16cecce73bbfbcb1c30a7570cddfb408ef4752104e1109d2cc9c5bcae5b5"
+    },
+    {
+      "file": "stability-b2-poison-oct7-2-9.png",
+      "color": 7,
+      "cell": 9,
+      "source": "poison-cycle-2.png",
+      "sourceSha256": "39af301f49aa92f0b5f363672a345ca6ee7785b4ca20c0116341b406c0fcdbfc"
+    },
+    {
+      "file": "stability-b2-poison-oct7-2-10.png",
+      "color": 7,
+      "cell": 10,
+      "source": "poison-cycle-2.png",
+      "sourceSha256": "39af301f49aa92f0b5f363672a345ca6ee7785b4ca20c0116341b406c0fcdbfc"
+    },
+    {
+      "file": "stability-b2-poison-oct7-2-12.png",
+      "color": 7,
+      "cell": 12,
+      "source": "poison-cycle-2.png",
+      "sourceSha256": "39af301f49aa92f0b5f363672a345ca6ee7785b4ca20c0116341b406c0fcdbfc"
+    },
+    {
+      "file": "stability-b2-poison-oct7-2-24.png",
+      "color": 7,
+      "cell": 24,
+      "source": "poison-cycle-2.png",
+      "sourceSha256": "39af301f49aa92f0b5f363672a345ca6ee7785b4ca20c0116341b406c0fcdbfc"
+    },
+    {
+      "file": "stability-b2-poison-oct7-4-9.png",
+      "color": 7,
+      "cell": 9,
+      "source": "poison-cycle-4.png",
+      "sourceSha256": "1b97fa9216b405afa49cbd8c4263a690f170ec98fe7063e2f75a789a1fa9e9af"
+    },
+    {
+      "file": "stability-b2-poison-oct7-4-10.png",
+      "color": 7,
+      "cell": 10,
+      "source": "poison-cycle-4.png",
+      "sourceSha256": "1b97fa9216b405afa49cbd8c4263a690f170ec98fe7063e2f75a789a1fa9e9af"
+    },
+    {
+      "file": "stability-b2-poison-oct7-4-12.png",
+      "color": 7,
+      "cell": 12,
+      "source": "poison-cycle-4.png",
+      "sourceSha256": "1b97fa9216b405afa49cbd8c4263a690f170ec98fe7063e2f75a789a1fa9e9af"
+    },
+    {
+      "file": "stability-b2-poison-oct7-4-24.png",
+      "color": 7,
+      "cell": 24,
+      "source": "poison-cycle-4.png",
+      "sourceSha256": "1b97fa9216b405afa49cbd8c4263a690f170ec98fe7063e2f75a789a1fa9e9af"
+    },
+    {
+      "file": "stability-b2-poison-oct7-6-9.png",
+      "color": 7,
+      "cell": 9,
+      "source": "poison-cycle-6.png",
+      "sourceSha256": "28a897e53b48dd5479a155aa98025eec78d712837f3a54c1c9cf5cc113e2405a"
+    },
+    {
+      "file": "stability-b2-poison-oct7-6-10.png",
+      "color": 7,
+      "cell": 10,
+      "source": "poison-cycle-6.png",
+      "sourceSha256": "28a897e53b48dd5479a155aa98025eec78d712837f3a54c1c9cf5cc113e2405a"
+    },
+    {
+      "file": "stability-b2-poison-oct7-6-12.png",
+      "color": 7,
+      "cell": 12,
+      "source": "poison-cycle-6.png",
+      "sourceSha256": "28a897e53b48dd5479a155aa98025eec78d712837f3a54c1c9cf5cc113e2405a"
+    },
+    {
+      "file": "stability-b2-poison-oct7-6-24.png",
+      "color": 7,
+      "cell": 24,
+      "source": "poison-cycle-6.png",
+      "sourceSha256": "28a897e53b48dd5479a155aa98025eec78d712837f3a54c1c9cf5cc113e2405a"
+    },
+    {
+      "file": "stability-b2-poison-oct7-8-9.png",
+      "color": 7,
+      "cell": 9,
+      "source": "poison-cycle-8.png",
+      "sourceSha256": "9e24474b38c81ad5091ee6c82683d0bdc35a61f4ab3670387c78e29c8f40667e"
+    },
+    {
+      "file": "stability-b2-poison-oct7-8-10.png",
+      "color": 7,
+      "cell": 10,
+      "source": "poison-cycle-8.png",
+      "sourceSha256": "9e24474b38c81ad5091ee6c82683d0bdc35a61f4ab3670387c78e29c8f40667e"
+    },
+    {
+      "file": "stability-b2-poison-oct7-8-12.png",
+      "color": 7,
+      "cell": 12,
+      "source": "poison-cycle-8.png",
+      "sourceSha256": "9e24474b38c81ad5091ee6c82683d0bdc35a61f4ab3670387c78e29c8f40667e"
+    },
+    {
+      "file": "stability-b2-poison-oct7-8-24.png",
+      "color": 7,
+      "cell": 24,
+      "source": "poison-cycle-8.png",
+      "sourceSha256": "9e24474b38c81ad5091ee6c82683d0bdc35a61f4ab3670387c78e29c8f40667e"
+    },
+    {
+      "file": "stability-b2-poison-oct7-10-9.png",
+      "color": 7,
+      "cell": 9,
+      "source": "poison-cycle-10.png",
+      "sourceSha256": "03ceb8a61c7ac3d7d3bd51fe4ec35e5cdef50fdec2c7d9a155b5e2ba9f1de3c3"
+    },
+    {
+      "file": "stability-b2-poison-oct7-10-10.png",
+      "color": 7,
+      "cell": 10,
+      "source": "poison-cycle-10.png",
+      "sourceSha256": "03ceb8a61c7ac3d7d3bd51fe4ec35e5cdef50fdec2c7d9a155b5e2ba9f1de3c3"
+    },
+    {
+      "file": "stability-b2-poison-oct7-10-12.png",
+      "color": 7,
+      "cell": 12,
+      "source": "poison-cycle-10.png",
+      "sourceSha256": "03ceb8a61c7ac3d7d3bd51fe4ec35e5cdef50fdec2c7d9a155b5e2ba9f1de3c3"
+    },
+    {
+      "file": "stability-b2-poison-oct7-10-24.png",
+      "color": 7,
+      "cell": 24,
+      "source": "poison-cycle-10.png",
+      "sourceSha256": "03ceb8a61c7ac3d7d3bd51fe4ec35e5cdef50fdec2c7d9a155b5e2ba9f1de3c3"
+    },
+    {
+      "file": "stability-b2-poison-oct7-12-9.png",
+      "color": 7,
+      "cell": 9,
+      "source": "poison-cycle-12.png",
+      "sourceSha256": "fb31caf23d65c3d43536d9fd74c701978c93a299dd861caff81fe9d1e46ff885"
+    },
+    {
+      "file": "stability-b2-poison-oct7-12-10.png",
+      "color": 7,
+      "cell": 10,
+      "source": "poison-cycle-12.png",
+      "sourceSha256": "fb31caf23d65c3d43536d9fd74c701978c93a299dd861caff81fe9d1e46ff885"
+    },
+    {
+      "file": "stability-b2-poison-oct7-12-12.png",
+      "color": 7,
+      "cell": 12,
+      "source": "poison-cycle-12.png",
+      "sourceSha256": "fb31caf23d65c3d43536d9fd74c701978c93a299dd861caff81fe9d1e46ff885"
+    },
+    {
+      "file": "stability-b2-poison-oct7-12-24.png",
+      "color": 7,
+      "cell": 24,
+      "source": "poison-cycle-12.png",
+      "sourceSha256": "fb31caf23d65c3d43536d9fd74c701978c93a299dd861caff81fe9d1e46ff885"
+    },
+    {
+      "file": "stability-b2-poison-oct7-14-9.png",
+      "color": 7,
+      "cell": 9,
+      "source": "poison-cycle-14.png",
+      "sourceSha256": "298c8264204d58ab44ba6a4c95dd7d8604582f312adb59a7a11aeef0068b95d8"
+    },
+    {
+      "file": "stability-b2-poison-oct7-14-10.png",
+      "color": 7,
+      "cell": 10,
+      "source": "poison-cycle-14.png",
+      "sourceSha256": "298c8264204d58ab44ba6a4c95dd7d8604582f312adb59a7a11aeef0068b95d8"
+    },
+    {
+      "file": "stability-b2-poison-oct7-14-12.png",
+      "color": 7,
+      "cell": 12,
+      "source": "poison-cycle-14.png",
+      "sourceSha256": "298c8264204d58ab44ba6a4c95dd7d8604582f312adb59a7a11aeef0068b95d8"
+    },
+    {
+      "file": "stability-b2-poison-oct7-14-24.png",
+      "color": 7,
+      "cell": 24,
+      "source": "poison-cycle-14.png",
+      "sourceSha256": "298c8264204d58ab44ba6a4c95dd7d8604582f312adb59a7a11aeef0068b95d8"
+    }
+  ]
+}
