@@ -41,7 +41,7 @@ public class UraB9EarlyClearTest {
         assertFalse(UraProgressPolicy.b9CooldownCourse(6,7,3,3));
     }
     @Test public void actualB9ChargeRouteConsumesHealingWithoutLeaderAttack(){
-        byte[] board={0,0,5,2,1,3,1,5,0,5,1,5,0,3,3,5,0,5,4,3,5,2,0,5,3,2,2,5,5,3};
+        byte[] board={0,0,5,1,2,3,2,5,0,5,2,5,0,3,3,5,0,5,4,3,5,1,0,5,3,1,1,5,5,3};
         java.util.List<Integer> path=UraChargeRoute.findHealing(board);
         for(int i=1;i<path.size();i++){int a=path.get(i-1),b=path.get(i);assertEquals(1,Math.abs(a%6-b%6)+Math.abs(a/6-b/6));byte temp=board[a];board[a]=board[b];board[b]=temp;}
         PuzzleSolver.MatchStats stats=PuzzleSolver.firstWave(board,6,5);

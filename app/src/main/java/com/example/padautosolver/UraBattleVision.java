@@ -291,8 +291,11 @@ final class UraBattleVision {
             int[][] loaded=new int[normalReferences.length()][];int[] colors=new int[loaded.length];
             for(int i=0;i<loaded.length;i++) {
                 JSONObject row=normalReferences.getJSONObject(i);colors[i]=row.getInt("color");
-                Bitmap reference=template(row.getString("file")),scaled=Bitmap.createScaledBitmap(reference,48,48,true);
-                loaded[i]=pixels(scaled);if(scaled!=reference)scaled.recycle();
+                Bitmap reference=null,scaled=null;
+                try(InputStream in=context.getAssets().open("ura-shura/"+row.getString("file"))) {
+                    reference=BitmapFactory.decodeStream(in);if(reference==null)throw new IOException("Invalid orb image");
+                    scaled=Bitmap.createScaledBitmap(reference,48,48,true);loaded[i]=pixels(scaled);
+                }finally{if(scaled!=null&&scaled!=reference)scaled.recycle();if(reference!=null)reference.recycle();}
             }
             orbColors=colors;orbPixels=loaded;
         }

@@ -1,0 +1,75 @@
+{
+  "geometry": [
+    7,
+    6
+  ],
+  "board": [
+    1,
+    5,
+    0,
+    0,
+    1,
+    5,
+    5,
+    0,
+    4,
+    4,
+    5,
+    3,
+    0,
+    1,
+    4,
+    5,
+    4,
+    3,
+    5,
+    0,
+    4,
+    3,
+    0,
+    5,
+    0,
+    4,
+    1,
+    0,
+    2,
+    1,
+    3,
+    4,
+    2,
+    5,
+    5,
+    4,
+    0,
+    4,
+    1,
+    1,
+    2,
+    0
+  ],
+  "training": [
+    {
+      "source": "b10-expanded-cycle-0.png",
+      "sha256": "066fec6fbfb938cdafe60b575c7f76195d2fb07673fc5eb9d4dc181ee78f28ba"
+    },
+    {
+      "source": "b10-expanded-cycle-2.png",
+      "sha256": "5e293868424db0355a983626a7cc64944cf9b9100883ddd06a863b328d424817"
+    },
+    {
+      "source": "b10-expanded-cycle-4.png",
+      "sha256": "7932a1efa654d8aca180597ea4d97848df6eb8c77e131876a985b82395512f8a"
+    }
+  ],
+  "heldout": {
+    "b10-expanded-cycle-1.png": "13569197bc9d9d7fc21b0639b8cabd8483dd35c4759ea0a9caeadbc140af8493",
+    "b10-expanded-cycle-3.png": "411842a0182593fd2d7120cf1f8da1c329208a912132f432ca4bea3f9088f1c2",
+    "b10-expanded-cycle-5.png": "b2b4561b34dddff6865ab262888a8f578ca55218ebbddace7796e6fecc21a643",
+    "progress-stop-1791347083552.png": "ca14c68fac677e4deaf478baf7e55ad784945f60c1d866632001797df6da3d09"
+  },
+  "limit": 0.07,
+  "margin": 0.035,
+  "runId": "a1316f97-e64c-4045-a85a-204b843d7041",
+  "floor": 10,
+  "nativeOnly": true
+}
