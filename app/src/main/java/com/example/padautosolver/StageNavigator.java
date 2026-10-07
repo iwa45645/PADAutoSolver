@@ -123,8 +123,12 @@ final class StageNavigator {
         return readCrop(frame,.01f,.18f,.99f,.97f,false,false,2);
     }
     List<StagePolicy.Item> readUraHp(Bitmap frame)throws Exception {
-        // HP has a heavy colored outline; isolate its yellow/white digits and slash.
-        return readCrop(frame,.60f,.574f,.978f,.593f,true,false,4,true);
+        // Read the literal digits; full/reduced HP also uses green/red, not only yellow.
+        List<StagePolicy.Item> text=readCrop(frame,.60f,.574f,.978f,.593f,true,false,4,true);
+        if(UraB3Policy.hp(text)!=null)return text;
+        text=readCrop(frame,.60f,.574f,.978f,.593f,false,false,4);
+        if(UraB3Policy.hp(text)!=null)return text;
+        return readCrop(frame,.60f,.574f,.978f,.593f,true,false,4);
     }
     List<StagePolicy.Item> readUraMenuControl(Bitmap frame)throws Exception {
         return readCrop(frame,.86f,.19f,.998f,.22f,false,false,3);
