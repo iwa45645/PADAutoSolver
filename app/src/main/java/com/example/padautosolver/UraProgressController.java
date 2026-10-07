@@ -415,7 +415,7 @@ final class UraProgressController {
         d.holdMs=4000;d.heldStampedFrame=(image,current,t,s)->{
             List<StagePolicy.Item> text=nav.readUraHeldSkill(image);UraHeldSkillInfo info=assistRead?UraHeldSkillInfo.read(text):UraHeldSkillInfo.readBase(text);if(!current.getAsBoolean())return;
             held=info;heldAt=t;heldSequence=s;
-            heading=step==0&&vision.sekkaPostHeading(image)||step==1&&vision.distance(image,"post-mion-skill-header.png",130,230,770,50)<.025||(step==4||step==6)&&vision.distance(image,"post-ruka-skill-header.png",130,230,490,50)<.025;
+            heading=step==0&&vision.sekkaPostHeading(image)||step==1&&vision.distance(image,"post-mion-skill-header.png",130,230,770,50)<.025||step==3&&vision.distance(image,"post-odin-skill-header.png",130,230,490,50)<.025||(step==4||step==6)&&vision.distance(image,"post-ruka-skill-header.png",130,230,490,50)<.025;
             assistHeading=assistRead&&vision.distance(image,"post-yukine-assist-header.png",130,380,550,50)<.025;
             record.put("reviewedAssistHeading",assistHeading);
             record.put("reviewedHeading",heading).put("heldSkill",info==null?JSONObject.NULL:new JSONObject().put("name",info.baseName).put("remaining",info.baseRemaining).put("assistName",info.assistName).put("assistRemaining",info.assistRemaining));save(image,text,name,t,s);

@@ -1,0 +1,19 @@
+{
+  "description": "Oct7 literal Odin heading reference; Oct5 B20/B22 post-CD5 frames are independent identity recognition fixtures, not current-turn cooldown proof.",
+  "sourceFrames": {
+    "progress-readiness-1791343816705.png": "f41093147ebdc74a663bc7c8eb8eb1eda47ab377874a0ab0b22b3f84c79b53cd",
+    "progress-held-1791159873524.png": "8da7d121af8267f8bedd5478fdc84dab634ae5ad492e7822b67d1f42021bbf4a",
+    "progress-held-1791162286676.png": "674bddbb836d442af66881d7de8ffa64a791990bf5f37eb79814f0fffe06d267"
+  },
+  "roi": [
+    130,
+    230,
+    490,
+    50
+  ],
+  "limit": 0.025,
+  "currentRunId": "a1316f97-e64c-4045-a85a-204b843d7041",
+  "currentStep": 3,
+  "currentRemaining": 0,
+  "currentOdinActivated": false
+}
