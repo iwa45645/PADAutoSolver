@@ -1,0 +1,117 @@
+{
+  "training": [
+    {
+      "source": "b15-attack-cycle-0.png",
+      "sha256": "00d1e75308cc08e4d03121ef6dc8c5b8d0a4dee694228dd0443f01173994c991"
+    },
+    {
+      "source": "b15-attack-cycle-2.png",
+      "sha256": "d989e65e1cbdd998355b920c62d871f2802664e03c08ae6409f86ce8ab9a5a7f"
+    },
+    {
+      "source": "b15-attack-cycle-4.png",
+      "sha256": "225eb63b278d73db6598523a54c6ff421cb9c7ad04d89701488324565bd61959"
+    },
+    {
+      "source": "b15-attack-cycle-6.png",
+      "sha256": "84d24879bd13d3ee4e04147c14331a08c3d40c0f3c128aac55cedec2ca86dfee"
+    },
+    {
+      "source": "b15-attack-cycle-8.png",
+      "sha256": "f3256fa3a4e5e7eac329761975e663a4cfdd2b86fc76c2f6e7be8b9adf67b5b4"
+    },
+    {
+      "source": "b15-water-extra-0.png",
+      "sha256": "45b5f141a86115d76d6391e9b303f9ba5d1228a4d229d057d164fc7960272d9f"
+    },
+    {
+      "source": "b15-water-extra-1.png",
+      "sha256": "227583b222f58209b7fdb4572ebdeece5fb350d8043364117531dde79042289c"
+    },
+    {
+      "source": "b15-water-extra-2.png",
+      "sha256": "7fa41bbd009ac872b2f9261cd2076903c1d727690c34adc8db0f5f5395502a19"
+    },
+    {
+      "source": "b15-water-extra-3.png",
+      "sha256": "d0491906fe01b11f4dcca2d0dfc9ad6d51ea5fad0a119763badddd790d0ea73d"
+    },
+    {
+      "source": "b15-water-extra-4.png",
+      "sha256": "b1ec29aa948b85e262a24dad771c2b06b64ce8d112325b518ec5cc225803b87e"
+    },
+    {
+      "source": "b15-water-extra-5.png",
+      "sha256": "6db4aa2677b13e19e0cfade79678ccf4ba469cec42e82433e6167766c177cbf1"
+    },
+    {
+      "source": "b15-water-extra-6.png",
+      "sha256": "880f17eba04a8b9399ae1dffb707c01676071964e67f1ed6377a44b47adbe551"
+    },
+    {
+      "source": "b15-water-extra-7.png",
+      "sha256": "b9cd23b3d2fa62c40a24fbb24d8bdd8ce8cdec9b41d21810036edf9b4f07faad"
+    },
+    {
+      "source": "b15-water-extra-8.png",
+      "sha256": "b8fd9fc38f8c72adf7be06e5e46622f494243d851afe9a635ea358683c2eb8f6"
+    },
+    {
+      "source": "b15-water-extra-9.png",
+      "sha256": "32c14bebb84674718ad88fd250db26af1b3b7dddba6ff93f25ecda1f1a161bb5"
+    },
+    {
+      "source": "b15-water-extra-10.png",
+      "sha256": "6c0128d96a89aea790afd7e955253d6a8b42799a1e9961e88fb726fcd6872a25"
+    },
+    {
+      "source": "b15-water-extra-11.png",
+      "sha256": "4b7ef97f2738548c0f925e0e49bc97408599183845bcc552a1b2578ee6098e8b"
+    }
+  ],
+  "heldout": {
+    "b15-attack-cycle-1.png": "936118b020e7fc6330c4f2bdb226455c87da9e685a7c69b4ea7f4fbdd12f777d",
+    "b15-attack-cycle-3.png": "691a6b756b3a5485a7df22ee1aa6a4c580094aff92a8ee0bdc7fca5a4620bd76",
+    "b15-attack-cycle-5.png": "2fd91f5c223935007701c231cc0dc319e6d8224a582a8a35e216ffd01584a96d",
+    "b15-attack-cycle-7.png": "95de4d14cb510de9b0b194ee168dfa509dc24ad97f1a0cf47fbc4e9a805674e4",
+    "b15-attack-cycle-9.png": "74a9f150f710bfdce3669e7f4a09eb34fd8ab306b9647ee4473b95b8aecbc7f4",
+    "progress-stop-1791351727437.png": "c6dcfadfe1b8f4d524f6c624e925498fb24e0a38bf69382606d10007208d6639"
+  },
+  "board": [
+    2,
+    4,
+    3,
+    3,
+    2,
+    3,
+    4,
+    5,
+    3,
+    4,
+    5,
+    2,
+    3,
+    2,
+    5,
+    3,
+    4,
+    5,
+    3,
+    2,
+    4,
+    3,
+    3,
+    4,
+    5,
+    4,
+    3,
+    5,
+    2,
+    4
+  ],
+  "thresholds": [
+    0.07,
+    0.035
+  ],
+  "description": "Even real frames and separately captured extra frames train only locked water26; independent odd frames and earlier stopped frame replay all30. Existing held-out payloads retained."
+}
