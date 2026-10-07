@@ -26,6 +26,14 @@ final class UraBattleVision {
         for(int y=0;y<70;y++)for(int x=0;x<175;x++)if(brightWhite(frame.getPixel(630+x,980+y))!=brightWhite(ref.getPixel(x,y)))errors++;
         return errors<30;
     }
+    boolean menuFloor11(Bitmap frame)throws Exception {
+        Bitmap ref=template("menu-floor11.png");boolean[] expected=new boolean[175*70],current=new boolean[175*70];
+        for(int y=0;y<70;y++)for(int x=0;x<175;x++){
+            expected[y*175+x]=brightWhite(ref.getPixel(x,y));
+            current[y*175+x]=brightWhite(frame.getPixel(630+x,980+y));
+        }
+        return UraMenuFloorProof.matches(expected,current);
+    }
     boolean b15ChargeCounters(Bitmap frame)throws Exception {
         int[] positions={135,410,685,960};
         for(int i=0;i<4;i++) {

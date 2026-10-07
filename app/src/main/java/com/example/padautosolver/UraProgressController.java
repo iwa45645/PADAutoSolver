@@ -142,6 +142,11 @@ final class UraProgressController {
             }
             int observed=UraCombatText.floor(text);
             if(observed>=0)record.put("floorProof","literal-ocr:"+observed);
+            boolean menuEvidence=UraCombatText.joined(text).contains("裏魔門の守護者")&&UraCombatText.menuLayout(text);
+            if(menuEvidence&&(floor==10||floor==11)&&vision.menuFloor11(frame)){
+                int resolved=UraMenuFloorProof.resolvedEleven(observed,floor,true,true);
+                if(resolved==11){observed=11;record.put("floorProof","reviewed-menu-glyphs-11/22");}
+            }
             if(observed<0&&UraCombatText.joined(text).contains("裏魔門の守護者")&&UraCombatText.control(text,"戻る",2080,2220)!=null&&vision.menuFloor13(frame)) {
                 observed=13;record.put("floorProof","reviewed-menu-glyphs-13/22");
             }

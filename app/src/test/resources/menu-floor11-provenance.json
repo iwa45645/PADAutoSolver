@@ -1,0 +1,16 @@
+{
+  "roi": [
+    630,
+    980,
+    805,
+    1050
+  ],
+  "referenceAssetSha256": "d5aec6c1bf635724afafca2984fd4b5b365739dc96b764dc8f2c93ac8e9c067b",
+  "maskFixtureSha256": "dde4413ad38b1ffe1c26c498dee3f77e7febdcb6486e4e640fdd638df0aa3e43",
+  "source": "progress-stop-1791348328983.png",
+  "sourceSha256": "baa25088288dc01e8fa67ade01b336136c9a8eda08097a238337141e78dc8e96",
+  "heldout": "b11-menu-independent.png",
+  "heldoutSha256": "5868ce25423ba30d8857803d621bff1b3428ec61a5ddda3394724ffa59b900a5",
+  "negative": "actual Battle9 and missing left numeral",
+  "threshold": "bright RGB>235; fewer than30 changed pixels; same 175x70 ROI as floor13"
+}
