@@ -214,7 +214,7 @@ final class UraProgressController {
         }
         if(phase==16) {
             held=null;step=UraProgressPolicy.MION;
-            StagePolicy.Decision d=action(new StagePolicy.Item("PROGRESS_CHARGE_READY",1115,1425),"B"+floor+"：ミオンの残りターンを確認",()->{phase=17;misses=0;});captureHeld(d,nav,"progress-charge-ready");return d;
+            StagePolicy.Decision d=action(new StagePolicy.Item("PROGRESS_CHARGE_READY",1115,1425),"B"+floor+"：ミオンの残りターンを確認",()->{phase=17;prepared=false;misses=0;});captureHeld(d,nav,"progress-charge-ready");return d;
         }
         if(phase==17) {
             if(floor==9&&operation==1&&record.optInt("b9RetainedShieldRound",-1)==floorStartRound
@@ -371,7 +371,7 @@ final class UraProgressController {
             ?UraReadinessExit.evaluate(true,vision.backControl(frame,read),false,false)
             :UraReadinessExit.evaluate(false,false,vision.b9RedRedKappa(frame),mask(frame)==0&&board(frame)!=null);
         if(exit==UraReadinessExit.Outcome.WAIT)return retry(frame,List.of(),"PROGRESS_B9_READINESS_EXIT_REQUIRED",time,seq);
-        save(frame,List.of(),proof,time,seq);
+        if(!prepared){save(frame,List.of(),proof,time,seq);prepared=true;return waitFor("B9：保存後の新しい画面で確認");}
         if(exit==UraReadinessExit.Outcome.CLOSE_MODAL)return action(read.back,status,done);
         done.run();persistState();return waitFor(status);
     }
