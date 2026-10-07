@@ -209,15 +209,22 @@ final class UraB3Controller {
         }
         if(phase==14) {
             if(held==null)return retry(frame,List.of(),"B3_REFRESH_TURN_READ_REQUIRED",time,seq);
-            if(heldAt<=actionAt||heldSequence<=actionSequence||!(held.baseNamed(SKILLS[0])||heldSekkaHeading)||!Integer.valueOf(3).equals(held.baseRemaining))
-                return stop(frame,List.of(),"B3_REFRESH_TURN_NOT_VERIFIED",time,seq);
             UraDialogPolicy.Read read=UraDialogPolicy.read(nav.readUraDialog(frame),2712);
-            if(read==null||!vision.backControl(frame,read))return retry(frame,List.of(),"B3_REFRESH_PROOF_BACK_REQUIRED",time,seq);
+            UraB3RefreshProof.Outcome proof=UraB3RefreshProof.evaluate(sekkaCooldown,held.baseRemaining,
+                held.baseNamed(SKILLS[0])||heldSekkaHeading,actionAt,actionSequence,heldAt,heldSequence,
+                read!=null,read!=null&&read.named(SKILLS[0])&&vision.backControl(frame,read),
+                read==null&&enemy(frame),read==null&&vision.luciferBoard(frame)!=null);
+            if(proof==UraB3RefreshProof.Outcome.UNVERIFIED)return stop(frame,List.of(),"B3_REFRESH_TURN_NOT_VERIFIED",time,seq);
+            if(proof==UraB3RefreshProof.Outcome.WAIT_FOR_COMBAT)return retry(frame,List.of(),"B3_REFRESH_PROOF_COMBAT_OR_NAMED_MODAL_REQUIRED",time,seq);
             record.put("refreshTurnProof","named-sekka-cooldown-4-to-3");
-            return action(read.back,"B3：盤面更新の1ターン経過を確認",()->{round=1;phase=0;misses=0;});
+            if(proof==UraB3RefreshProof.Outcome.CLOSE_NAMED_MODAL)
+                return action(read.back,"B3：盤面更新の1ターン経過を確認",this::advanceRefresh);
+            advanceRefresh();save(frame,List.of(),"b3-refresh-turn-verified",time,seq);
+            return waitFor("B3：実残りターンと戦闘画面を確認して攻撃へ続行");
         }
         return stop(frame,List.of(),"B3_UNKNOWN_STATE",time,seq);
     }
+    private void advanceRefresh(){round=1;phase=0;misses=0;saved=false;}
     private void advanceSkill(){phase=(step==0||step==2)?3:7;if(step==0)step=1;else if(step==2)step=3;misses=0;}
     private boolean enemy(Bitmap frame)throws Exception{return fact?vision.fact(frame):vision.leonis(frame);}
     private static JSONArray array(byte[] b){JSONArray a=new JSONArray();for(byte x:b)a.put(x);return a;}

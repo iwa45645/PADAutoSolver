@@ -65,6 +65,7 @@ public class AutoPuzzleService extends Service {
     private android.widget.LinearLayout uraPanel;
     private TextView uraStatus;
     private int uraResumeAttempts;
+    private final UraHandoffRetry uraHandoffRetry=new UraHandoffRetry();
     private View uraPreview;
     private UraShuraInspector uraInspector;
     private UraPreflightController uraPreflight;
@@ -379,6 +380,11 @@ public class AutoPuzzleService extends Service {
                         UraLuciferController next=UraLuciferController.resume(this,bitmap);
                         if(next!=null){uraLucifer=next;clearUraBattle();decision=new StagePolicy.Decision(null,"B1突破確認済み：B2の実指示から続行",false);}
                     }
+                    if(decision.stop&&uraHandoffRetry.observeAgain(decision.status)) {
+                        android.util.Log.i("PADSolver","uraHandoffObservation="+decision.status+" sequence="+sequence);
+                        decision=new StagePolicy.Decision(null,"突破確認済み：次階層を新しい画像で再照合",false);
+                        decision.nextFrameDelayMs=600;
+                    } else if(!decision.stop)uraHandoffRetry.reset();
                     decision.capturedAt=capturedAt;
                     bitmap.recycle();
                     String uraDecisionStatus=decision.status;
@@ -716,6 +722,7 @@ public class AutoPuzzleService extends Service {
             if(loopEnabled||busy.get()){uraStatus.setText("処理中です。停止してから再開してください");return;}
             clearUraPreview();
             uraResumeAttempts=0;
+            uraHandoffRetry.reset();
             try{uraPreflight=new UraPreflightController(this);clearUraBattle();clearLucifer();uraResumeRequested=true;pendingControl="";loopEnabled=true;
                 lastLoopProgress=android.os.SystemClock.elapsedRealtime();scheduleLoop(350);
             }catch(Exception e){pauseLoop("編成確認を開始できません："+e.getMessage());}
