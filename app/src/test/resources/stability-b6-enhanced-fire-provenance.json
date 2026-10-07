@@ -1,0 +1,122 @@
+{
+  "description": "Even real-device frames train enhanced fire cells27/29; odd frames and earlier stop are independent full30-board classification fixtures. Native MAX_DISTANCE=.07/MIN_MARGIN=.035 unchanged.",
+  "board": [
+    1,
+    3,
+    5,
+    4,
+    3,
+    5,
+    1,
+    5,
+    0,
+    1,
+    4,
+    4,
+    0,
+    0,
+    0,
+    3,
+    5,
+    4,
+    0,
+    4,
+    5,
+    3,
+    3,
+    1,
+    1,
+    5,
+    0,
+    0,
+    4,
+    0
+  ],
+  "training": [
+    {
+      "file": "stability-b6-enhanced-fire-oct7-0-27.png",
+      "color": 0,
+      "cell": 27,
+      "source": "b6-fire-cycle-0.png",
+      "sourceSha256": "61e7e9ffc3319197c962c2509babfab724dd80ad556107adc8b2cfb359613d7d"
+    },
+    {
+      "file": "stability-b6-enhanced-fire-oct7-0-29.png",
+      "color": 0,
+      "cell": 29,
+      "source": "b6-fire-cycle-0.png",
+      "sourceSha256": "61e7e9ffc3319197c962c2509babfab724dd80ad556107adc8b2cfb359613d7d"
+    },
+    {
+      "file": "stability-b6-enhanced-fire-oct7-2-27.png",
+      "color": 0,
+      "cell": 27,
+      "source": "b6-fire-cycle-2.png",
+      "sourceSha256": "8d1be7342ddf863e70d1e334cfdf17bab8d60e87183613d46f1c3f6a429f7886"
+    },
+    {
+      "file": "stability-b6-enhanced-fire-oct7-2-29.png",
+      "color": 0,
+      "cell": 29,
+      "source": "b6-fire-cycle-2.png",
+      "sourceSha256": "8d1be7342ddf863e70d1e334cfdf17bab8d60e87183613d46f1c3f6a429f7886"
+    },
+    {
+      "file": "stability-b6-enhanced-fire-oct7-4-27.png",
+      "color": 0,
+      "cell": 27,
+      "source": "b6-fire-cycle-4.png",
+      "sourceSha256": "06b2654b5eb21e23d613410991d24e4826ad986d25aa4cfbf2ac558ea3c271fd"
+    },
+    {
+      "file": "stability-b6-enhanced-fire-oct7-4-29.png",
+      "color": 0,
+      "cell": 29,
+      "source": "b6-fire-cycle-4.png",
+      "sourceSha256": "06b2654b5eb21e23d613410991d24e4826ad986d25aa4cfbf2ac558ea3c271fd"
+    },
+    {
+      "file": "stability-b6-enhanced-fire-oct7-6-27.png",
+      "color": 0,
+      "cell": 27,
+      "source": "b6-fire-cycle-6.png",
+      "sourceSha256": "e57b24f4ccc78d2c8c6f25a6675d2dda0b9aebade2b47503039a9a0e3207b71f"
+    },
+    {
+      "file": "stability-b6-enhanced-fire-oct7-6-29.png",
+      "color": 0,
+      "cell": 29,
+      "source": "b6-fire-cycle-6.png",
+      "sourceSha256": "e57b24f4ccc78d2c8c6f25a6675d2dda0b9aebade2b47503039a9a0e3207b71f"
+    },
+    {
+      "file": "stability-b6-enhanced-fire-oct7-8-27.png",
+      "color": 0,
+      "cell": 27,
+      "source": "b6-fire-cycle-8.png",
+      "sourceSha256": "ba50953cfc68910a8c78c821ab8edec4e1003a67d5e79245193c259fdcfeeb45"
+    },
+    {
+      "file": "stability-b6-enhanced-fire-oct7-8-29.png",
+      "color": 0,
+      "cell": 29,
+      "source": "b6-fire-cycle-8.png",
+      "sourceSha256": "ba50953cfc68910a8c78c821ab8edec4e1003a67d5e79245193c259fdcfeeb45"
+    }
+  ],
+  "heldOut": {
+    "b6-fire-cycle-1.png": "7564ac26cff8e83473d6bc360524bda432e4df29098d0eb3616bcff9e84a91aa",
+    "b6-fire-cycle-3.png": "ebff75169e56d35a499f204682c323da4b874e6fb3bb8920b7438328ea0d097e",
+    "b6-fire-cycle-5.png": "03977aadd7f0eadc5e0f4c5d1ce20e03bb473d36e607a87265c0790981e6a6cf",
+    "b6-fire-cycle-7.png": "f364b9101d03188ccc8274f17fed4aaeef70f78b45615173bdb821a6d889d28f",
+    "b6-fire-cycle-9.png": "d628162b772aed674badb6c098f0daa35d5f57d7a66ea0602756d0361536122f",
+    "progress-stop-1791343358062.png": "a2f64aed863b73bd56dc539053b326f75ede370d7bcebc024a1d7c6d3942080f"
+  },
+  "runId": "a1316f97-e64c-4045-a85a-204b843d7041",
+  "nativeTurnProof": {
+    "before": 2,
+    "after": 1,
+    "pendingAction": "ATTACK",
+    "dispatchState": "ACKNOWLEDGED"
+  }
+}
