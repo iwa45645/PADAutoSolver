@@ -2,6 +2,10 @@ package com.example.padautosolver;
 
 /** Compares the interior and surrounding space of a reviewed digit, ignoring its one-pixel glow. */
 final class UraCounterGlyph {
+    static boolean counterInk(int p){
+        int r=(p>>16)&255,g=(p>>8)&255,b=p&255;
+        return Math.min(r,Math.min(g,b))>235||r>235&&g<150&&b<150&&Math.abs(g-b)<20;
+    }
     static boolean matches(boolean[] reference,boolean[] current,int width,int height) {
         if(reference==null||current==null||width<3||height<3||reference.length!=width*height||current.length!=reference.length)return false;
         int errors=0,core=0;

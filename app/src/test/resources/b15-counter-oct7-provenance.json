@@ -1,0 +1,37 @@
+{
+  "source": "progress-stop-1791350247734.png",
+  "sourceSha256": "4cf232fe553d66821bde3158a034b7e58868f673439b278f3c01a65ce102903d",
+  "heldout": "b15-counter-independent.png",
+  "heldoutSha256": "60d055cc11ed12f380239940536f4930011e8481a4b8a777fe4c8560c44beac6",
+  "literalEntryCounters": [
+    5,
+    2,
+    4,
+    5
+  ],
+  "x": [
+    135,
+    410,
+    685,
+    960
+  ],
+  "y": 788,
+  "size": [
+    44,
+    53
+  ],
+  "maskRoi": [
+    5,
+    5,
+    39,
+    48
+  ],
+  "assetSha256": [
+    "2766d0a3a46c1da132f7d68755b71f68ff51a12ccd335cdaced30314d4eebc1e",
+    "02ef28785a9e18c6e7d7ff5179f699aa5b622d013aff161885347404bf29c8c5",
+    "70bacbdf6aa64029885b245bad50e3bf52a0e1f9ddfcce89234c83dbe4d499dd",
+    "e61b8ca0479cf35dc92bbb22d87bb5ce5a7e4bd45575a8553bad37c4e1df357c"
+  ],
+  "fixtureSha256": "e4e1b3669c907bbb43c46e9ec8c30614c6bbe194d0aed208a4abb43169b983c4",
+  "negative": "Blank counter masks; cross-slot literal2 rejected as literal5. Digit1/0 rejected by existing reviewed glyph mechanism."
+}

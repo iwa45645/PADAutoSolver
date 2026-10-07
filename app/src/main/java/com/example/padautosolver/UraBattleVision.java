@@ -37,14 +37,15 @@ final class UraBattleVision {
     boolean b15ChargeCounters(Bitmap frame)throws Exception {
         int[] positions={135,410,685,960};
         for(int i=0;i<4;i++) {
-            Bitmap ref=template("progress-b15-counter-"+i+".png");
-            boolean[] expected=new boolean[34*43],current=new boolean[34*43];
+            Bitmap ref=template("progress-b15-counter-"+i+".png"),reviewed=template("progress-b15-counter-oct7-"+i+".png");
+            boolean[] expected=new boolean[34*43],extra=new boolean[34*43],current=new boolean[34*43];
             for(int y=0;y<43;y++)for(int x=0;x<34;x++){
                 expected[y*34+x]=brightWhite(ref.getPixel(5+x,5+y));
+                extra[y*34+x]=UraCounterGlyph.counterInk(reviewed.getPixel(5+x,5+y));
                 int pixel=frame.getPixel(positions[i]+5+x,793+y);
-                current[y*34+x]=brightWhite(pixel)||((pixel>>16)&255)>235&&((pixel>>8)&255)<80&&(pixel&255)<80;
+                current[y*34+x]=UraCounterGlyph.counterInk(pixel);
             }
-            if(!UraCounterGlyph.matches(expected,current,34,43))return false;
+            if(!UraCounterGlyph.matches(expected,current,34,43)&&!UraCounterGlyph.matches(extra,current,34,43))return false;
         }return true;
     }
     private static boolean brightWhite(int pixel){return ((pixel>>16)&255)>235&&((pixel>>8)&255)>235&&(pixel&255)>235;}
